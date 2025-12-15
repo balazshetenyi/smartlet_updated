@@ -43,6 +43,7 @@ export default function HomeScreen() {
   const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const { session } = useAuthStore();
+  const user = session?.user?.user_metadata;
 
   const fetchProperties = useCallback(async () => {
     try {
@@ -295,7 +296,7 @@ export default function HomeScreen() {
   const renderWelcomeSection = () => (
     <View style={styles.welcomeSection}>
       <Text style={styles.greeting}>
-        Hello, {session?.user?.user_metadata?.first_name || "Guest"} 👋
+        Hello, {user?.first_name || "Guest"} 👋
       </Text>
       <Text style={styles.subtitle}>Find your perfect property</Text>
     </View>
