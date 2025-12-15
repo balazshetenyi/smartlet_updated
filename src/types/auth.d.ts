@@ -1,3 +1,4 @@
+import { Session } from "@supabase/supabase-js";
 type SignInData = {
   email: string;
   password: string;
@@ -9,4 +10,8 @@ type SignUpData = {
   email: string;
   password: string;
   user_type: "tenant" | "landlord";
+};
+
+type SignInResponse = {
+  session: Session | null;
 };

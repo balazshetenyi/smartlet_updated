@@ -1,15 +1,13 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import { signInSchema } from "@/config/schemas";
-import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
-import { Toast } from "react-native-toast-notifications";
-import * as zod from "zod";
+import { Text, TouchableOpacity, View } from "react-native";
 
 /**
  * Auth component for user authentication.
@@ -17,6 +15,7 @@ import * as zod from "zod";
  * If the user does not have an account, they can navigate to the sign-up page.
  */
 export default function SignIn() {
+  const { loading, signIn } = useAuthStore();
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -24,23 +23,8 @@ export default function SignIn() {
       password: "",
     },
   });
-  const [loading, setLoading] = useState(false);
+
   const router = useRouter();
-
-  async function signInWithEmail(data: zod.infer<typeof signInSchema>) {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword(data);
-
-    if (error) Alert.alert(error.message);
-    else {
-      Toast.show("Signed in successfully", {
-        type: "success",
-        placement: "top",
-        duration: 3000,
-      });
-    }
-    setLoading(false);
-  }
 
   return (
     <View className="flex-1 justify-between bg-white">
@@ -118,8 +102,8 @@ export default function SignIn() {
           <Button
             title="Sign in"
             disabled={formState.isSubmitting}
-            loading={loading}
-            onPress={handleSubmit(signInWithEmail)}
+            // loading={loading}
+            onPress={handleSubmit(signIn)}
             buttonStyle={{ backgroundColor: colours.primary }}
             testID="sign-in-button"
             accessibilityLabel="Sign In Button"
