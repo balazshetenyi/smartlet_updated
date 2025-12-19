@@ -402,7 +402,7 @@ export const markMessagesAsRead = async (
  */
 export const subscribeToMessages = (
   conversationId: string,
-  callback: (message: Message) => void
+  callback: (messages: Message[]) => void
 ) => {
   return supabase
     .channel(`messages:${conversationId}`)
@@ -429,11 +429,10 @@ export const subscribeToMessages = (
             )
           `
           )
-          .eq("id", payload.new.id)
-          .single();
+          .eq("id", payload.new.id);
 
         if (data) {
-          callback(data as Message);
+          callback(data as Message[]);
         }
       }
     )

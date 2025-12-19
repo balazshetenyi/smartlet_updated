@@ -8,20 +8,95 @@ import { uploadImageToStorage } from "./image-picker-utils";
  * @returns {Promise<Property[]>} A promise that resolves to an array of properties.
  * @throws Will throw an error if the fetch operation fails.
  */
-export const fetchAllProperties = async (): Promise<Property[]> => {
+export const fetchAllProperties = async (): Promise<{
+  long_term_properties: Property[];
+  short_term_properties: Property[];
+  holiday_properties: Property[];
+}> => {
   try {
-    const { data, error } = await supabase.from("properties").select("*");
+    const { data, error } = await supabase
+      .from("properties")
+      .select("*")
+      .eq("is_available", true)
+      .order("created_at", { ascending: false });
 
     if (error) {
       throw new Error(`Error fetching properties: ${error.message}`);
     }
 
-    return data as Property[];
+    const allProperties = data || [];
+    if (allProperties.length) {
+      const ids = allProperties.map((p) => p.id);
+      const map = await fetchCoverImageUrls(ids);
+      for (const property of allProperties) {
+        if (map[property.id]) {
+          property.cover_image_url = map[property.id];
+        }
+      }
+    }
+
+    const long_term_properties = allProperties.filter(
+      (p) => p.rental_type === "long_term"
+    );
+    const short_term_properties = allProperties.filter(
+      (p) => p.rental_type === "short_term"
+    );
+    const holiday_properties = allProperties.filter(
+      (p) => p.rental_type === "holiday"
+    );
+
+    return {
+      long_term_properties,
+      short_term_properties,
+      holiday_properties,
+    };
   } catch (error) {
     console.error("Error fetching properties:", error);
     throw error;
   }
 };
+
+// const fetchProperties = useCallback(async () => {
+//     try {
+//       const { data, error } = await supabase
+//         .from("properties")
+//         .select("*")
+//         .eq("is_available", true)
+//         .order("created_at", { ascending: false });
+
+//       if (error) throw error;
+
+//       const allProperties = data || [];
+//       setProperties(allProperties);
+//       setFilteredProperties(allProperties);
+
+//       // Separate by rental type
+//       setLongTermProperties(
+//         allProperties.filter((p) => p.rental_type === "long_term")
+//       );
+//       setShortTermProperties(
+//         allProperties.filter((p) => p.rental_type === "short_term")
+//       );
+//       setHolidayProperties(
+//         allProperties.filter((p) => p.rental_type === "holiday")
+//       );
+
+//       // Fetch cover images
+//       if (allProperties.length) {
+//         const ids = allProperties.map((p) => p.id);
+//         const map = await fetchCoverImageUrls(ids);
+//         setCoverMap(map);
+//       } else {
+//         setCoverMap({});
+//       }
+//     } catch (error) {
+//       console.error("Error fetching properties:", error);
+//       Alert.alert("Error", "Failed to load properties");
+//     } finally {
+//       setLoading(false);
+//       setRefreshing(false);
+//     }
+//   }, []);
 
 /**
  * Fetches a property by its ID from the Supabase database.
