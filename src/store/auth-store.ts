@@ -1,5 +1,5 @@
 import { SignInData, SignUpData } from "@/types/auth";
-import { signInWithEmail } from "@/utils/auth-utils";
+import { signInWithEmail, signOutUser } from "@/utils/auth-utils";
 import { Session } from "@supabase/supabase-js";
 import { deleteItemAsync, getItem, setItem } from "expo-secure-store";
 import { create } from "zustand";
@@ -10,6 +10,7 @@ type AuthStore = {
   session: Session | null;
   profile?: UserProfile | null;
   loading?: boolean;
+  signingOut?: boolean;
 };
 
 type AuthActions = {
@@ -28,16 +29,30 @@ export const useAuthStore = create(
       session: null,
       profile: null,
       loading: true,
+      signingOut: false,
       signIn: async (data: SignInData) => {
         set({ loading: true });
         const { session } = await signInWithEmail(data);
         if (session) {
-          set({ isLoggedIn: true, session });
+          set({
+            isLoggedIn: true,
+            session,
+            profile: session.user.user_metadata as UserProfile,
+            loading: false,
+          });
+        } else {
+          set({ loading: false });
         }
-        set({ loading: false });
       },
       signOut: async () => {
-        // Implementation of signOut
+        set({ signingOut: true });
+        await signOutUser();
+        set({
+          isLoggedIn: false,
+          session: null,
+          profile: null,
+          signingOut: false,
+        });
       },
       signUpWithEmail: async (data: SignUpData) => {
         // Implementation of signUpWithEmail

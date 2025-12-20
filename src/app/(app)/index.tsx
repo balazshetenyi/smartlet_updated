@@ -25,13 +25,12 @@ export default function HomeScreen() {
     loading,
   } = usePropertyStore();
   const [refreshing, setRefreshing] = useState(false);
-  const { session } = useAuthStore();
+  const { profile } = useAuthStore();
   const properties = [
     ...longTermProperties,
     ...shortTermProperties,
     ...holidayProperties,
   ];
-  const user = session?.user?.user_metadata;
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -40,7 +39,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadProperties();
-  }, [loadProperties, session?.user?.id]);
+  }, [loadProperties, profile?.id]);
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
@@ -74,7 +73,7 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.content}>
-          <WelcomeSection name={user?.first_name} />
+          <WelcomeSection name={profile?.first_name!} />
 
           {/* Holiday Rentals */}
           <PropertyRow

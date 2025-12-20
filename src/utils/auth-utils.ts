@@ -13,6 +13,14 @@ export async function signInWithEmail(
   return { session: data.session };
 }
 
+export async function signOutUser(): Promise<void> {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    Alert.alert("Error", error.message);
+    throw error;
+  }
+}
+
 // Password strength indicator
 export const getPasswordStrength = (password: string) => {
   let strength = 0;

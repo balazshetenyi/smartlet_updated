@@ -1,8 +1,12 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
+import {
+  getRoleColor,
+  getRoleIcon,
+  handleProfileSave,
+} from "@/utils/profile-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -16,11 +20,10 @@ import {
 } from "react-native";
 
 export default function ProfileScreen() {
-  const { profile, refreshProfile } = useAuth();
+  const { profile, signOut, signingOut } = useAuthStore();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
   const [formData, setFormData] = useState({
     first_name: profile?.first_name || "",
     last_name: profile?.last_name || "",
@@ -52,27 +55,20 @@ export default function ProfileScreen() {
   }, [profile, isEditing]);
 
   const handleSave = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          phone: formData.phone,
-        })
-        .eq("id", profile?.id);
-
-      if (error) throw error;
-
-      await refreshProfile?.();
+      await handleProfileSave(
+        formData.first_name,
+        formData.last_name,
+        formData.phone,
+        profile!.id
+      );
       setIsEditing(false);
-      Alert.alert("Success", "Profile updated successfully!");
     } catch (error) {
-      console.error("Error updating profile:", error);
-      Alert.alert("Error", "Failed to update profile");
+      console.error("Failed to save profile:", error);
+      Alert.alert("Error", "Failed to save profile changes.");
     } finally {
+      // await refreshProfile?.();
       setLoading(false);
     }
   };
@@ -85,64 +81,6 @@ export default function ProfileScreen() {
       phone: profile?.phone || "",
     });
     setIsEditing(false);
-  };
-
-  const handleSignOut = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            setSigningOut(true);
-            const { error } = await supabase.auth.signOut();
-
-            if (error) {
-              console.error("Sign out error:", error);
-              Alert.alert("Error", `Failed to sign out: ${error.message}`);
-              return;
-            }
-
-            // router.replace("/(auth)");
-          } catch (error) {
-            console.error("Unexpected error during sign out:", error);
-            Alert.alert(
-              "Error",
-              "An unexpected error occurred during sign out."
-            );
-          } finally {
-            setSigningOut(false);
-          }
-        },
-      },
-    ]);
-  };
-
-  const getRoleColor = (role?: string) => {
-    switch (role) {
-      case "landlord":
-        return colours.primary;
-      case "tenant":
-        return colours.secondary;
-      case "admin":
-        return colours.accent;
-      default:
-        return colours.muted;
-    }
-  };
-
-  const getRoleIcon = (role?: string) => {
-    switch (role) {
-      case "landlord":
-        return "home";
-      case "tenant":
-        return "person";
-      case "admin":
-        return "admin-panel-settings";
-      default:
-        return "person";
-    }
   };
 
   return (
@@ -164,7 +102,6 @@ export default function ProfileScreen() {
           ),
         }}
       />
-      {/* <Stack.Screen options={{ title: "Profile" }} /> */}
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <View
@@ -346,7 +283,7 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <TouchableOpacity
           style={styles.signOutButton}
-          onPress={handleSignOut}
+          onPress={signOut}
           disabled={signingOut}
         >
           <MaterialIcons name="logout" size={20} color={colours.danger} />

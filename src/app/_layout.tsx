@@ -1,4 +1,3 @@
-import { AuthProvider } from "@/context/AuthContext";
 import { useAuthStore } from "@/store/auth-store";
 import "@/styles/global.css";
 import { Stack } from "expo-router";
@@ -10,7 +9,7 @@ export default function RootLayout() {
   const { isLoggedIn } = useAuthStore();
 
   return (
-    <AuthProvider>
+    <React.Fragment>
       <StatusBar style="auto" />
       <SafeAreaView className="flex-1 bg-white">
         <Stack>
@@ -22,6 +21,6 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack>
       </SafeAreaView>
-    </AuthProvider>
+    </React.Fragment>
   );
 }
