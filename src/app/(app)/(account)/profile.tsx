@@ -214,7 +214,7 @@ export default function ProfileScreen() {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => router.push("/bookings")}
+          onPress={() => router.push("/my-bookings")}
         >
           <View style={styles.menuItemLeft}>
             <MaterialIcons
@@ -231,7 +231,7 @@ export default function ProfileScreen() {
         {isLandlord && (
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => router.push("/properties")}
+            onPress={() => router.push("/my-properties")}
           >
             <View style={styles.menuItemLeft}>
               <MaterialIcons name="home" size={24} color={colours.text} />

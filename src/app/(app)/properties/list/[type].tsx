@@ -157,6 +157,15 @@ export default function PropertyCategoryScreen() {
         options={{
           title: config.title,
           headerShown: true,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: 8, padding: 4 }}
+              accessibilityLabel="Go back"
+            >
+              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
+            </TouchableOpacity>
+          ),
           headerStyle: {
             backgroundColor: colours.surface,
           },

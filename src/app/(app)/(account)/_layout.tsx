@@ -9,7 +9,7 @@ export default function MessagesLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerStyle: {
           backgroundColor: colours.surface,
         },
@@ -20,6 +20,7 @@ export default function MessagesLayout() {
         name="profile"
         options={{
           title: "Profile",
+          headerShown: true,
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => router.back()}
@@ -32,9 +33,10 @@ export default function MessagesLayout() {
         }}
       />
       <Stack.Screen
-        name="bookings"
+        name="my-bookings"
         options={{
           title: "My Bookings",
+          headerShown: true,
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => router.back()}
@@ -47,9 +49,10 @@ export default function MessagesLayout() {
         }}
       />
       <Stack.Screen
-        name="properties"
+        name="my-properties"
         options={{
           title: "My Properties",
+          headerShown: true,
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => router.back()}

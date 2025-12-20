@@ -28,7 +28,7 @@ const PropertyRow = ({ title, properties, rentalType }: PropertyRowProps) => {
     <View className="mb-8">
       <View className="flex-row justify-between items-center mb-3">
         <Text style={styles.categoryTitle}>{title}</Text>
-        <Link href={`/properties/${rentalType}`}>
+        <Link href={`/properties/list/${rentalType}`}>
           <Text style={styles.viewAllText}>View All →</Text>
         </Link>
       </View>

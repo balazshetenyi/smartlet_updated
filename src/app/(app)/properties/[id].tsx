@@ -1,11 +1,16 @@
 import Button from "@/components/shared/Button";
-import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
 import { Amenity, Property } from "@/types/property";
 import { fetchPropertyPhotos } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import {
+  Stack,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from "expo-router";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -28,7 +33,7 @@ export default function PropertyDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
-  const { profile } = useAuth();
+  const { profile } = useAuthStore();
   const [property, setProperty] = useState<Property | null>(null);
   const [landlord, setLandlord] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -245,6 +250,29 @@ export default function PropertyDetailsScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          title: property.title,
+          headerShown: true,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: 8, padding: 4 }}
+              accessibilityLabel="Go back"
+            >
+              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
+            </TouchableOpacity>
+          ),
+          headerStyle: {
+            backgroundColor: colours.surface,
+          },
+          headerTintColor: colours.text,
+          headerTitleStyle: {
+            fontWeight: "700",
+          },
+          headerShadowVisible: false,
+        }}
+      />
       <ScrollView style={styles.scrollView}>
         {/* Images */}
         <View style={styles.imageContainer}>

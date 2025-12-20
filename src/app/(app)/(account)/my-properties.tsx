@@ -1,6 +1,6 @@
 import PropertyCard from "@/components/properties/PropertyCard";
-import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
 import { Property } from "@/types/property";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
@@ -18,7 +18,7 @@ import {
 } from "react-native";
 
 const Properties = () => {
-  const { profile, refreshProfile } = useAuth();
+  const { profile, refreshProfile } = useAuthStore();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loadingProperties, setLoadingProperties] = useState(false);

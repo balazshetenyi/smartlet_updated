@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
 import { Conversation, Message } from "@/types/message";
 import { pickImage } from "@/utils/image-picker-utils";
@@ -35,7 +35,7 @@ export default function ChatScreen() {
     conversation_id: string;
     propertyTitle?: string;
   }>();
-  const { profile } = useAuth();
+  const { profile } = useAuthStore();
   const router = useRouter();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
