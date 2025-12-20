@@ -8,10 +8,11 @@ import {
   handleProfileSave,
 } from "@/utils/profile-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,7 +21,7 @@ import {
 } from "react-native";
 
 export default function ProfileScreen() {
-  const { profile, signOut, signingOut } = useAuthStore();
+  const { profile, signOut, signingOut, refreshProfile } = useAuthStore();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,6 @@ export default function ProfileScreen() {
     email: profile?.email || "",
     phone: profile?.phone || "",
   });
-
   const isLandlord = profile?.user_role === "landlord";
 
   // Sync form data when profile changes (and not editing)
@@ -68,7 +68,7 @@ export default function ProfileScreen() {
       console.error("Failed to save profile:", error);
       Alert.alert("Error", "Failed to save profile changes.");
     } finally {
-      // await refreshProfile?.();
+      await refreshProfile();
       setLoading(false);
     }
   };
@@ -83,25 +83,25 @@ export default function ProfileScreen() {
     setIsEditing(false);
   };
 
+  const onRefresh = async () => {
+    setLoading(true);
+    await refreshProfile();
+    setLoading(false);
+  };
+
   return (
     <ScrollView
       style={styles.scrollView}
       contentContainerStyle={styles.contentContainer}
+      refreshControl={
+        <RefreshControl
+          refreshing={loading}
+          onRefresh={onRefresh}
+          tintColor={colours.primary}
+          colors={[colours.primary]}
+        />
+      }
     >
-      <Stack.Screen
-        options={{
-          title: "Profile",
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: 8, padding: 4 }}
-              accessibilityLabel="Go back"
-            >
-              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
-            </TouchableOpacity>
-          ),
-        }}
-      />
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <View
@@ -214,7 +214,7 @@ export default function ProfileScreen() {
 
         <TouchableOpacity
           style={styles.menuItem}
-          // onPress={() => router.navigate("/(account)/bookings")}
+          onPress={() => router.push("/bookings")}
         >
           <View style={styles.menuItemLeft}>
             <MaterialIcons
@@ -231,7 +231,7 @@ export default function ProfileScreen() {
         {isLandlord && (
           <TouchableOpacity
             style={styles.menuItem}
-            // onPress={() => router.navigate("/(account)/properties")}
+            onPress={() => router.push("/properties")}
           >
             <View style={styles.menuItemLeft}>
               <MaterialIcons name="home" size={24} color={colours.text} />

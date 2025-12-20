@@ -14,4 +14,5 @@ type SignUpData = {
 
 type SignInResponse = {
   session: Session | null;
+  profile: UserProfile | null;
 };

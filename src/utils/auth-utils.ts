@@ -7,10 +7,22 @@ import zod from "zod";
 export async function signInWithEmail(
   signInData: zod.infer<typeof signInSchema>
 ): Promise<SignInResponse> {
-  const { data, error } = await supabase.auth.signInWithPassword(signInData);
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.signInWithPassword(signInData);
 
   if (error) Alert.alert(error.message);
-  return { session: data.session };
+
+  if (!session) {
+    return { session: null, profile: null };
+  }
+  const profile = await fetchUserProfile(session.user.id);
+  if (!profile) {
+    return { session, profile: null };
+  }
+
+  return { session, profile };
 }
 
 export async function signOutUser(): Promise<void> {
@@ -20,6 +32,31 @@ export async function signOutUser(): Promise<void> {
     throw error;
   }
 }
+
+export const fetchUserProfile = async (
+  userId: string
+): Promise<UserProfile | null> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(
+      `
+        *,
+        user_roles (
+          role
+        )
+      `
+    )
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching user profile:", error);
+    return null;
+  }
+
+  const role = data.user_roles?.[0]?.role || "tenant";
+  return { ...data, user_role: role };
+};
 
 // Password strength indicator
 export const getPasswordStrength = (password: string) => {

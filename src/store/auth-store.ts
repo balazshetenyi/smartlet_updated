@@ -1,5 +1,9 @@
 import { SignInData, SignUpData } from "@/types/auth";
-import { signInWithEmail, signOutUser } from "@/utils/auth-utils";
+import {
+  fetchUserProfile,
+  signInWithEmail,
+  signOutUser,
+} from "@/utils/auth-utils";
 import { Session } from "@supabase/supabase-js";
 import { deleteItemAsync, getItem, setItem } from "expo-secure-store";
 import { create } from "zustand";
@@ -15,16 +19,16 @@ type AuthStore = {
 
 type AuthActions = {
   signIn: (data: SignInData) => void;
-  signOut?: () => Promise<void>;
-  signUpWithEmail?: (
+  signOut: () => Promise<void>;
+  signUpWithEmail: (
     data: SignUpData
   ) => Promise<{ success: boolean; error?: string }>;
-  refreshProfile?: () => Promise<UserProfile | null> | null;
+  refreshProfile: () => Promise<void>;
 };
 
 export const useAuthStore = create(
   persist<AuthStore & AuthActions>(
-    (set) => ({
+    (set, get) => ({
       isLoggedIn: false,
       session: null,
       profile: null,
@@ -32,12 +36,12 @@ export const useAuthStore = create(
       signingOut: false,
       signIn: async (data: SignInData) => {
         set({ loading: true });
-        const { session } = await signInWithEmail(data);
+        const { session, profile } = await signInWithEmail(data);
         if (session) {
           set({
             isLoggedIn: true,
             session,
-            profile: session.user.user_metadata as UserProfile,
+            profile,
             loading: false,
           });
         } else {
@@ -59,8 +63,10 @@ export const useAuthStore = create(
         return { success: false };
       },
       refreshProfile: async () => {
-        // Implementation of refreshProfile
-        return null;
+        const profile = await fetchUserProfile(get().session?.user.id!);
+        if (profile) {
+          set({ profile });
+        }
       },
     }),
     {
