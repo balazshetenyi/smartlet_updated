@@ -329,73 +329,71 @@ export default function ChatScreen() {
           ),
         }}
       />
-      <SafeAreaView style={styles.container} edges={["bottom"]}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-        >
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.messagesList}
-            onContentSizeChange={scrollToBottom}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <MaterialIcons
-                  name="chat-bubble-outline"
-                  size={64}
-                  color={colours.muted}
-                />
-                <Text style={styles.emptyText}>No messages yet</Text>
-                <Text style={styles.emptySubtext}>Start the conversation!</Text>
-              </View>
-            }
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.messagesList}
+          onContentSizeChange={scrollToBottom}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialIcons
+                name="chat-bubble-outline"
+                size={64}
+                color={colours.muted}
+              />
+              <Text style={styles.emptyText}>No messages yet</Text>
+              <Text style={styles.emptySubtext}>Start the conversation!</Text>
+            </View>
+          }
+        />
+
+        <View style={styles.inputContainer}>
+          <TouchableOpacity
+            style={styles.attachButton}
+            onPress={handleAttachment}
+            disabled={sending}
+          >
+            <MaterialIcons
+              name="attach-file"
+              size={24}
+              color={sending ? colours.muted : colours.primary}
+            />
+          </TouchableOpacity>
+
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Type a message..."
+            placeholderTextColor={colours.textSecondary}
+            multiline
+            maxLength={1000}
+            editable={!sending}
           />
 
-          <View style={styles.inputContainer}>
-            <TouchableOpacity
-              style={styles.attachButton}
-              onPress={handleAttachment}
-              disabled={sending}
-            >
-              <MaterialIcons
-                name="attach-file"
-                size={24}
-                color={sending ? colours.muted : colours.primary}
-              />
-            </TouchableOpacity>
-
-            <TextInput
-              style={styles.input}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder="Type a message..."
-              placeholderTextColor={colours.textSecondary}
-              multiline
-              maxLength={1000}
-              editable={!sending}
-            />
-
-            <TouchableOpacity
-              style={[
-                styles.sendButton,
-                (!inputText.trim() || sending) && styles.sendButtonDisabled,
-              ]}
-              onPress={handleSendMessage}
-              disabled={!inputText.trim() || sending}
-            >
-              {sending ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <MaterialIcons name="send" size={24} color="#FFFFFF" />
-              )}
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              (!inputText.trim() || sending) && styles.sendButtonDisabled,
+            ]}
+            onPress={handleSendMessage}
+            disabled={!inputText.trim() || sending}
+          >
+            {sending ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <MaterialIcons name="send" size={24} color="#FFFFFF" />
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </>
   );
 }

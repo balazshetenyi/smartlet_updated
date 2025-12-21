@@ -206,24 +206,22 @@ export default function MessagesScreen() {
 
   return (
     // Use only bottom edge to prevent extra gap under the stack header
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
-      <FlatList
-        data={conversations}
-        renderItem={renderConversation}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={
-          conversations.length === 0 ? styles.emptyList : styles.listContent
-        }
-        ListEmptyComponent={renderEmpty}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colours.primary}
-          />
-        }
-      />
-    </SafeAreaView>
+    <FlatList
+      data={conversations}
+      renderItem={renderConversation}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={
+        conversations.length === 0 ? styles.emptyList : styles.listContent
+      }
+      ListEmptyComponent={renderEmpty}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colours.primary}
+        />
+      }
+    />
   );
 }
 
@@ -238,7 +236,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   listContent: {
-    paddingVertical: 8,
+    // paddingVertical: 8,
   },
   emptyList: {
     flexGrow: 1,
