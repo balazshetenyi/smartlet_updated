@@ -27,7 +27,6 @@ export const usePropertyStore = create<PropertyStore & PropertyActions>(
         short_term_properties,
         holiday_properties,
       } = await fetchAllProperties();
-      console.log("pop: ", long_term_properties);
 
       set({
         longTermProperties: long_term_properties,

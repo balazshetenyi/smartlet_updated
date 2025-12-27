@@ -3,7 +3,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
 import {
   Booking,
-  fetchMyBookings,
+  fetchBookingRequests,
   updateBookingStatus,
 } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -22,7 +22,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function MyBookingsScreen() {
+export default function BookingRequestsScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -30,18 +30,18 @@ export default function MyBookingsScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    loadBookings();
+    loadBookingRequests();
   }, [profile?.id]);
 
-  const loadBookings = async () => {
+  const loadBookingRequests = async () => {
     if (!profile?.id) return;
 
     try {
       setLoading(true);
-      const data = await fetchMyBookings(profile.id);
+      const data = await fetchBookingRequests(profile.id);
       setBookings(data);
     } catch (error) {
-      console.error("Error loading bookings:", error);
+      console.error("Error loading booking requests:", error);
     } finally {
       setLoading(false);
     }
@@ -49,26 +49,48 @@ export default function MyBookingsScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadBookings();
+    await loadBookingRequests();
     setRefreshing(false);
   }, [profile?.id]);
 
-  const handleCancelBooking = (bookingId: string) => {
+  const handleConfirmBooking = (bookingId: string) => {
     Alert.alert(
-      "Cancel Booking",
-      "Are you sure you want to cancel this booking?",
+      "Confirm Booking",
+      "Are you sure you want to confirm this booking?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Confirm",
+          onPress: async () => {
+            const success = await updateBookingStatus(bookingId, "confirmed");
+            if (success) {
+              Alert.alert("Success", "Booking confirmed successfully");
+              loadBookingRequests();
+            } else {
+              Alert.alert("Error", "Failed to confirm booking");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeclineBooking = (bookingId: string) => {
+    Alert.alert(
+      "Decline Booking",
+      "Are you sure you want to decline this booking request?",
       [
         { text: "No", style: "cancel" },
         {
-          text: "Yes, Cancel",
+          text: "Yes, Decline",
           style: "destructive",
           onPress: async () => {
             const success = await updateBookingStatus(bookingId, "cancelled");
             if (success) {
-              Alert.alert("Success", "Booking cancelled successfully");
-              loadBookings();
+              Alert.alert("Success", "Booking declined");
+              loadBookingRequests();
             } else {
-              Alert.alert("Error", "Failed to cancel booking");
+              Alert.alert("Error", "Failed to decline booking");
             }
           },
         },
@@ -91,21 +113,6 @@ export default function MyBookingsScreen() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return "check-circle";
-      case "pending":
-        return "schedule";
-      case "cancelled":
-        return "cancel";
-      case "completed":
-        return "done-all";
-      default:
-        return "info";
-    }
-  };
-
   const renderBookingCard = ({ item }: { item: Booking }) => {
     const checkInDate = new Date(item.check_in);
     const checkOutDate = new Date(item.check_out);
@@ -114,10 +121,7 @@ export default function MyBookingsScreen() {
     );
 
     return (
-      <TouchableOpacity
-        style={styles.bookingCard}
-        onPress={() => router.push(`/properties/${item.property_id}` as any)}
-      >
+      <View style={styles.bookingCard}>
         {item.property?.cover_image_url && (
           <Image
             source={{ uri: item.property.cover_image_url }}
@@ -127,31 +131,13 @@ export default function MyBookingsScreen() {
 
         <View style={styles.bookingContent}>
           <View style={styles.bookingHeader}>
-            <View style={styles.bookingTitleContainer}>
-              <Text style={styles.propertyTitle} numberOfLines={1}>
-                {item.property?.title}
-              </Text>
-              <View style={styles.locationRow}>
-                <MaterialIcons
-                  name="location-on"
-                  size={14}
-                  color={colours.textSecondary}
-                />
-                <Text style={styles.locationText}>{item.property?.city}</Text>
-              </View>
-            </View>
-
+            <Text style={styles.propertyTitle}>{item.property?.title}</Text>
             <View
               style={[
                 styles.statusBadge,
                 { backgroundColor: getStatusColor(item.status) + "20" },
               ]}
             >
-              <MaterialIcons
-                name={getStatusIcon(item.status) as any}
-                size={14}
-                color={getStatusColor(item.status)}
-              />
               <Text
                 style={[
                   styles.statusText,
@@ -163,81 +149,81 @@ export default function MyBookingsScreen() {
             </View>
           </View>
 
-          <View style={styles.datesContainer}>
-            <View style={styles.dateColumn}>
-              <Text style={styles.dateLabel}>Check-in</Text>
-              <Text style={styles.dateValue}>
-                {checkInDate.toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                })}
-              </Text>
-            </View>
-
-            <View style={styles.nightsIndicator}>
-              <MaterialIcons name="hotel" size={16} color={colours.muted} />
-              <Text style={styles.nightsText}>
-                {nights} {nights === 1 ? "night" : "nights"}
-              </Text>
-            </View>
-
-            <View style={styles.dateColumn}>
-              <Text style={styles.dateLabel}>Check-out</Text>
-              <Text style={styles.dateValue}>
-                {checkOutDate.toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                })}
+          <View style={styles.guestInfo}>
+            {item.tenant?.avatar_url ? (
+              <Image
+                source={{ uri: item.tenant.avatar_url }}
+                style={styles.guestAvatar}
+              />
+            ) : (
+              <View style={[styles.guestAvatar, styles.guestAvatarPlaceholder]}>
+                <MaterialIcons name="person" size={20} color={colours.muted} />
+              </View>
+            )}
+            <View>
+              <Text style={styles.guestLabel}>Guest</Text>
+              <Text style={styles.guestName}>
+                {item.tenant?.first_name} {item.tenant?.last_name}
               </Text>
             </View>
           </View>
 
-          <View style={styles.bookingFooter}>
-            <View style={styles.landlordInfo}>
-              {item.landlord?.avatar_url ? (
-                <Image
-                  source={{ uri: item.landlord.avatar_url }}
-                  style={styles.landlordAvatar}
-                />
-              ) : (
-                <View
-                  style={[
-                    styles.landlordAvatar,
-                    styles.landlordAvatarPlaceholder,
-                  ]}
-                >
-                  <MaterialIcons
-                    name="person"
-                    size={16}
-                    color={colours.muted}
-                  />
-                </View>
-              )}
-              <Text style={styles.landlordName}>
-                {item.landlord?.first_name} {item.landlord?.last_name}
-              </Text>
+          <View style={styles.datesContainer}>
+            <View style={styles.dateInfo}>
+              <MaterialIcons name="login" size={20} color={colours.primary} />
+              <View>
+                <Text style={styles.dateLabel}>Check-in</Text>
+                <Text style={styles.dateValue}>
+                  {checkInDate.toLocaleDateString("en-GB", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </Text>
+              </View>
             </View>
 
-            <View style={styles.priceContainer}>
-              <Text style={styles.priceLabel}>Total</Text>
-              <Text style={styles.priceValue}>
-                £{item.total_price.toLocaleString()}
-              </Text>
+            <View style={styles.dateInfo}>
+              <MaterialIcons name="logout" size={20} color={colours.danger} />
+              <View>
+                <Text style={styles.dateLabel}>Check-out</Text>
+                <Text style={styles.dateValue}>
+                  {checkOutDate.toLocaleDateString("en-GB", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </Text>
+              </View>
             </View>
+          </View>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>
+              {nights} {nights === 1 ? "night" : "nights"}
+            </Text>
+            <Text style={styles.totalPrice}>
+              £{item.total_price.toLocaleString()}
+            </Text>
           </View>
 
           {item.status === "pending" && (
             <View style={styles.actionsContainer}>
               <Button
-                title="Cancel Request"
-                onPress={() => handleCancelBooking(item.id)}
+                title="Decline"
+                onPress={() => handleDeclineBooking(item.id)}
                 variant="outline"
-                buttonStyle={styles.cancelButton}
+                buttonStyle={[styles.actionButton, styles.declineButton]}
+              />
+              <Button
+                title="Confirm Booking"
+                onPress={() => handleConfirmBooking(item.id)}
+                buttonStyle={styles.actionButton}
               />
             </View>
           )}
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -253,23 +239,18 @@ export default function MyBookingsScreen() {
     <>
       <Stack.Screen
         options={{
-          title: "My Bookings",
+          title: "Booking Requests",
           headerShown: true,
         }}
       />
       <SafeAreaView style={styles.container} edges={["bottom"]}>
         {bookings.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="event-busy" size={64} color={colours.muted} />
-            <Text style={styles.emptyTitle}>No bookings yet</Text>
+            <MaterialIcons name="inbox" size={64} color={colours.muted} />
+            <Text style={styles.emptyTitle}>No booking requests</Text>
             <Text style={styles.emptyText}>
-              Your holiday rental bookings will appear here
+              Booking requests from tenants will appear here
             </Text>
-            <Button
-              title="Browse Properties"
-              onPress={() => router.push("/(app)")}
-              buttonStyle={styles.browseButton}
-            />
           </View>
         ) : (
           <FlatList
@@ -318,7 +299,7 @@ const styles = StyleSheet.create({
   },
   propertyImage: {
     width: "100%",
-    height: 180,
+    height: 150,
     backgroundColor: colours.border,
   },
   bookingContent: {
@@ -327,33 +308,18 @@ const styles = StyleSheet.create({
   bookingHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 16,
   },
-  bookingTitleContainer: {
-    flex: 1,
-    marginRight: 12,
-  },
   propertyTitle: {
+    flex: 1,
     fontSize: 18,
     fontWeight: "700",
     color: colours.text,
-    marginBottom: 4,
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  locationText: {
-    fontSize: 14,
-    color: colours.textSecondary,
+    marginRight: 12,
   },
   statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
   },
@@ -361,87 +327,87 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-  datesContainer: {
+  guestInfo: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colours.border,
+    gap: 12,
     marginBottom: 16,
-  },
-  dateColumn: {
-    alignItems: "center",
-  },
-  dateLabel: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginBottom: 4,
-  },
-  dateValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  nightsIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    padding: 12,
     backgroundColor: colours.backgroundDark,
     borderRadius: 8,
   },
-  nightsText: {
-    fontSize: 12,
-    color: colours.muted,
+  guestAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
-  bookingFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  landlordInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  landlordAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  landlordAvatarPlaceholder: {
+  guestAvatarPlaceholder: {
     backgroundColor: colours.border,
     justifyContent: "center",
     alignItems: "center",
   },
-  landlordName: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colours.text,
-  },
-  priceContainer: {
-    alignItems: "flex-end",
-  },
-  priceLabel: {
+  guestLabel: {
     fontSize: 12,
     color: colours.textSecondary,
     marginBottom: 2,
   },
-  priceValue: {
-    fontSize: 20,
+  guestName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colours.text,
+  },
+  datesContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    gap: 12,
+  },
+  dateInfo: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    backgroundColor: colours.backgroundDark,
+    borderRadius: 8,
+  },
+  dateLabel: {
+    fontSize: 12,
+    color: colours.textSecondary,
+    marginBottom: 2,
+  },
+  dateValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colours.text,
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 16,
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: colours.border,
+    marginBottom: 16,
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: colours.textSecondary,
+  },
+  totalPrice: {
+    fontSize: 24,
     fontWeight: "700",
     color: colours.primary,
   },
   actionsContainer: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colours.border,
+    flexDirection: "row",
+    gap: 12,
   },
-  cancelButton: {
+  actionButton: {
+    flex: 1,
+  },
+  declineButton: {
     borderColor: colours.danger,
   },
   emptyContainer: {
@@ -461,9 +427,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colours.textSecondary,
     textAlign: "center",
-    marginBottom: 24,
-  },
-  browseButton: {
-    minWidth: 200,
   },
 });

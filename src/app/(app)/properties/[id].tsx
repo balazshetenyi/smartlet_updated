@@ -172,11 +172,23 @@ export default function PropertyDetailsScreen() {
   };
 
   const handleBookProperty = () => {
+    console.log("property: ", property);
     if (!profile) {
       Alert.alert("Error", "Please sign in to book a property");
       return;
     }
-    Alert.alert("Booking", "Booking feature coming soon!");
+
+    if (!property) {
+      Alert.alert("Error", "Property information not available");
+      return;
+    }
+
+    // Only allow booking for holiday rentals with date selection
+    if (property.rental_type === "holiday") {
+      router.push(`/book-property/${property.id}`);
+    } else {
+      Alert.alert("Booking", "Long-term and short-term bookings coming soon!");
+    }
   };
 
   const handleContactLandlord = async () => {

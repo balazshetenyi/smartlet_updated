@@ -229,20 +229,36 @@ export default function ProfileScreen() {
 
         {/* My Listings - Only for Landlords */}
         {isLandlord && (
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => router.push("/my-properties")}
-          >
-            <View style={styles.menuItemLeft}>
-              <MaterialIcons name="home" size={24} color={colours.text} />
-              <Text style={styles.menuItemText}>My Properties</Text>
-            </View>
-            <MaterialIcons
-              name="chevron-right"
-              size={24}
-              color={colours.muted}
-            />
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/my-properties")}
+            >
+              <View style={styles.menuItemLeft}>
+                <MaterialIcons name="home" size={24} color={colours.text} />
+                <Text style={styles.menuItemText}>My Properties</Text>
+              </View>
+              <MaterialIcons
+                name="chevron-right"
+                size={24}
+                color={colours.muted}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/booking-requests")}
+            >
+              <View style={styles.menuItemLeft}>
+                <MaterialIcons name="home" size={24} color={colours.text} />
+                <Text style={styles.menuItemText}>Booking Requests</Text>
+              </View>
+              <MaterialIcons
+                name="chevron-right"
+                size={24}
+                color={colours.muted}
+              />
+            </TouchableOpacity>
+          </>
         )}
       </View>
 

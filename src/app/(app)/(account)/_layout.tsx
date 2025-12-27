@@ -64,6 +64,22 @@ export default function MessagesLayout() {
           ),
         }}
       />
+      <Stack.Screen
+        name="booking-requests"
+        options={{
+          title: "Booking Requests",
+          headerShown: true,
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ marginLeft: 8, padding: 4 }}
+              accessibilityLabel="Go back"
+            >
+              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
     </Stack>
   );
 }
