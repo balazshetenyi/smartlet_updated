@@ -4,12 +4,13 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SearchProvider } from "@/context/SearchContext";
 
 export default function RootLayout() {
   const { isLoggedIn } = useAuthStore();
 
   return (
-    <React.Fragment>
+    <SearchProvider>
       <StatusBar style="auto" />
       <SafeAreaView className="flex-1 bg-white">
         <Stack>
@@ -21,6 +22,6 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack>
       </SafeAreaView>
-    </React.Fragment>
+    </SearchProvider>
   );
 }

@@ -1,6 +1,6 @@
 import PropertyRow from "@/components/properties/PropertyRow";
 import AppBar from "@/components/shared/AppBar";
-import WelcomeSection from "@/components/shared/WelcomeSection";
+import SearchBar from "@/components/shared/SearchBar";
 import { useAuthStore } from "@/store/auth-store";
 import { usePropertyStore } from "@/store/property-store";
 import { colours } from "@/styles/colours";
@@ -26,11 +26,6 @@ export default function HomeScreen() {
   } = usePropertyStore();
   const [refreshing, setRefreshing] = useState(false);
   const { profile } = useAuthStore();
-  const properties = [
-    ...longTermProperties,
-    ...shortTermProperties,
-    ...holidayProperties,
-  ];
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -73,31 +68,44 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.content}>
-          <WelcomeSection name={profile?.first_name!} />
+          {/* Welcome Section */}
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeTitle}>
+              Hello, {profile?.first_name || "Guest"} 👋
+            </Text>
+            <Text style={styles.welcomeSubtitle}>
+              Where would you like to go?
+            </Text>
+          </View>
 
-          {/* Holiday Rentals */}
-          <PropertyRow
-            title="Holiday Rentals"
-            properties={holidayProperties}
-            rentalType="holiday"
-          />
+          {/* Search Bar */}
+          <SearchBar />
 
-          {/* Short Term Rentals */}
-          <PropertyRow
-            title="Short Term Rentals"
-            properties={shortTermProperties}
-            rentalType="short-term"
-          />
+          {/* Popular Destinations / Recent */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Popular Holiday Rentals</Text>
+            {holidayProperties.length > 0 ? (
+              <PropertyRow
+                title=""
+                properties={holidayProperties.slice(0, 5)}
+                rentalType="holiday"
+              />
+            ) : (
+              <Text style={styles.emptyText}>No holiday rentals available</Text>
+            )}
+          </View>
 
-          {/* Long Term Rentals */}
-          <PropertyRow
-            title="Long Term Rentals"
-            properties={longTermProperties}
-            rentalType="long-term"
-          />
-
-          {/* Empty state if no properties at all */}
-          {properties.length === 0 && renderEmpty()}
+          {/* Other rental types can be shown as secondary options */}
+          {shortTermProperties.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Short Term Rentals</Text>
+              <PropertyRow
+                title=""
+                properties={shortTermProperties.slice(0, 5)}
+                rentalType="short-term"
+              />
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -117,21 +125,42 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
   },
+  welcomeSection: {
+    marginBottom: 24,
+  },
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: colours.text,
+    marginBottom: 4,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    color: colours.textSecondary,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: colours.text,
+    marginBottom: 16,
+  },
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 60,
   },
   emptyText: {
-    fontSize: 18,
+    marginTop: 12,
+    fontSize: 16,
     fontWeight: "600",
     color: colours.text,
-    marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
     color: colours.textSecondary,
-    marginTop: 8,
-    textAlign: "center",
+    marginTop: 4,
   },
 });
