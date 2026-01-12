@@ -1,8 +1,8 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
+import { BookingWithProperty } from "@/types/bookings";
 import {
-  Booking,
   fetchMyBookings,
   updateBookingStatus,
 } from "@/utils/booking-utils";
@@ -25,7 +25,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function MyBookingsScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<BookingWithProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -63,7 +63,9 @@ export default function MyBookingsScreen() {
           text: "Yes, Cancel",
           style: "destructive",
           onPress: async () => {
-            const success = await updateBookingStatus(bookingId, "cancelled");
+            const success = await updateBookingStatus(bookingId, {
+              status: "cancelled",
+            });
             if (success) {
               Alert.alert("Success", "Booking cancelled successfully");
               loadBookings();
@@ -106,7 +108,7 @@ export default function MyBookingsScreen() {
     }
   };
 
-  const renderBookingCard = ({ item }: { item: Booking }) => {
+  const renderBookingCard = ({ item }: { item: BookingWithProperty }) => {
     const checkInDate = new Date(item.check_in);
     const checkOutDate = new Date(item.check_out);
     const nights = Math.ceil(
@@ -118,7 +120,7 @@ export default function MyBookingsScreen() {
         style={styles.bookingCard}
         onPress={() => router.push(`/properties/${item.property_id}` as any)}
       >
-        {item.property?.cover_image_url && (
+        {item.property.cover_image_url && (
           <Image
             source={{ uri: item.property.cover_image_url }}
             style={styles.propertyImage}
@@ -129,7 +131,7 @@ export default function MyBookingsScreen() {
           <View style={styles.bookingHeader}>
             <View style={styles.bookingTitleContainer}>
               <Text style={styles.propertyTitle} numberOfLines={1}>
-                {item.property?.title}
+                {item.property.title}
               </Text>
               <View style={styles.locationRow}>
                 <MaterialIcons
@@ -137,7 +139,7 @@ export default function MyBookingsScreen() {
                   size={14}
                   color={colours.textSecondary}
                 />
-                <Text style={styles.locationText}>{item.property?.city}</Text>
+                <Text style={styles.locationText}>{item.property.city}</Text>
               </View>
             </View>
 
@@ -194,9 +196,9 @@ export default function MyBookingsScreen() {
 
           <View style={styles.bookingFooter}>
             <View style={styles.landlordInfo}>
-              {item.landlord?.avatar_url ? (
+              {item.property.landlord?.avatar_url ? (
                 <Image
-                  source={{ uri: item.landlord.avatar_url }}
+                  source={{ uri: item.property.landlord.avatar_url }}
                   style={styles.landlordAvatar}
                 />
               ) : (
@@ -214,7 +216,7 @@ export default function MyBookingsScreen() {
                 </View>
               )}
               <Text style={styles.landlordName}>
-                {item.landlord?.first_name} {item.landlord?.last_name}
+                {item.property.landlord?.first_name} {item.property.landlord?.last_name}
               </Text>
             </View>
 
@@ -231,7 +233,7 @@ export default function MyBookingsScreen() {
               <Button
                 title="Cancel Request"
                 onPress={() => handleCancelBooking(item.id)}
-                variant="outline"
+                type="outline"
                 buttonStyle={styles.cancelButton}
               />
             </View>
@@ -308,6 +310,8 @@ const styles = StyleSheet.create({
   bookingCard: {
     backgroundColor: colours.surface,
     borderRadius: 12,
+    borderColor: colours.border,
+    borderWidth: 1,
     marginBottom: 16,
     overflow: "hidden",
     elevation: 2,
@@ -390,7 +394,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: colours.backgroundDark,
+    backgroundColor: colours.background,
     borderRadius: 8,
   },
   nightsText: {

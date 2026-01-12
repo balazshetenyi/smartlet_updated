@@ -65,38 +65,6 @@ export type PropertyPhoto = {
   is_cover?: boolean;
 };
 
-export type Booking = {
-  id: string;
-  property_id: string;
-  tenant_id: string;
-  check_in: string;
-  check_out: string;
-  total_price: number;
-  status: "pending" | "confirmed" | "cancelled" | "completed";
-  created_at: string;
-  updated_at: string;
-  // Extended fields from joins
-  property?: {
-    id: string;
-    title: string;
-    cover_image_url?: string;
-    city?: string;
-    owner_id?: string;
-  };
-  tenant?: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    avatar_url?: string;
-  };
-  landlord?: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    avatar_url?: string;
-  };
-};
-
 export type Notification = {
   id: string;
   user_id: string;

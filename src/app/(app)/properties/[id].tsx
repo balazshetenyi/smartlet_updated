@@ -1,8 +1,11 @@
+import BookingModal from "@/components/properties/BookingModal";
 import Button from "@/components/shared/Button";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
+import { CreateBookingData } from "@/types/bookings";
 import { Amenity, Property } from "@/types/property";
+import { createBooking } from "@/utils/booking-utils";
 import { fetchPropertyPhotos } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
@@ -40,6 +43,56 @@ export default function PropertyDetailsScreen() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [photos, setPhotos] = useState<string[]>([]);
   const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+
+  const handleBookProperty = () => {
+    if (!profile) {
+      Alert.alert("Error", "Please sign in to book a property");
+      return;
+    }
+    if (property?.rental_type === "holiday") {
+      setShowBookingModal(true);
+    } else {
+      Alert.alert("Booking", "Booking feature coming soon for this rental type!");
+    }
+  };
+
+  const handleBookingConfirm = async (
+    checkIn: Date,
+    checkOut: Date,
+    totalPrice: number
+  ) => {
+    try {
+      if (!property || !profile) {
+        Alert.alert("Error", "Missing booking information");
+        return;
+      }
+
+      setShowBookingModal(false);
+
+      const bookingData: CreateBookingData = {
+        property_id: property.id,
+        tenant_id: profile.id,
+        check_in: checkIn.toISOString(),
+        check_out: checkOut.toISOString(),
+        total_price: totalPrice,
+        status: "pending",
+      };
+
+      const booking = await createBooking(bookingData);
+
+      if (!booking) {
+        Alert.alert("Error", "Failed to create booking");
+        return;
+      }
+
+      // Navigate to payment screen
+      router.push(`/book-property/payment?bookingId=${booking.id}` as any);
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      Alert.alert("Error", "Failed to create booking");
+    }
+  };
 
   // Set up header with edit button for property owner
   useLayoutEffect(() => {
@@ -171,25 +224,25 @@ export default function PropertyDetailsScreen() {
     return labels[property?.rental_type || "long_term"];
   };
 
-  const handleBookProperty = () => {
-    console.log("property: ", property);
-    if (!profile) {
-      Alert.alert("Error", "Please sign in to book a property");
-      return;
-    }
+  // const handleBookProperty = () => {
+  //   console.log("property: ", property);
+  //   if (!profile) {
+  //     Alert.alert("Error", "Please sign in to book a property");
+  //     return;
+  //   }
 
-    if (!property) {
-      Alert.alert("Error", "Property information not available");
-      return;
-    }
+  //   if (!property) {
+  //     Alert.alert("Error", "Property information not available");
+  //     return;
+  //   }
 
-    // Only allow booking for holiday rentals with date selection
-    if (property.rental_type === "holiday") {
-      router.push(`/book-property/${property.id}`);
-    } else {
-      Alert.alert("Booking", "Long-term and short-term bookings coming soon!");
-    }
-  };
+  //   // Only allow booking for holiday rentals with date selection
+  //   if (property.rental_type === "holiday") {
+  //     router.push(`/book-property/${property.id}`);
+  //   } else {
+  //     Alert.alert("Booking", "Long-term and short-term bookings coming soon!");
+  //   }
+  // };
 
   const handleContactLandlord = async () => {
     if (!landlord) {
@@ -473,6 +526,15 @@ export default function PropertyDetailsScreen() {
             />
           </View>
         </SafeAreaView>
+      )}
+
+      {property && (
+        <BookingModal
+          visible={showBookingModal}
+          property={property}
+          onClose={() => setShowBookingModal(false)}
+          onConfirm={handleBookingConfirm}
+        />
       )}
     </View>
   );

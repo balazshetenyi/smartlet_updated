@@ -5,12 +5,17 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SearchProvider } from "@/context/SearchContext";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 export default function RootLayout() {
   const { isLoggedIn } = useAuthStore();
 
   return (
     <SearchProvider>
+      <StripeProvider 
+        publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""} 
+        merchantIdentifier="merchant.com.smartlet" 
+      >
       <StatusBar style="auto" />
       <SafeAreaView className="flex-1 bg-white">
         <Stack>
@@ -22,6 +27,7 @@ export default function RootLayout() {
           </Stack.Protected>
         </Stack>
       </SafeAreaView>
+      </StripeProvider>
     </SearchProvider>
   );
 }

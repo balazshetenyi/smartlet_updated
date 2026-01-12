@@ -2,7 +2,7 @@ import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
 import {
-  Booking,
+  BookingWithTenant,
   fetchBookingRequests,
   updateBookingStatus,
 } from "@/utils/booking-utils";
@@ -25,7 +25,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function BookingRequestsScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<BookingWithTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -62,7 +62,9 @@ export default function BookingRequestsScreen() {
         {
           text: "Confirm",
           onPress: async () => {
-            const success = await updateBookingStatus(bookingId, "confirmed");
+            const success = await updateBookingStatus(bookingId, {
+              status: "confirmed",
+            });
             if (success) {
               Alert.alert("Success", "Booking confirmed successfully");
               loadBookingRequests();

@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { BookingWithProperty, BookingWithTenant, CreateBookingData, UpdateBookingData } from "@/types/bookings";
 
 export type Booking = {
   id: string;
@@ -66,22 +67,14 @@ export const calculateBookingPrice = (
  * Create a new booking
  */
 export const createBooking = async (
-  propertyId: string,
-  tenantId: string,
-  checkIn: string,
-  checkOut: string,
-  totalPrice: number
+  bookingData: CreateBookingData
 ): Promise<Booking | null> => {
   try {
     const { data, error } = await supabase
       .from("bookings")
       .insert({
-        property_id: propertyId,
-        tenant_id: tenantId,
-        check_in: checkIn,
-        check_out: checkOut,
-        total_price: totalPrice,
-        status: "pending",
+        ...bookingData,
+        status: bookingData.status || "pending",
       })
       .select()
       .single();
@@ -97,12 +90,13 @@ export const createBooking = async (
 /**
  * Fetch user's bookings (as tenant)
  */
-export const fetchMyBookings = async (userId: string): Promise<Booking[]> => {
+export const fetchMyBookings = async (
+  userId: string
+): Promise<BookingWithProperty[]> => {
   try {
     const { data, error } = await supabase
       .from("bookings")
-      .select(
-        `
+      .select(`
         *,
         property:properties!inner (
           id,
@@ -117,17 +111,12 @@ export const fetchMyBookings = async (userId: string): Promise<Booking[]> => {
             avatar_url
           )
         )
-      `
-      )
+      `)
       .eq("tenant_id", userId)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-
-    return (data || []).map((booking) => ({
-      ...booking,
-      landlord: booking.property.landlord,
-    })) as Booking[];
+    return (data || []) as BookingWithProperty[];
   } catch (error) {
     console.error("Error fetching bookings:", error);
     return [];
@@ -139,7 +128,7 @@ export const fetchMyBookings = async (userId: string): Promise<Booking[]> => {
  */
 export const fetchBookingRequests = async (
   landlordId: string
-): Promise<Booking[]> => {
+): Promise<BookingWithTenant[]> => {
   try {
     const { data, error } = await supabase
       .from("bookings")
@@ -150,7 +139,8 @@ export const fetchBookingRequests = async (
           id,
           title,
           cover_image_url,
-          city
+          city,
+          landlord_id
         ),
         tenant:profiles!bookings_tenant_id_fkey (
           id,
@@ -164,8 +154,7 @@ export const fetchBookingRequests = async (
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-
-    return data as Booking[];
+    return (data || []) as BookingWithTenant[];
   } catch (error) {
     console.error("Error fetching booking requests:", error);
     return [];
@@ -177,18 +166,18 @@ export const fetchBookingRequests = async (
  */
 export const updateBookingStatus = async (
   bookingId: string,
-  status: "confirmed" | "cancelled"
+  updates: UpdateBookingData
 ): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from("bookings")
-      .update({ status })
+      .update(updates)
       .eq("id", bookingId);
 
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error("Error updating booking status:", error);
+    console.error("Error updating booking:", error);
     return false;
   }
 };
