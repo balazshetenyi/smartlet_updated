@@ -5,7 +5,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
 import { CreateBookingData } from "@/types/bookings";
 import { Amenity, Property } from "@/types/property";
-import { createBooking } from "@/utils/booking-utils";
+import { createBooking, fetchBlockedDates } from "@/utils/booking-utils";
 import { fetchPropertyPhotos } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
@@ -44,6 +44,7 @@ export default function PropertyDetailsScreen() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
 
   const handleBookProperty = () => {
     if (!profile) {
@@ -122,6 +123,12 @@ export default function PropertyDetailsScreen() {
   useEffect(() => {
     fetchPropertyDetails();
   }, [id]);
+
+  useEffect(() => {
+    if (property?.id && property?.rental_type === "holiday") {
+      fetchBlockedDates(property.id).then(setBlockedDates);
+    }
+  }, [property?.id]);
 
   const fetchPropertyDetails = async () => {
     try {
@@ -532,6 +539,7 @@ export default function PropertyDetailsScreen() {
         <BookingModal
           visible={showBookingModal}
           property={property}
+          blockedDates={blockedDates}
           onClose={() => setShowBookingModal(false)}
           onConfirm={handleBookingConfirm}
         />

@@ -34,6 +34,16 @@ export type PropertyWithLandlordAndImagesAndReviews = {
   images: string[];
   reviews: Review[];
 };
+
+export type PropertyUnavailableDate = {
+  id: string;
+  property_id: string;
+  start_date: string; // ISO date string (YYYY-MM-DD)
+  end_date: string; // ISO date string (YYYY-MM-DD)
+  reason?: string;
+  created_at?: string;
+};
+
 export type Review = {
   id: string;
   property_id: string;

@@ -1,12 +1,11 @@
 import Button from "@/components/shared/Button";
-import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@/styles/colours";
 import { Property } from "@/types/property";
 import {
   calculateBookingPrice,
   createBooking,
-  fetchBookedDates,
+  fetchBlockedDates
 } from "@/utils/booking-utils";
 import { fetchPropertyById } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -31,7 +30,7 @@ export default function BookPropertyScreen() {
 
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const [bookedDates, setBookedDates] = useState<string[]>([]);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]); 
   const [selectedDates, setSelectedDates] = useState<{
     checkIn: string | null;
     checkOut: string | null;
@@ -58,9 +57,9 @@ export default function BookPropertyScreen() {
 
       setProperty(propertyData);
 
-      // Fetch booked dates
-      const booked = await fetchBookedDates(propertyId as string);
-      setBookedDates(booked);
+      // Fetch blocked dates (includes both bookings and unavailable dates)
+      const blocked = await fetchBlockedDates(propertyId as string);
+      setBlockedDates(blocked);
     } catch (error) {
       console.error("Error loading property:", error);
       Alert.alert("Error", "Failed to load property details");
@@ -72,9 +71,9 @@ export default function BookPropertyScreen() {
   const handleDayPress = (day: DateData) => {
     const dateString = day.dateString;
 
-    // Check if date is already booked
-    if (bookedDates.includes(dateString)) {
-      Alert.alert("Unavailable", "This date is already booked");
+    // Check if date is blocked (booked or unavailable)
+    if (blockedDates.includes(dateString)) {
+      Alert.alert("Unavailable", "This date is not available for booking");
       return;
     }
 
@@ -99,7 +98,7 @@ export default function BookPropertyScreen() {
           checkOut: selectedDates.checkIn,
         });
       } else {
-        // Check if any booked dates are in the range
+        // Check if any blocked dates are in the range
         const hasBlockedDate = checkDateRangeAvailability(
           selectedDates.checkIn,
           dateString
@@ -108,7 +107,7 @@ export default function BookPropertyScreen() {
         if (hasBlockedDate) {
           Alert.alert(
             "Unavailable",
-            "There are booked dates in this range. Please select different dates."
+            "There are unavailable dates in this range. Please select different dates."
           );
           return;
         }
@@ -127,7 +126,7 @@ export default function BookPropertyScreen() {
       d <= endDate;
       d.setDate(d.getDate() + 1)
     ) {
-      if (bookedDates.includes(d.toISOString().split("T")[0])) {
+      if (blockedDates.includes(d.toISOString().split("T")[0])) {
         return true;
       }
     }
@@ -137,23 +136,27 @@ export default function BookPropertyScreen() {
   const getMarkedDates = () => {
     const marked: any = {};
 
-    // Mark booked dates
-    bookedDates.forEach((date) => {
+    // Mark blocked dates (booked or unavailable) - show as disabled with red color
+    blockedDates.forEach((date) => {
       marked[date] = {
         disabled: true,
         disableTouchEvent: true,
         color: colours.danger,
         textColor: "white",
+        marked: true,
       };
     });
 
     // Mark selected range
     if (selectedDates.checkIn) {
-      marked[selectedDates.checkIn] = {
-        startingDay: true,
-        color: colours.primary,
-        textColor: "white",
-      };
+      // Only mark check-in if it's not blocked
+      if (!blockedDates.includes(selectedDates.checkIn)) {
+        marked[selectedDates.checkIn] = {
+          startingDay: true,
+          color: colours.primary,
+          textColor: "white",
+        };
+      }
 
       if (selectedDates.checkOut) {
         // Mark all dates in between
@@ -162,6 +165,9 @@ export default function BookPropertyScreen() {
 
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           const dateString = d.toISOString().split("T")[0];
+
+          // Skip if already marked as blocked
+          if (blockedDates.includes(dateString)) continue;
 
           if (dateString === selectedDates.checkIn) continue;
           if (dateString === selectedDates.checkOut) {
@@ -218,13 +224,14 @@ export default function BookPropertyScreen() {
 
     try {
       const totalPrice = getTotalPrice();
-      const booking = await createBooking(
-        property.id,
-        profile.id,
-        selectedDates.checkIn,
-        selectedDates.checkOut,
-        totalPrice
-      );
+      const booking = await createBooking({
+        property_id: property.id,
+        tenant_id: profile.id,
+        check_in: selectedDates.checkIn,
+        check_out: selectedDates.checkOut,
+        total_price: totalPrice,
+        status: "pending",
+      });
 
       if (booking) {
         Alert.alert("Success", "Your booking request has been submitted!", [
@@ -309,6 +316,18 @@ export default function BookPropertyScreen() {
                   : "Tap to select check-in date"}
               </Text>
 
+              {/* Add legend for availability */}
+              <View style={styles.legendContainer}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendColor, { backgroundColor: colours.primary }]} />
+                  <Text style={styles.legendText}>Selected</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendColor, { backgroundColor: colours.danger }]} />
+                  <Text style={styles.legendText}>Unavailable</Text>
+                </View>
+              </View>
+
               <Calendar
                 markedDates={getMarkedDates()}
                 onDayPress={handleDayPress}
@@ -318,6 +337,7 @@ export default function BookPropertyScreen() {
                   selectedDayBackgroundColor: colours.primary,
                   todayTextColor: colours.primary,
                   arrowColor: colours.primary,
+                  disabledDotColor: colours.danger,
                 }}
               />
             </View>
@@ -479,6 +499,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colours.textSecondary,
     marginBottom: 16,
+  },
+  legendContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 24,
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  legendColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  legendText: {
+    fontSize: 12,
+    color: colours.textSecondary,
   },
   summaryCard: {
     backgroundColor: colours.surface,

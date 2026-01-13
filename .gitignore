@@ -46,3 +46,6 @@ app-example
 .env.*
 
 supabase/.temp
+
+# IDE
+.idea/

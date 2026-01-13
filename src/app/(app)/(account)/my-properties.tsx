@@ -121,6 +121,15 @@ const Properties = () => {
                 <View style={styles.propertyActions}>
                   <TouchableOpacity
                     style={styles.propertyActionButton}
+                    onPress={() =>
+                      router.push(`/manage-unavailable-dates/${property.id}`)
+                    }
+                  >
+                    <MaterialIcons name="event-busy" size={16} color={colours.primary} />
+                    <Text style={styles.actionText}>Unavailable</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.propertyActionButton}
                     // onPress={() =>
                     //   router.push(`/property/edit-property?id=${property.id}`)
                     // }

@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { BookingWithProperty, BookingWithTenant, CreateBookingData, UpdateBookingData } from "@/types/bookings";
+import { Notification, PropertyUnavailableDate } from "@/types/property";
 
 export type Booking = {
   id: string;
@@ -262,5 +263,126 @@ export const getUnreadNotificationCount = async (
   } catch (error) {
     console.error("Error getting unread count:", error);
     return 0;
+  }
+};
+
+/**
+ * Fetch unavailable dates for a property (set by landlord)
+ */
+export const fetchUnavailableDates = async (
+  propertyId: string
+): Promise<string[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("property_unavailable_dates")
+      .select("start_date, end_date")
+      .eq("property_id", propertyId);
+
+    if (error) throw error;
+
+    // Generate array of all unavailable dates
+    const unavailableDates: string[] = [];
+    data?.forEach((range) => {
+      const start = new Date(range.start_date);
+      const end = new Date(range.end_date);
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        unavailableDates.push(d.toISOString().split("T")[0]);
+      }
+    });
+
+    return unavailableDates;
+  } catch (error) {
+    console.error("Error fetching unavailable dates:", error);
+    return [];
+  }
+};
+
+/**
+ * Fetch all blocked dates (bookings + unavailable dates)
+ */
+export const fetchBlockedDates = async (
+  propertyId: string
+): Promise<string[]> => {
+  try {
+    const [bookedDates, unavailableDates] = await Promise.all([
+      fetchBookedDates(propertyId),
+      fetchUnavailableDates(propertyId),
+    ]);
+
+    // Combine and deduplicate
+    const allBlocked = [...new Set([...bookedDates, ...unavailableDates])];
+    return allBlocked;
+  } catch (error) {
+    console.error("Error fetching blocked dates:", error);
+    return [];
+  }
+};
+
+/**
+ * Add unavailable dates for a property
+ */
+export const addUnavailableDates = async (
+  propertyId: string,
+  startDate: string,
+  endDate: string,
+  reason?: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("property_unavailable_dates")
+      .insert({
+        property_id: propertyId,
+        start_date: startDate,
+        end_date: endDate,
+        reason,
+      });
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error adding unavailable dates:", error);
+    return false;
+  }
+};
+
+/**
+ * Remove unavailable date range
+ */
+export const removeUnavailableDates = async (
+  unavailableDateId: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("property_unavailable_dates")
+      .delete()
+      .eq("id", unavailableDateId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error removing unavailable dates:", error);
+    return false;
+  }
+};
+
+/**
+ * Fetch all unavailable date ranges for a property
+ */
+export const fetchUnavailableDateRanges = async (
+  propertyId: string
+): Promise<PropertyUnavailableDate[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("property_unavailable_dates")
+      .select("*")
+      .eq("property_id", propertyId)
+      .order("start_date", { ascending: true });
+
+    if (error) throw error;
+    return (data || []) as PropertyUnavailableDate[];
+  } catch (error) {
+    console.error("Error fetching unavailable date ranges:", error);
+    return [];
   }
 };

@@ -1,22 +1,23 @@
+import Button from "@/components/shared/Button";
 import { colours } from "@/styles/colours";
 import { Property } from "@/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import {
   Alert,
   Modal,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import Button from "@/components/shared/Button";
 
 interface BookingModalProps {
   visible: boolean;
   property: Property;
+  blockedDates?: string[];
   onClose: () => void;
   onConfirm: (checkIn: Date, checkOut: Date, totalPrice: number) => void;
 }
@@ -24,6 +25,7 @@ interface BookingModalProps {
 export default function BookingModal({
   visible,
   property,
+  blockedDates = [],
   onClose,
   onConfirm,
 }: BookingModalProps) {
@@ -49,6 +51,24 @@ export default function BookingModal({
     if (checkOut <= checkIn) {
       Alert.alert("Error", "Check-out date must be after check-in date");
       return;
+    }
+
+    // Check if selected dates overlap with blocked dates
+    const checkInStr = checkIn.toISOString().split("T")[0];
+    const checkOutStr = checkOut.toISOString().split("T")[0];
+    
+    const start = new Date(checkInStr);
+    const end = new Date(checkOutStr);
+    
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split("T")[0];
+      if (blockedDates.includes(dateStr)) {
+        Alert.alert(
+          "Unavailable",
+          "Selected dates include unavailable dates. Please choose different dates."
+        );
+        return;
+      }
     }
 
     const totalPrice = calculateTotalPrice();
