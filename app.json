@@ -25,7 +25,9 @@
       },
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
-        "CFBundleLocalizations": ["en"],
+        "CFBundleLocalizations": [
+          "en"
+        ],
         "NSCameraUsageDescription": "SmartLet needs access to your camera to take photos of properties.",
         "NSPhotoLibraryUsageDescription": "SmartLet needs access to your photo library to select property images.",
         "NSLocationWhenInUseUsageDescription": "SmartLet uses your location to show nearby properties and help you search in your area."
@@ -76,7 +78,8 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
         }
-      ]
+      ],
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,
