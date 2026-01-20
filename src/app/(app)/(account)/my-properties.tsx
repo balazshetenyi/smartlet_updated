@@ -1,4 +1,5 @@
 import PropertyCard from "@/components/properties/PropertyCard";
+import Button from "@/components/shared/Button";
 import {supabase} from "@/lib/supabase";
 import {useAuthStore} from "@/store/auth-store";
 import {colours} from "@/styles/colours";
@@ -86,18 +87,18 @@ const Properties = () => {
             contentContainerStyle={styles.contentContainer}
         >
             <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>My Listings</Text>
-                    <TouchableOpacity
-                        // onPress={() => router.push("/property/create-property")}
-                    >
-                        <MaterialIcons
-                            name="add-circle"
-                            size={24}
-                            color={colours.primary}
-                        />
-                    </TouchableOpacity>
-                </View>
+                {/*<View style={styles.sectionHeader}>*/}
+                {/*    <Text style={styles.sectionTitle}>My Listings</Text>*/}
+                {/*    <TouchableOpacity*/}
+                {/*        onPress={() => router.push("/properties/create-property")}*/}
+                {/*    >*/}
+                {/*        <MaterialIcons*/}
+                {/*            name="add-circle"*/}
+                {/*            size={24}*/}
+                {/*            color={colours.primary}*/}
+                {/*        />*/}
+                {/*    </TouchableOpacity>*/}
+                {/*</View>*/}
 
                 {loadingProperties ? (
                     <ActivityIndicator size="small" color={colours.primary}/>
@@ -107,7 +108,7 @@ const Properties = () => {
                             <View key={property.id} style={styles.propertyWrapper}>
                                 <PropertyCard
                                     property={property}
-                                    // onPress={() => router.push(`/property/${property.id}`)}
+                                    onPress={() => router.push(`/properties/${property.id}`)}
                                     imageUrl={coverMap[property.id]}
                                 />
                                 <View style={styles.propertyActions}>
@@ -122,9 +123,9 @@ const Properties = () => {
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={styles.propertyActionButton}
-                                        // onPress={() =>
-                                        //   router.push(`/property/edit-property?id=${property.id}`)
-                                        // }
+                                        onPress={() =>
+                                            router.push(`/properties/edit-property?id=${property.id}`)
+                                        }
                                     >
                                         <MaterialIcons
                                             name="edit"
@@ -154,11 +155,11 @@ const Properties = () => {
                     <View style={styles.emptyState}>
                         <MaterialIcons name="home-work" size={48} color={colours.muted}/>
                         <Text style={styles.emptyText}>No properties yet</Text>
-                        {/* <Button
-              title="Create Property"
-              onPress={() => router.push("/property/create-property")}
-              buttonStyle={styles.createButton}
-            /> */}
+                        <Button
+                            title="Create Property"
+                            onPress={() => router.push("/properties/create-property")}
+                            buttonStyle={styles.createButton}
+                        />
                     </View>
                 )}
             </View>
