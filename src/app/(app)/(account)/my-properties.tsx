@@ -87,19 +87,6 @@ const Properties = () => {
             contentContainerStyle={styles.contentContainer}
         >
             <View style={styles.section}>
-                {/*<View style={styles.sectionHeader}>*/}
-                {/*    <Text style={styles.sectionTitle}>My Listings</Text>*/}
-                {/*    <TouchableOpacity*/}
-                {/*        onPress={() => router.push("/properties/create-property")}*/}
-                {/*    >*/}
-                {/*        <MaterialIcons*/}
-                {/*            name="add-circle"*/}
-                {/*            size={24}*/}
-                {/*            color={colours.primary}*/}
-                {/*        />*/}
-                {/*    </TouchableOpacity>*/}
-                {/*</View>*/}
-
                 {loadingProperties ? (
                     <ActivityIndicator size="small" color={colours.primary}/>
                 ) : properties.length > 0 ? (
