@@ -10,6 +10,7 @@ import React, {useEffect, useState} from "react";
 import {ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
 import {Calendar, DateData} from "react-native-calendars";
 import {SafeAreaView} from "react-native-safe-area-context";
+import {CreateBookingData} from "@/types/bookings";
 
 export default function BookPropertyScreen() {
     const {propertyId} = useLocalSearchParams();
@@ -216,12 +217,14 @@ export default function BookPropertyScreen() {
         setSubmitting(true);
 
         try {
-            const booking = await createBooking({
+            const booking: CreateBookingData | null = await createBooking({
                 property_id: property.id,
                 tenant_id: profile.id,
                 check_in: selectedDates.checkIn,
                 check_out: selectedDates.checkOut,
                 total_price: finalTotalPrice,
+                base_price: basePrice,
+                service_fee: serviceFee,
                 status: "pending",
             });
 
@@ -280,122 +283,120 @@ export default function BookPropertyScreen() {
                     ),
                 }}
             />
-            <SafeAreaView style={styles.container} edges={["bottom"]}>
-                <ScrollView style={styles.scrollView}>
-                    <View style={styles.content}>
-                        {/* Property Info */}
-                        <View style={styles.propertyCard}>
-                            <Text style={styles.propertyTitle}>{property.title}</Text>
-                            <View style={styles.propertyDetails}>
-                                <MaterialIcons
-                                    name="location-on"
-                                    size={16}
-                                    color={colours.textSecondary}
-                                />
-                                <Text style={styles.propertyLocation}>{property.city}</Text>
-                            </View>
-                            <Text style={styles.pricePerNight}>
-                                £{property.price?.toLocaleString()}/night
-                            </Text>
-                        </View>
-
-                        {/* Calendar */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Select Dates</Text>
-                            <Text style={styles.sectionHint}>
-                                {selectedDates.checkIn && !selectedDates.checkOut
-                                    ? "Now select check-out date"
-                                    : "Tap to select check-in date"}
-                            </Text>
-
-                            {/* Add legend for availability */}
-                            <View style={styles.legendContainer}>
-                                <View style={styles.legendItem}>
-                                    <View style={[styles.legendColor, {backgroundColor: colours.primary}]}/>
-                                    <Text style={styles.legendText}>Selected</Text>
-                                </View>
-                                <View style={styles.legendItem}>
-                                    <View style={[styles.legendColor, {backgroundColor: colours.danger}]}/>
-                                    <Text style={styles.legendText}>Unavailable</Text>
-                                </View>
-                            </View>
-
-                            <Calendar
-                                markedDates={getMarkedDates()}
-                                onDayPress={handleDayPress}
-                                markingType="period"
-                                minDate={new Date().toISOString().split("T")[0]}
-                                theme={{
-                                    selectedDayBackgroundColor: colours.primary,
-                                    todayTextColor: colours.primary,
-                                    arrowColor: colours.primary,
-                                    disabledDotColor: colours.danger,
-                                }}
+            <ScrollView style={styles.scrollView}>
+                <View style={styles.content}>
+                    {/* Property Info */}
+                    <View style={styles.propertyCard}>
+                        <Text style={styles.propertyTitle}>{property.title}</Text>
+                        <View style={styles.propertyDetails}>
+                            <MaterialIcons
+                                name="location-on"
+                                size={16}
+                                color={colours.textSecondary}
                             />
+                            <Text style={styles.propertyLocation}>{property.city}</Text>
+                        </View>
+                        <Text style={styles.pricePerNight}>
+                            £{property.price?.toLocaleString()}/night
+                        </Text>
+                    </View>
+
+                    {/* Calendar */}
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Select Dates</Text>
+                        <Text style={styles.sectionHint}>
+                            {selectedDates.checkIn && !selectedDates.checkOut
+                                ? "Now select check-out date"
+                                : "Tap to select check-in date"}
+                        </Text>
+
+                        {/* Add legend for availability */}
+                        <View style={styles.legendContainer}>
+                            <View style={styles.legendItem}>
+                                <View style={[styles.legendColor, {backgroundColor: colours.primary}]}/>
+                                <Text style={styles.legendText}>Selected</Text>
+                            </View>
+                            <View style={styles.legendItem}>
+                                <View style={[styles.legendColor, {backgroundColor: colours.danger}]}/>
+                                <Text style={styles.legendText}>Unavailable</Text>
+                            </View>
                         </View>
 
-                        {/* Booking Summary */}
-                        {selectedDates.checkIn && selectedDates.checkOut && (
-                            <View style={styles.summaryCard}>
-                                <Text style={styles.summaryTitle}>Price Details</Text>
-
-                                <View style={styles.summaryRow}>
-                                    <Text style={styles.summaryLabel}>
-                                        £{property.price} × {nights} {nights === 1 ? "night" : "nights"}
-                                    </Text>
-                                    <Text style={styles.summaryValue}>
-                                        £{basePrice.toLocaleString()}
-                                    </Text>
-                                </View>
-
-                                <View style={styles.summaryRow}>
-                                    <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-                                        <Text style={styles.summaryLabel}>Service Fee</Text>
-                                        <MaterialIcons name="info-outline" size={14} color={colours.textSecondary}/>
-                                    </View>
-                                    <Text style={styles.summaryValue}>
-                                        £{serviceFee.toLocaleString()}
-                                    </Text>
-                                </View>
-
-                                <View style={styles.divider}/>
-
-                                <View style={styles.summaryRow}>
-                                    <Text style={styles.totalLabel}>Total (GBP)</Text>
-                                    <Text style={styles.totalValue}>
-                                        £{finalTotalPrice.toLocaleString()}
-                                    </Text>
-                                </View>
-                            </View>
-                        )}
+                        <Calendar
+                            markedDates={getMarkedDates()}
+                            onDayPress={handleDayPress}
+                            markingType="period"
+                            minDate={new Date().toISOString().split("T")[0]}
+                            theme={{
+                                selectedDayBackgroundColor: colours.primary,
+                                todayTextColor: colours.primary,
+                                arrowColor: colours.primary,
+                                disabledDotColor: colours.danger,
+                            }}
+                        />
                     </View>
-                </ScrollView>
 
-                {/* Bottom Action Bar */}
-                {selectedDates.checkIn && selectedDates.checkOut && (
-                    <SafeAreaView edges={["bottom"]} style={styles.bottomBar}>
-                        <View style={styles.bottomBarContent}>
-                            <View>
-                                <Text style={styles.bottomBarPrice}>
+                    {/* Booking Summary */}
+                    {selectedDates.checkIn && selectedDates.checkOut && (
+                        <View style={styles.summaryCard}>
+                            <Text style={styles.summaryTitle}>Price Details</Text>
+
+                            <View style={styles.summaryRow}>
+                                <Text style={styles.summaryLabel}>
+                                    £{property.price} × {nights} {nights === 1 ? "night" : "nights"}
+                                </Text>
+                                <Text style={styles.summaryValue}>
+                                    £{basePrice.toLocaleString()}
+                                </Text>
+                            </View>
+
+                            <View style={styles.summaryRow}>
+                                <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                                    <Text style={styles.summaryLabel}>Service Fee</Text>
+                                    <MaterialIcons name="info-outline" size={14} color={colours.textSecondary}/>
+                                </View>
+                                <Text style={styles.summaryValue}>
+                                    £{serviceFee.toLocaleString()}
+                                </Text>
+                            </View>
+
+                            <View style={styles.divider}/>
+
+                            <View style={styles.summaryRow}>
+                                <Text style={styles.totalLabel}>Total (GBP)</Text>
+                                <Text style={styles.totalValue}>
                                     £{finalTotalPrice.toLocaleString()}
                                 </Text>
-                                <Text style={styles.bottomBarNights}>
-                                    Total including fees
-                                </Text>
-                                <Text style={styles.bottomBarNights}>
-                                    {nights} {nights === 1 ? "night" : "nights"}
-                                </Text>
                             </View>
-                            <Button
-                                title="Confirm Booking"
-                                onPress={handleConfirmBooking}
-                                loading={submitting}
-                                buttonStyle={styles.confirmButton}
-                            />
                         </View>
-                    </SafeAreaView>
-                )}
-            </SafeAreaView>
+                    )}
+                </View>
+            </ScrollView>
+
+            {/* Bottom Action Bar */}
+            {selectedDates.checkIn && selectedDates.checkOut && (
+                <SafeAreaView edges={["bottom"]} style={styles.bottomBar}>
+                    <View style={styles.bottomBarContent}>
+                        <View>
+                            <Text style={styles.bottomBarPrice}>
+                                £{finalTotalPrice.toLocaleString()}
+                            </Text>
+                            <Text style={styles.bottomBarNights}>
+                                Total including fees
+                            </Text>
+                            <Text style={styles.bottomBarNights}>
+                                {nights} {nights === 1 ? "night" : "nights"}
+                            </Text>
+                        </View>
+                        <Button
+                            title="Confirm Booking"
+                            onPress={handleConfirmBooking}
+                            loading={submitting}
+                            buttonStyle={styles.confirmButton}
+                        />
+                    </View>
+                </SafeAreaView>
+            )}
         </>
     );
 }

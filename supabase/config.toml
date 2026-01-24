@@ -1,11 +1,41 @@
-
 [functions.create-payment-intent]
 enabled = true
 verify_jwt = true
 import_map = "./functions/create-payment-intent/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/create-payment-intent/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/create-payment-intent/*.html" ]
+
+[functions.send-booking-email]
+enabled = true
+verify_jwt = true
+import_map = "./functions/send-booking-email/deno.json"
+entrypoint = "./functions/send-booking-email/index.ts"
+
+[functions.confirm-booking]
+enabled = true
+verify_jwt = false
+import_map = "./functions/confirm-booking/deno.json"
+entrypoint = "./functions/confirm-booking/index.ts"
+
+[functions.create-setup-intent]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-setup-intent/deno.json"
+entrypoint = "./functions/create-setup-intent/index.ts"
+
+[functions.send-payment-reminder]
+enabled = true
+verify_jwt = false
+import_map = "./functions/send-payment-reminder/deno.json"
+entrypoint = "./functions/send-payment-reminder/index.ts"
+
+[functions.charge-due-bookings]
+enabled = true
+verify_jwt = false
+import_map = "./functions/charge-due-bookings/deno.json"
+entrypoint = "./functions/charge-due-bookings/index.ts"
+
+[functions.cancel-booking]
+enabled = true
+verify_jwt = true
+import_map = "./functions/cancel-booking/deno.json"
+entrypoint = "./functions/cancel-booking/index.ts"

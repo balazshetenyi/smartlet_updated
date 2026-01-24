@@ -13,7 +13,7 @@ export default function PaymentScreen() {
     const {bookingId} = useLocalSearchParams<{ bookingId: string }>();
     const {profile} = useAuthStore();
     const router = useRouter();
-    const {confirmPayment} = useStripe();
+    const {confirmSetupIntent} = useStripe();
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [booking, setBooking] = useState<BookingWithProperty | null>(null);
@@ -28,8 +28,7 @@ export default function PaymentScreen() {
             const {data, error} = await supabase
                 .from("bookings")
                 .select(
-                    `
-            *,
+                    `*,
             property:properties!inner (
             id,
             title,
@@ -44,30 +43,53 @@ export default function PaymentScreen() {
                 .single();
 
             if (error) throw error;
+            if (!data) throw new Error("No booking found");
+
             setBooking(data);
 
-            console.log(
-                "Functions URL:",
-                `${process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL}/create-payment-intent`
-            );
+            console.log("Calling create-setup-intent with:", {bookingId: data.id});
 
-            // Get payment intent from your backend
-            const {data: response, error: responseError} = await supabase.functions.invoke('create-payment-intent', {
-                body: {
-                    bookingId: data.id, // Only send the bookingId
-                },
+            const response = await supabase.functions.invoke("create-setup-intent", {
+                body: {bookingId: data.id},
             });
-            if (responseError) throw responseError;
 
+            console.log("Raw response:", JSON.stringify(response, null, 2));
 
-            setClientSecret(response.clientSecret);
+            if (response.error) {
+                // Try to get the actual error from the response body
+                let errorMessage = "Setup intent failed";
+
+                if (response.response) {
+                    try {
+                        const responseText = await response.response.text();
+                        console.log("Error response body:", responseText);
+                        const errorData = JSON.parse(responseText);
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        console.error("Could not parse error response:", e);
+                    }
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            if (!response.data?.clientSecret) {
+                console.error("Invalid response data:", response.data);
+                throw new Error("No client secret received");
+            }
+
+            setClientSecret(response.data.clientSecret);
         } catch (error) {
             console.error("Error fetching booking:", error);
-            Alert.alert("Error", "Failed to load booking details");
+            Alert.alert(
+                "Error",
+                error instanceof Error ? error.message : "Failed to load booking details"
+            );
         } finally {
             setLoading(false);
         }
     };
+
 
     const handlePayment = async () => {
         if (!clientSecret) {
@@ -78,38 +100,33 @@ export default function PaymentScreen() {
         try {
             setProcessing(true);
 
-            const {error, paymentIntent} = await confirmPayment(clientSecret, {
+            const {error, setupIntent} = await confirmSetupIntent(clientSecret, {
                 paymentMethodType: "Card",
             });
 
             if (error) {
-                Alert.alert("Payment Failed", error.message);
+                Alert.alert("Card Setup Failed", error.message);
                 return;
             }
 
-            if (paymentIntent?.status === "Succeeded") {
-                // Update booking status
+            if (setupIntent?.paymentMethod?.id) {
                 await supabase
                     .from("bookings")
                     .update({
-                        status: "confirmed",
+                        payment_method_id: setupIntent.paymentMethod.id,
+                        payment_status: "pending",
                     })
                     .eq("id", bookingId);
 
                 Alert.alert(
                     "Success",
-                    "Payment successful! Your booking is confirmed.",
-                    [
-                        {
-                            text: "OK",
-                            onPress: () => router.replace("/my-bookings"),
-                        },
-                    ]
+                    "Card saved. Payment will be taken 48h before check-in.",
+                    [{text: "OK", onPress: () => router.replace("/my-bookings")}]
                 );
             }
         } catch (error) {
-            console.error("Payment error:", error);
-            Alert.alert("Error", "Payment processing failed");
+            console.error("Payment setup error:", error);
+            Alert.alert("Error", "Card setup failed");
         } finally {
             setProcessing(false);
         }
@@ -192,7 +209,7 @@ export default function PaymentScreen() {
                 </View>
 
                 <Button
-                    title="Pay Now"
+                    title="Register Payment Method"
                     onPress={handlePayment}
                     loading={processing}
                     disabled={processing || !clientSecret}
