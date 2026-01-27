@@ -1,36 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {serve} from "https://deno.land/std@0.168.0/http/server.ts";
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.39.7";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
-const createStripePaymentIntent = async (stripeSecret: string, params: Record<string, string>) => {
-    const body = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => body.append(key, value));
-
-    const response = await fetch("https://api.stripe.com/v1/payment_intents", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${stripeSecret}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: body.toString(),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data?.error?.message ?? "Stripe API error");
-    }
-    return data;
-};
-
-const MAX_BATCH = 25;
-const MAX_CONCURRENCY = 5;
-const TIME_BUDGET_MS = 8_000;
-
-const withTimeoutGuard = (startTime: number) => {
-    const elapsed = Date.now() - startTime;
-    return elapsed < TIME_BUDGET_MS;
-};
-
-Deno.serve(async (req) => {
+serve(async (req) => {
     // Satisfy pg_net by reading any potential body immediately
     try {
         await req.text();
@@ -49,6 +22,7 @@ Deno.serve(async (req) => {
         }
 
         const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+        const stripe = new Stripe(stripeSecret, {apiVersion: "2023-10-16"});
         const now = new Date().toISOString();
 
         const {data: bookings, error} = await supabaseAdmin
@@ -78,24 +52,24 @@ Deno.serve(async (req) => {
                     const totalAmount = Math.round(booking.total_price * 100);
                     const feeAmount = Math.round((booking.service_fee || 0) * 100);
 
-                    const paymentIntent = await createStripePaymentIntent(stripeSecret, {
-                        amount: String(totalAmount),
-                        currency: "gbp",
-                        customer: tenant.stripe_customer_id,
-                        payment_method: booking.payment_method_id ?? "",
-                        off_session: "true",
-                        confirm: "true",
-                        application_fee_amount: String(feeAmount),
-                        "transfer_data[destination]": landlord.stripe_account_id,
-                        "metadata[bookingId]": booking.id,
-                    });
+                    const paymentIntent = await stripe.paymentIntents.create({
+                            amount: totalAmount,
+                            currency: "gbp",
+                            customer: tenant.stripe_customer_id,
+                            payment_method: booking.payment_method_id,
+                            application_fee_amount: feeAmount,
+                            transfer_data: {destination: landlord.stripe_account_id},
+                            metadata: {bookingId: booking.id},
+                            off_session: true,
+                            confirm: true,
+                        }
+                    );
 
                     await supabaseAdmin
                         .from("bookings")
                         .update({
                             payment_status: "paid",
                             paid_at: new Date().toISOString(),
-                            payment_intent_id: paymentIntent.id,
                         })
                         .eq("id", booking.id);
 

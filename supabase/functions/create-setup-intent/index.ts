@@ -28,14 +28,14 @@ serve(async (req: { json: () => PromiseLike<{ bookingId: any; }> | { bookingId: 
 
         const {data: tenant, error: tenantError} = await supabaseAdmin
             .from("profiles")
-            .select("id, email, stripe_account_id")
+            .select("id, email, stripe_customer_id")
             .eq("id", booking.tenant_id)
             .single();
 
         if (tenantError || !tenant) throw new Error("Tenant profile not found");
 
         // 2. Get or create Stripe customer for tenant
-        let customerId = tenant.stripe_account_id;
+        let customerId = tenant.stripe_customer_id;
 
         if (!customerId) {
             const customer = await stripe.customers.create({
@@ -47,14 +47,14 @@ serve(async (req: { json: () => PromiseLike<{ bookingId: any; }> | { bookingId: 
             // Save customer ID to profile
             await supabaseAdmin
                 .from("profiles")
-                .update({stripe_account_id: customerId})
+                .update({stripe_customer_id: customerId})
                 .eq("id", tenant.id);
         }
 
         // 3. Create Setup Intent
         const setupIntent = await stripe.setupIntents.create({
             payment_method_types: ["card"],
-            customer_account: customerId,
+            customer: customerId,
             metadata: {bookingId: booking.id, userId: tenant.id},
         })
 

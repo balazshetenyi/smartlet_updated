@@ -7,15 +7,15 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {Stack, useRouter} from "expo-router";
 import React, {useCallback, useEffect, useState} from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 
@@ -25,6 +25,15 @@ export default function MyBookingsScreen() {
     const [bookings, setBookings] = useState<BookingWithProperty[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
+
+    // Filter bookings by tab
+    const upcomingBookings = bookings.filter(
+        (b) => b.status === "pending" || b.status === "confirmed"
+    );
+    const pastBookings = bookings.filter(
+        (b) => b.status === "cancelled" || b.status === "completed"
+    );
 
     useEffect(() => {
         loadBookings();
@@ -232,6 +241,47 @@ export default function MyBookingsScreen() {
                         </View>
                     </View>
 
+                    {/* Payment due date */}
+                    {item.payment_status && (
+                        <View style={styles.paymentStatusContainer}>
+                            <View style={styles.paymentStatusRow}>
+                                <MaterialIcons
+                                    name={
+                                        item.payment_status === "paid"
+                                            ? "check-circle"
+                                            : item.payment_status === "due"
+                                                ? "schedule"
+                                                : "pending"
+                                    }
+                                    size={16}
+                                    color={
+                                        item.payment_status === "paid"
+                                            ? colours.success
+                                            : item.payment_status === "due"
+                                                ? colours.warning
+                                                : colours.textSecondary
+                                    }
+                                />
+                                <Text style={styles.paymentStatusLabel}>
+                                    {item.payment_status === "paid"
+                                        ? "Payment confirmed"
+                                        : item.payment_status === "due"
+                                            ? "Payment due"
+                                            : "Payment pending"}
+                                </Text>
+                            </View>
+                            {item.payment_status === "due" && item.payment_due_at && (
+                                <Text style={styles.paymentDueText}>
+                                    {new Date(item.payment_due_at).toLocaleDateString("en-GB", {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric",
+                                    })}
+                                </Text>
+                            )}
+                        </View>
+                    )}
+
                     <View style={styles.bookingFooter}>
                         <View style={styles.landlordInfo}>
                             {item.property.landlord?.avatar_url ? (
@@ -323,19 +373,61 @@ export default function MyBookingsScreen() {
                         />
                     </View>
                 ) : (
-                    <FlatList
-                        data={bookings}
-                        renderItem={renderBookingCard}
-                        keyExtractor={(item) => item.id}
-                        contentContainerStyle={styles.listContent}
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={refreshing}
-                                onRefresh={onRefresh}
-                                tintColor={colours.primary}
-                            />
-                        }
-                    />
+                    <>
+                        <View style={styles.tabContainer}>
+                            <TouchableOpacity
+                                style={[styles.tab, activeTab === "upcoming" && styles.activeTab]}
+                                onPress={() => setActiveTab("upcoming")}
+                            >
+                                <Text
+                                    style={[
+                                        styles.tabText,
+                                        activeTab === "upcoming" && styles.activeTabText,
+                                    ]}
+                                >
+                                    Upcoming ({upcomingBookings.length})
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.tab, activeTab === "past" && styles.activeTab]}
+                                onPress={() => setActiveTab("past")}
+                            >
+                                <Text
+                                    style={[styles.tabText, activeTab === "past" && styles.activeTabText]}
+                                >
+                                    Past ({pastBookings.length})
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <FlatList
+                            data={activeTab === "upcoming" ? upcomingBookings : pastBookings}
+                            renderItem={renderBookingCard}
+                            keyExtractor={(item) => item.id}
+                            contentContainerStyle={styles.listContent}
+                            refreshControl={
+                                <RefreshControl
+                                    refreshing={refreshing}
+                                    onRefresh={onRefresh}
+                                    tintColor={colours.primary}
+                                />
+                            }
+                            ListEmptyComponent={
+                                <View style={styles.emptyTabContainer}>
+                                    <MaterialIcons
+                                        name={activeTab === "upcoming" ? "event-available" : "history"}
+                                        size={48}
+                                        color={colours.muted}
+                                    />
+                                    <Text style={styles.emptyTabText}>
+                                        {activeTab === "upcoming"
+                                            ? "No upcoming bookings"
+                                            : "No past bookings"}
+                                    </Text>
+                                </View>
+                            }
+                        />
+                    </>
                 )}
             </SafeAreaView>
         </>
@@ -450,6 +542,31 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: colours.muted,
     },
+    paymentStatusContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+        backgroundColor: colours.background,
+        borderRadius: 8,
+        marginBottom: 16,
+    },
+    paymentStatusRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+    },
+    paymentStatusLabel: {
+        fontSize: 13,
+        fontWeight: "500",
+        color: colours.text,
+    },
+    paymentDueText: {
+        fontSize: 12,
+        color: colours.warning,
+        fontWeight: "600",
+    },
     bookingFooter: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -519,4 +636,38 @@ const styles = StyleSheet.create({
     browseButton: {
         minWidth: 200,
     },
+    tabContainer: {
+        flexDirection: "row",
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        gap: 8,
+    },
+    tab: {
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: "center",
+        borderBottomWidth: 2,
+        borderBottomColor: "transparent",
+    },
+    activeTab: {
+        borderBottomColor: colours.primary,
+    },
+    tabText: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: colours.textSecondary,
+    },
+    activeTabText: {
+        color: colours.primary,
+    },
+    emptyTabContainer: {
+        paddingVertical: 64,
+        alignItems: "center",
+    },
+    emptyTabText: {
+        fontSize: 14,
+        color: colours.textSecondary,
+        marginTop: 12,
+    },
+
 });

@@ -336,11 +336,6 @@ export default function EditPropertyScreen() {
             style={styles.container}
             contentContainerStyle={styles.contentContainer}
         >
-            <View style={styles.header}>
-                <MaterialIcons name="edit" size={32} color={colours.primary}/>
-                <Text style={styles.subtitle}>Update your property details</Text>
-            </View>
-
             <View style={styles.form}>
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Basic Information</Text>
