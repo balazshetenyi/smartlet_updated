@@ -11,19 +11,20 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {Stack, useLocalSearchParams, useNavigation, useRouter,} from "expo-router";
 import React, {useEffect, useLayoutEffect, useState} from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Image,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import {SafeAreaView, useSafeAreaInsets} from "react-native-safe-area-context";
+import {PropertyType} from "@/enums/property-enums.ts";
 
 const {width: SCREEN_WIDTH} = Dimensions.get("window");
 
@@ -97,9 +98,9 @@ export default function PropertyDetailsScreen() {
             navigation.setOptions({
                 headerRight: () => (
                     <TouchableOpacity
-                        // onPress={() =>
-                        //   router.push(`/property/edit-property?id=${property.id}`)
-                        // }
+                        onPress={() =>
+                            router.push(`/properties/edit-property?id=${property.id}`)
+                        }
                         style={{
                             paddingHorizontal: 16,
                         }}
@@ -500,17 +501,19 @@ export default function PropertyDetailsScreen() {
                 >
                     <View style={styles.bottomBar}>
                         <Button
-                            title="Ask a question"
+                            title={`${property.rental_type === PropertyType.Holiday ? "Ask a question" : "Contact Landlord"}`}
                             onPress={handleContactLandlord}
                             type="outline"
                             buttonStyle={styles.contactButton}
                         />
-                        <Button
-                            title="Book Now"
-                            onPress={handleBookProperty}
-                            buttonStyle={styles.bookButton}
-                            disabled={!property.is_available}
-                        />
+                        {property.rental_type === PropertyType.Holiday && (
+                            <Button
+                                title="Book Now"
+                                onPress={handleBookProperty}
+                                buttonStyle={styles.bookButton}
+                                disabled={!property.is_available}
+                            />
+                        )}
                     </View>
                 </SafeAreaView>
             )}
