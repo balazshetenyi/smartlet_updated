@@ -21,23 +21,23 @@ const RentalTypeSelector = ({
     icon: string;
     description: string;
   }> = [
+    // {
+    //   value: "long_term",
+    //   label: "Long Term",
+    //   icon: "home",
+    //   description: "Monthly rental",
+    // },
     {
-      value: "long_term",
-      label: "Long Term",
-      icon: "home",
-      description: "Monthly rental",
+      value: "holiday",
+      label: "Holiday",
+      icon: "beach-access",
+      description: "Nightly rental",
     },
     {
       value: "short_term",
       label: "Short Term",
       icon: "calendar-today",
       description: "Weekly rental",
-    },
-    {
-      value: "holiday",
-      label: "Holiday",
-      icon: "beach-access",
-      description: "Nightly rental",
     },
   ];
 

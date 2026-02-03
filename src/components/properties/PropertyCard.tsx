@@ -48,11 +48,7 @@ export default function PropertyCard({
       activeOpacity={0.7}
     >
       <Image
-        source={
-          imageUrl
-            ? { uri: imageUrl }
-            : require("@/assets/images/partial-react-logo.png")
-        }
+        source={{ uri: imageUrl }}
         style={[
           styles.image,
           !property.is_available && styles.imageUnavailable,
