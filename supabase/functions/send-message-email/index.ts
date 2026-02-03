@@ -66,19 +66,19 @@ serve(async (req) => {
         const subject = `New message from ${senderName} - ${propertyTitle}`;
         const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2 style="color: #333;">New Message on SmartLet</h2>
+        <h2 style="color: #333;">New Message on Kiado App</h2>
         <p><strong>${senderName}</strong> sent you a message about <strong>${propertyTitle}</strong>:</p>
         <blockquote style="border-left: 3px solid #007AFF; padding-left: 15px; color: #555; margin: 20px 0;">
           ${messagePreview}
         </blockquote>
         <p>
-          <a href="smartlet://messages/${conversationId}" 
+          <a href="kiado://messages/${conversationId}" 
              style="background: #007AFF; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 10px;">
             View Message
           </a>
         </p>
         <p style="color: #888; font-size: 12px; margin-top: 30px;">
-          This email was sent because you have a SmartLet account. You can manage your notification preferences in the app settings.
+          This email was sent because you have a Kiado App account. You can manage your notification preferences in the app settings.
         </p>
       </div>
     `;
@@ -90,7 +90,7 @@ serve(async (req) => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                from: "SmartLet <no-reply@smartlet.mozaiksoftwaresolutions.com>",
+                from: "Kiado App <no-reply@kiado.mozaiksoftwaresolutions.com>",
                 to: [recipient.email],
                 subject,
                 html,

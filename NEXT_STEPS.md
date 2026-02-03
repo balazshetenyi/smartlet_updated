@@ -1,21 +1,24 @@
-# Next Steps for SmartLet Production Release
+# Next Steps for Kiado Production Release
 
 ## What Has Been Done ✅
 
 ### Phase 1: Critical Security Fixes (COMPLETED)
+
 1. ✅ Environment configuration setup (`.env.example` created)
 2. ✅ Logging utility created (`src/utils/logger.ts`)
 3. ✅ Environment variable validation (`src/config/env.ts`)
 4. ✅ Security best practices implemented
 
 ### Phase 2: App Store Configuration (COMPLETED)
-5. ✅ iOS bundle identifier added: `com.smartlet.app`
-6. ✅ Android package name added: `com.smartlet.app`
+
+5. ✅ iOS bundle identifier added: `com.kiado.app`
+6. ✅ Android package name added: `com.kiado.app`
 7. ✅ App permissions configured (camera, storage, location)
 8. ✅ Privacy Policy created (`PRIVACY_POLICY.md`)
 9. ✅ Terms of Service created (`TERMS_OF_SERVICE.md`)
 
 ### Phase 3: Production Infrastructure (COMPLETED)
+
 10. ✅ Sentry error tracking configured (`src/config/sentry.ts`)
 11. ✅ Error Boundary component created (`src/components/shared/ErrorBoundary.tsx`)
 12. ✅ Network error handling utility (`src/utils/network-utils.ts`)
@@ -23,6 +26,7 @@
 14. ✅ EAS Build configuration (`eas.json`)
 
 ### Phase 4: Documentation (COMPLETED)
+
 15. ✅ Comprehensive production guide (`PRODUCTION_GUIDE.md`)
 16. ✅ Production checklist (`PRODUCTION_CHECKLIST.md`)
 17. ✅ Updated README with full documentation
@@ -36,16 +40,18 @@
 #### 1. Update Configuration Files
 
 **Update `app.json` (lines 90, 87):**
+
 ```json
 "owner": "your-actual-expo-username",
 "extra": {
-  "eas": {
-    "projectId": "your-actual-eas-project-id"
-  }
+"eas": {
+"projectId": "your-actual-eas-project-id"
+}
 }
 ```
 
 **Update Legal Documents:**
+
 - [ ] Open `PRIVACY_POLICY.md` and replace `[DATE]`, `[YOUR EMAIL]`, `[YOUR ADDRESS]`
 - [ ] Open `TERMS_OF_SERVICE.md` and replace `[DATE]`, `[YOUR EMAIL]`, `[YOUR ADDRESS]`, `[YOUR JURISDICTION]`
 - [ ] Host these documents on a web URL (required by app stores)
@@ -53,11 +59,13 @@
 #### 2. Set Up Production Environment
 
 Create `.env.production`:
+
 ```bash
 cp .env.example .env.production
 ```
 
 Fill in all production values:
+
 - [ ] Production Supabase credentials
 - [ ] Production Stripe API keys
 - [ ] Sentry DSN
@@ -67,6 +75,7 @@ Fill in all production values:
 #### 3. Configure Backend Services
 
 **Supabase:**
+
 - [ ] Create production project at https://supabase.com
 - [ ] Run database migrations
 - [ ] Set up Row Level Security policies
@@ -75,12 +84,14 @@ Fill in all production values:
 - [ ] Set environment variables in Supabase dashboard
 
 **Stripe:**
+
 - [ ] Create production account at https://stripe.com
 - [ ] Get production API keys
 - [ ] Set up webhooks pointing to your Supabase functions
 - [ ] Test payment flow with test cards first
 
 **Sentry:**
+
 - [ ] Create account at https://sentry.io
 - [ ] Create new React Native project
 - [ ] Get DSN and add to `.env.production`
@@ -103,18 +114,18 @@ eas build:configure
 You need to wrap your app with the ErrorBoundary component. Update your root layout file (`src/app/_layout.tsx`):
 
 ```tsx
-import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
-import { initSentry } from '@/config/sentry';
+import {ErrorBoundary} from '@/components/shared/ErrorBoundary';
+import {initSentry} from '@/config/sentry';
 
 // Initialize Sentry
 initSentry();
 
 export default function RootLayout() {
-  return (
-    <ErrorBoundary>
-      {/* Your existing app content */}
-    </ErrorBoundary>
-  );
+    return (
+        <ErrorBoundary>
+            {/* Your existing app content */}
+        </ErrorBoundary>
+    );
 }
 ```
 
@@ -123,15 +134,15 @@ export default function RootLayout() {
 Add the OfflineIndicator to your app layout:
 
 ```tsx
-import { OfflineIndicator } from '@/components/shared/OfflineIndicator';
+import {OfflineIndicator} from '@/components/shared/OfflineIndicator';
 
 export default function AppLayout() {
-  return (
-    <View>
-      <OfflineIndicator />
-      {/* Your existing app content */}
-    </View>
-  );
+    return (
+        <View>
+            <OfflineIndicator/>
+            {/* Your existing app content */}
+        </View>
+    );
 }
 ```
 
@@ -142,6 +153,7 @@ export default function AppLayout() {
 #### 7. Test in Staging Environment
 
 Create `.env.staging` for testing:
+
 - [ ] Use Stripe test keys
 - [ ] Use test Supabase project
 - [ ] Test all critical flows
@@ -218,6 +230,7 @@ Or manually upload the builds through the respective consoles.
 #### 13. Monitor After Launch
 
 First Week:
+
 - [ ] Check Sentry for errors daily
 - [ ] Monitor app store reviews
 - [ ] Respond to user feedback
@@ -230,23 +243,27 @@ First Week:
 ## Important Notes ⚠️
 
 ### Security Reminders
+
 - Never commit `.env` files to git
 - Always use production keys for production builds
 - Test payment flows thoroughly before launch
 - Monitor error rates closely after launch
 
 ### Testing Recommendations
+
 - Start with internal testing (TestFlight/Internal track)
 - Invite beta users to test
 - Wait at least 1 week before public release
 - Have a rollback plan
 
 ### App Store Review Times
+
 - iOS: Typically 1-3 days
 - Android: Typically a few hours to 1 day
 - First submission usually takes longer
 
 ### Common Rejection Reasons
+
 - Incomplete or unclear privacy policy
 - Crashes during review
 - Missing required information
@@ -282,6 +299,7 @@ eas update --branch production --message "Bug fixes"
 ## Resources
 
 📚 **Documentation Created:**
+
 - `PRODUCTION_GUIDE.md` - Detailed step-by-step guide
 - `PRODUCTION_CHECKLIST.md` - Complete checklist
 - `PRIVACY_POLICY.md` - Privacy policy template
@@ -289,6 +307,7 @@ eas update --branch production --message "Bug fixes"
 - `README.md` - Updated with full documentation
 
 🔗 **External Resources:**
+
 - [Expo Documentation](https://docs.expo.dev)
 - [EAS Build Guide](https://docs.expo.dev/build/introduction/)
 - [Supabase Production Checklist](https://supabase.com/docs/guides/platform/going-into-prod)
@@ -301,6 +320,7 @@ eas update --branch production --message "Bug fixes"
 ## Need Help?
 
 If you get stuck:
+
 1. Check the `PRODUCTION_GUIDE.md` for detailed instructions
 2. Review the `PRODUCTION_CHECKLIST.md` to ensure nothing is missed
 3. Consult the official documentation links above
@@ -318,6 +338,7 @@ You now have a production-ready foundation with:
 ✅ Comprehensive documentation
 
 The main remaining tasks are:
+
 1. Configure your production services (Supabase, Stripe, Sentry)
 2. Update placeholder values in configuration files
 3. Test thoroughly

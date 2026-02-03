@@ -152,7 +152,7 @@ ${confirmUrl}
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                from: "SmartLet <no-reply@smartlet.mozaiksoftwaresolutions.com>",
+                from: "Kiado App <no-reply@kiado.mozaiksoftwaresolutions.com>",
                 to: [landlord.email ?? ""],
                 subject,
                 text: bodyText,

@@ -65,7 +65,7 @@ Amount: £${booking.total_price}
 Pay now: ${payUrl}
 
 Thanks,
-SmartLet
+Kiado App
       `.trim();
 
             const emailResponse = await fetch("https://api.resend.com/emails", {
@@ -75,7 +75,7 @@ SmartLet
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    from: "SmartLet <no-reply@your-domain.com>",
+                    from: "Kiado App <no-reply@your-domain.com>",
                     to: [tenant.email],
                     subject,
                     text,

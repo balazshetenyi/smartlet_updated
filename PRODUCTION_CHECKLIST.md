@@ -1,8 +1,9 @@
-# SmartLet Production Readiness Checklist
+# Kiado Production Readiness Checklist
 
 Use this checklist to track your progress towards production deployment.
 
 ## ✅ Phase 1: Critical Security (COMPLETED)
+
 - [x] Remove sensitive data from git history
 - [x] Set up environment configuration (`.env.example`)
 - [x] Implement proper logging (no console.log in production)
@@ -12,6 +13,7 @@ Use this checklist to track your progress towards production deployment.
 ## 📋 Phase 2: App Store Requirements
 
 ### App Configuration
+
 - [ ] Update `app.json` with your Expo username
 - [ ] Set up EAS project ID
 - [ ] Configure app icon (1024x1024)
@@ -22,6 +24,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Set app keywords for SEO
 
 ### Legal Documents
+
 - [x] Privacy Policy created (update with your contact info)
 - [x] Terms of Service created (update with your contact info)
 - [ ] Host Privacy Policy & Terms on web (required by stores)
@@ -29,6 +32,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Add links to Terms in signup flow
 
 ### Certificates & Signing
+
 - [ ] iOS: Apple Developer Account ($99/year)
 - [ ] iOS: Create App Store Connect app
 - [ ] Android: Google Play Developer Account ($25 one-time)
@@ -38,6 +42,7 @@ Use this checklist to track your progress towards production deployment.
 ## 🔧 Phase 3: Backend & Services
 
 ### Supabase Production Setup
+
 - [ ] Create production Supabase project
 - [ ] Set up Row Level Security (RLS) policies
 - [ ] Configure database indexes for performance
@@ -51,6 +56,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Set up connection pooling
 
 ### Stripe Production Setup
+
 - [ ] Create production Stripe account
 - [ ] Get production API keys
 - [ ] Update `.env.production` with production keys
@@ -61,6 +67,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Review and set currency/localization
 
 ### Error Tracking (Sentry)
+
 - [ ] Create Sentry account
 - [ ] Create React Native project in Sentry
 - [ ] Get Sentry DSN
@@ -71,6 +78,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Set up user context tracking
 
 ### Other Services
+
 - [ ] Update OpenCage API key for production (if needed)
 - [ ] Set up any analytics (optional)
 - [ ] Configure push notifications (if implemented)
@@ -78,6 +86,7 @@ Use this checklist to track your progress towards production deployment.
 ## 🏗️ Phase 4: Build & Deploy
 
 ### Pre-Build
+
 - [ ] Install EAS CLI: `npm install -g eas-cli`
 - [ ] Login to Expo: `eas login`
 - [ ] Configure EAS: `eas build:configure`
@@ -87,6 +96,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Test app thoroughly in staging environment
 
 ### iOS Build
+
 - [ ] Create development build for testing
 - [ ] Create preview build for TestFlight
 - [ ] Test preview build thoroughly
@@ -98,6 +108,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Submit for review
 
 ### Android Build
+
 - [ ] Create development build for testing
 - [ ] Create preview build for internal testing
 - [ ] Test preview build thoroughly
@@ -113,6 +124,7 @@ Use this checklist to track your progress towards production deployment.
 ## 🔍 Phase 5: Testing
 
 ### Functional Testing
+
 - [ ] Test all user flows (signup, login, logout)
 - [ ] Test property listing creation
 - [ ] Test property search and filtering
@@ -124,6 +136,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Test user profile updates
 
 ### Performance Testing
+
 - [ ] Test with slow network connection
 - [ ] Test with no network (offline mode)
 - [ ] Test with large datasets
@@ -132,6 +145,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Check startup time
 
 ### Security Testing
+
 - [ ] Test authentication flows
 - [ ] Test authorization (users can only access their data)
 - [ ] Test payment security
@@ -140,6 +154,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Verify HTTPS for all requests
 
 ### Device Testing
+
 - [ ] Test on various iOS devices (if targeting iOS)
 - [ ] Test on various Android devices (if targeting Android)
 - [ ] Test on different screen sizes
@@ -149,6 +164,7 @@ Use this checklist to track your progress towards production deployment.
 ## 📊 Phase 6: Post-Launch
 
 ### Monitoring
+
 - [ ] Set up Sentry alerts
 - [ ] Monitor error rates daily (first week)
 - [ ] Check app store reviews daily (first week)
@@ -157,12 +173,14 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Track key metrics (downloads, MAU, retention)
 
 ### User Support
+
 - [ ] Set up support email
 - [ ] Create FAQ section
 - [ ] Prepare response templates for common issues
 - [ ] Set up in-app feedback mechanism
 
 ### Compliance
+
 - [ ] GDPR compliance (if EU users)
 - [ ] CCPA compliance (if California users)
 - [ ] Data retention policies documented
@@ -170,6 +188,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Account deletion functionality
 
 ### Marketing (Optional)
+
 - [ ] Create landing page
 - [ ] Set up social media accounts
 - [ ] Prepare launch announcement
@@ -215,6 +234,7 @@ npm audit
 ## ❓ Need Help?
 
 Refer to:
+
 - `PRODUCTION_GUIDE.md` for detailed instructions
 - `PRIVACY_POLICY.md` and `TERMS_OF_SERVICE.md` for legal templates
 - `.env.example` for required environment variables

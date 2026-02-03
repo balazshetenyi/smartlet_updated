@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "SmartLet",
-    "slug": "smartlet",
+    "name": "Kiado",
+    "slug": "kiado",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
-    "scheme": "smartlet",
+    "scheme": "kiado",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -18,7 +18,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.smartlet.app",
+      "bundleIdentifier": "com.kiado.app",
       "buildNumber": "1",
       "config": {
         "usesNonExemptEncryption": false
@@ -28,13 +28,13 @@
         "CFBundleLocalizations": [
           "en"
         ],
-        "NSCameraUsageDescription": "SmartLet needs access to your camera to take photos of properties.",
-        "NSPhotoLibraryUsageDescription": "SmartLet needs access to your photo library to select property images.",
-        "NSLocationWhenInUseUsageDescription": "SmartLet uses your location to show nearby properties and help you search in your area."
+        "NSCameraUsageDescription": "Kiado needs access to your camera to take photos of properties.",
+        "NSPhotoLibraryUsageDescription": "Kiado needs access to your photo library to select property images.",
+        "NSLocationWhenInUseUsageDescription": "Kiado uses your location to show nearby properties and help you search in your area."
       }
     },
     "android": {
-      "package": "com.smartlet.app",
+      "package": "com.kiado.app",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

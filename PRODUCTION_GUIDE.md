@@ -1,8 +1,9 @@
-# SmartLet Production Deployment Guide
+# Kiado Production Deployment Guide
 
-This guide will help you prepare and deploy the SmartLet app to production.
+This guide will help you prepare and deploy the Kiado app to production.
 
 ## Table of Contents
+
 1. [Pre-Deployment Checklist](#pre-deployment-checklist)
 2. [Environment Setup](#environment-setup)
 3. [Building for Production](#building-for-production)
@@ -14,6 +15,7 @@ This guide will help you prepare and deploy the SmartLet app to production.
 ## Pre-Deployment Checklist
 
 ### ✅ Phase 1: Security & Configuration (COMPLETED)
+
 - [x] Remove `.env` from git history
 - [x] Create `.env.example` template
 - [x] Set up logging utility (no console.log in production)
@@ -29,7 +31,9 @@ This guide will help you prepare and deploy the SmartLet app to production.
 ### 📋 Phase 2: Configuration Tasks (TODO)
 
 #### 1. Update app.json
+
 Edit `app.json` and replace placeholder values:
+
 ```json
 {
   "owner": "your-expo-username",
@@ -42,12 +46,15 @@ Edit `app.json` and replace placeholder values:
 ```
 
 #### 2. Set Up Production Environment Variables
+
 Create `.env.production` file:
+
 ```bash
 cp .env.example .env.production
 ```
 
 Fill in production values:
+
 - `EXPO_PUBLIC_ENVIRONMENT=production`
 - Production Supabase credentials
 - Production Stripe keys
@@ -57,22 +64,26 @@ Fill in production values:
 #### 3. Configure Supabase for Production
 
 **Database:**
+
 - Review and optimize database indexes
 - Set up Row Level Security (RLS) policies
 - Create database backups
 - Configure connection pooling
 
 **Storage:**
+
 - Set up storage bucket policies
 - Configure CDN if needed
 - Review file size limits
 
 **Edge Functions:**
+
 - Deploy Stripe payment function to production
 - Set production environment variables in Supabase dashboard
 - Test all functions with production credentials
 
 **Authentication:**
+
 - Configure email templates
 - Set up password policies
 - Configure OAuth providers (if applicable)
@@ -84,9 +95,9 @@ Fill in production values:
 - Get production API keys
 - Set up webhooks: `https://your-supabase-url/functions/v1/stripe-webhook`
 - Configure webhook events:
-  - `payment_intent.succeeded`
-  - `payment_intent.failed`
-  - `charge.refunded`
+    - `payment_intent.succeeded`
+    - `payment_intent.failed`
+    - `charge.refunded`
 - Test payment flow with production keys
 - Set up billing and payout settings
 
@@ -104,21 +115,25 @@ Fill in production values:
 ## Environment Setup
 
 ### Install Expo Application Services (EAS) CLI
+
 ```bash
 npm install -g eas-cli
 ```
 
 ### Login to Expo
+
 ```bash
 eas login
 ```
 
 ### Initialize EAS in your project
+
 ```bash
 eas build:configure
 ```
 
 ### Update EAS Configuration
+
 Edit `eas.json` and update the submit section with your credentials.
 
 ---
@@ -128,11 +143,13 @@ Edit `eas.json` and update the submit section with your credentials.
 ### 1. iOS Build
 
 #### Prerequisites
+
 - Apple Developer Account ($99/year)
 - App Store Connect access
 - Apple Team ID
 
 #### Steps
+
 ```bash
 # Create production build
 eas build --platform ios --profile production
@@ -142,13 +159,14 @@ eas build --platform ios --profile preview
 ```
 
 #### App Store Connect Setup
+
 1. Go to https://appstoreconnect.apple.com
 2. Create new app
 3. Fill in app information:
-   - Name: SmartLet
-   - Primary Language: English
-   - Bundle ID: com.smartlet.app
-   - SKU: unique identifier
+    - Name: Kiado
+    - Primary Language: English
+    - Bundle ID: com.kiado.app
+    - SKU: unique identifier
 4. Add app description, screenshots, keywords
 5. Set pricing (free/paid)
 6. Add Privacy Policy and Terms URLs
@@ -157,10 +175,12 @@ eas build --platform ios --profile preview
 ### 2. Android Build
 
 #### Prerequisites
+
 - Google Play Developer Account ($25 one-time)
 - Google Play Console access
 
 #### Steps
+
 ```bash
 # Create production build (AAB for Play Store)
 eas build --platform android --profile production
@@ -170,16 +190,17 @@ eas build --platform android --profile preview
 ```
 
 #### Google Play Console Setup
+
 1. Go to https://play.google.com/console
 2. Create new app
 3. Fill in app information
 4. Add store listing:
-   - App name: SmartLet
-   - Short description
-   - Full description
-   - Screenshots (phone, tablet if applicable)
-   - Feature graphic
-   - App icon
+    - App name: Kiado
+    - Short description
+    - Full description
+    - Screenshots (phone, tablet if applicable)
+    - Feature graphic
+    - App icon
 5. Complete Content rating questionnaire
 6. Add Privacy Policy and Terms URLs
 7. Set pricing and distribution
@@ -189,12 +210,14 @@ eas build --platform android --profile preview
 ## App Store Submission
 
 ### iOS Submission
+
 ```bash
 # Submit to App Store
 eas submit --platform ios --profile production
 ```
 
 Or manually:
+
 1. Download IPA from EAS build
 2. Upload via Xcode or Transporter app
 3. Go to App Store Connect
@@ -202,12 +225,14 @@ Or manually:
 5. Submit for review
 
 ### Android Submission
+
 ```bash
 # Submit to Google Play
 eas submit --platform android --profile production
 ```
 
 Or manually:
+
 1. Download AAB from EAS build
 2. Go to Google Play Console
 3. Create new release (Internal/Alpha/Beta/Production)
@@ -221,12 +246,14 @@ Or manually:
 ### 1. Monitor App Performance
 
 **Sentry Dashboard:**
+
 - Check for crashes and errors
 - Review user impact
 - Set up alerts for critical errors
 
 **Analytics (Optional):**
 Consider adding:
+
 - Expo Analytics
 - Firebase Analytics
 - Amplitude
@@ -234,6 +261,7 @@ Consider adding:
 ### 2. Set Up App Updates
 
 **Over-The-Air (OTA) Updates:**
+
 ```bash
 # Publish update without new build
 eas update --branch production --message "Bug fixes"
@@ -270,18 +298,22 @@ eas update --branch production --message "Bug fixes"
 ## Common Issues & Solutions
 
 ### Build Fails
+
 - Check all environment variables are set
 - Verify bundle identifier matches certificates
 - Review build logs in EAS dashboard
 
 ### App Store Rejection
+
 Common reasons:
+
 - Missing/unclear privacy policy
 - Incomplete app information
 - Crashes during review
 - Violation of guidelines
 
 ### Production Bugs
+
 1. Check Sentry for error details
 2. Use remote logging to debug
 3. Release hotfix via OTA if possible
@@ -292,17 +324,20 @@ Common reasons:
 ## Maintenance Schedule
 
 ### Weekly
+
 - Review Sentry errors
 - Check app store reviews
 - Monitor key metrics
 
 ### Monthly
+
 - Review and update dependencies
 - Check for security vulnerabilities (`npm audit`)
 - Review and optimize database performance
 - Analyze user feedback
 
 ### Quarterly
+
 - Update Privacy Policy if needed
 - Review and update Terms of Service
 - Major feature releases
@@ -324,6 +359,7 @@ Common reasons:
 ## Support
 
 For issues or questions:
+
 - Email: [YOUR SUPPORT EMAIL]
 - GitHub Issues: [YOUR REPO URL]
 - Documentation: [YOUR DOCS URL]

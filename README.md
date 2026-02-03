@@ -1,6 +1,7 @@
-# SmartLet - Property Rental Platform
+# Kiado - Property Rental Platform
 
-SmartLet is a modern property rental platform built with React Native and Expo, connecting landlords with tenants for long-term, short-term, and holiday rentals.
+Kiado is a modern property rental platform built with React Native and Expo, connecting landlords with tenants for
+long-term, short-term, and holiday rentals.
 
 ## Features
 
@@ -40,7 +41,7 @@ SmartLet is a modern property rental platform built with React Native and Expo, 
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd SmartLet
+   cd Kiado
    ```
 
 2. **Install dependencies**
@@ -54,10 +55,10 @@ SmartLet is a modern property rental platform built with React Native and Expo, 
    ```
 
    Fill in the required values in `.env`:
-   - Supabase credentials
-   - Stripe API keys
-   - OpenCage API key
-   - Other service credentials
+    - Supabase credentials
+    - Stripe API keys
+    - OpenCage API key
+    - Other service credentials
 
 4. **Start the development server**
    ```bash
@@ -65,14 +66,14 @@ SmartLet is a modern property rental platform built with React Native and Expo, 
    ```
 
 5. **Run on your device**
-   - Press `i` for iOS simulator
-   - Press `a` for Android emulator
-   - Scan QR code with Expo Go app for physical device
+    - Press `i` for iOS simulator
+    - Press `a` for Android emulator
+    - Scan QR code with Expo Go app for physical device
 
 ## Project Structure
 
 ```
-SmartLet/
+Kiado/
 ├── src/
 │   ├── app/                 # Expo Router pages
 │   │   ├── (app)/          # Main app screens
@@ -144,40 +145,44 @@ supabase functions deploy create-payment-intent
 Before deploying to production, complete the production checklist:
 
 1. **Review Documentation**
-   - Read `PRODUCTION_GUIDE.md` for detailed deployment instructions
-   - Use `PRODUCTION_CHECKLIST.md` to track progress
-   - Update `PRIVACY_POLICY.md` and `TERMS_OF_SERVICE.md` with your information
+    - Read `PRODUCTION_GUIDE.md` for detailed deployment instructions
+    - Use `PRODUCTION_CHECKLIST.md` to track progress
+    - Update `PRIVACY_POLICY.md` and `TERMS_OF_SERVICE.md` with your information
 
 2. **Set Up Services**
-   - Configure production Supabase project
-   - Set up production Stripe account
-   - Create Sentry account for error tracking
-   - Obtain app store developer accounts
+    - Configure production Supabase project
+    - Set up production Stripe account
+    - Create Sentry account for error tracking
+    - Obtain app store developer accounts
 
 3. **Configure App**
-   - Update `app.json` with your bundle identifiers
-   - Create production environment variables
-   - Set up EAS Build
+    - Update `app.json` with your bundle identifiers
+    - Create production environment variables
+    - Set up EAS Build
 
 ### Building for Production
 
 Install EAS CLI:
+
 ```bash
 npm install -g eas-cli
 eas login
 ```
 
 Build for iOS:
+
 ```bash
 eas build --platform ios --profile production
 ```
 
 Build for Android:
+
 ```bash
 eas build --platform android --profile production
 ```
 
 Submit to stores:
+
 ```bash
 eas submit --platform ios --profile production
 eas submit --platform android --profile production
@@ -186,6 +191,7 @@ eas submit --platform android --profile production
 ## Features by User Type
 
 ### Landlords
+
 - List properties with photos and details
 - Set pricing for different rental types
 - Manage property availability
@@ -194,6 +200,7 @@ eas submit --platform android --profile production
 - Communicate with potential tenants
 
 ### Tenants
+
 - Browse available properties
 - Search by location and rental type
 - View property details and photos
@@ -214,6 +221,7 @@ eas submit --platform android --profile production
 ## Error Tracking
 
 The app uses Sentry for production error tracking:
+
 - Automatic error capture
 - User context tracking
 - Release tracking
@@ -234,6 +242,7 @@ The app uses Sentry for production error tracking:
 ## Support
 
 For issues or questions:
+
 - Email: [YOUR SUPPORT EMAIL]
 - GitHub Issues: [YOUR REPO URL]
 
