@@ -165,6 +165,9 @@ BEGIN
     ELSIF NEW.status = 'cancelled' THEN
       notification_title := 'Booking Cancelled';
       notification_message := 'Your booking for ' || property_title || ' has been cancelled.';
+    ELSIF NEW.status = 'declined' THEN
+      notification_title := 'Booking Declined';
+      notification_message := 'Your booking for ' || property_title || ' has been declined.';
     END IF;
     
     -- Create notification for tenant
@@ -297,7 +300,8 @@ CREATE TABLE IF NOT EXISTS "public"."bookings" (
     "refund_amount" numeric,
     "refunded_at" timestamp without time zone,
     "reminder_sent_at" timestamp without time zone,
-    CONSTRAINT "bookings_status_check" CHECK (("status" = ANY (ARRAY['pending'::"text", 'confirmed'::"text", 'cancelled'::"text", 'completed'::"text"])))
+    "declined_at" timestamp without time zone,
+    CONSTRAINT "bookings_status_check" CHECK (("status" = ANY (ARRAY['pending'::"text", 'confirmed'::"text", 'cancelled'::"text", 'declined'::"text", 'completed'::"text"])))
 );
 
 
@@ -341,7 +345,7 @@ CREATE TABLE IF NOT EXISTS "public"."notifications" (
     "related_id" "uuid",
     "read" boolean DEFAULT false,
     "created_at" timestamp with time zone DEFAULT "now"(),
-    CONSTRAINT "notifications_type_check" CHECK (("type" = ANY (ARRAY['booking_request'::"text", 'booking_confirmed'::"text", 'booking_cancelled'::"text", 'payment'::"text", 'message'::"text", 'system'::"text"])))
+    CONSTRAINT "notifications_type_check" CHECK (("type" = ANY (ARRAY['booking_request'::"text", 'booking_confirmed'::"text", 'booking_cancelled'::"text", 'booking_declined'::"text", 'payment'::"text", 'message'::"text", 'system'::"text"])))
 );
 
 
@@ -373,7 +377,8 @@ CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "avatar_url" "text" NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"(),
     "push_token" "text",
-    "stripe_account_id" "text"
+    "stripe_account_id" "text",
+    "stripe_customer_id" "text"
 );
 
 
@@ -766,7 +771,7 @@ ALTER TABLE ONLY "public"."property_amenities"
 
 
 ALTER TABLE ONLY "public"."property_amenities"
-    ADD CONSTRAINT "property_amenities_property_id_fkey" FOREIGN KEY ("property_id") REFERENCES "public"."properties"("id") ON DELETE CASCADE;
+    ADD CONSTRAINT "property_amenities_property_id_fkey" FOREIGN KEY ("property_id") REFERENCES "public"."properties"("id") ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 
@@ -786,7 +791,7 @@ ALTER TABLE ONLY "public"."rental_applications"
 
 
 ALTER TABLE ONLY "public"."rental_applications"
-    ADD CONSTRAINT "rental_applications_property_id_fkey" FOREIGN KEY ("property_id") REFERENCES "public"."properties"("id");
+    ADD CONSTRAINT "rental_applications_property_id_fkey" FOREIGN KEY ("property_id") REFERENCES "public"."properties"("id") ON DELETE CASCADE;
 
 
 
@@ -809,7 +814,25 @@ CREATE POLICY "Anyone can read unavailable dates" ON "public"."property_unavaila
 
 
 
+CREATE POLICY "Enable delete for users based on user_id" ON "public"."conversations" FOR DELETE TO "authenticated" USING (("property_id" IN ( SELECT "properties"."id"
+   FROM "public"."properties"
+  WHERE ("properties"."landlord_id" = "auth"."uid"()))));
+
+
+
 CREATE POLICY "Enable delete for users based on user_id" ON "public"."properties" FOR DELETE USING ((( SELECT "auth"."uid"() AS "uid") = "landlord_id"));
+
+
+
+CREATE POLICY "Enable delete for users based on user_id" ON "public"."property_photos" FOR DELETE USING (("property_id" IN ( SELECT "properties"."id"
+   FROM "public"."properties"
+  WHERE ("properties"."landlord_id" = "auth"."uid"()))));
+
+
+
+CREATE POLICY "Enable delete for users based on user_id" ON "public"."property_unavailable_dates" FOR DELETE USING (("property_id" IN ( SELECT "properties"."id"
+   FROM "public"."properties"
+  WHERE ("properties"."landlord_id" = "auth"."uid"()))));
 
 
 
@@ -839,7 +862,13 @@ CREATE POLICY "Landlords can manage unavailable dates for their properties" ON "
 
 
 
-CREATE POLICY "Users can create conversations" ON "public"."conversations" FOR INSERT WITH CHECK ((("auth"."uid"() = "landlord_id") OR ("auth"."uid"() = "tenant_id")));
+CREATE POLICY "Participants can delete messages in their conversations" ON "public"."messages" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."conversations"
+  WHERE (("conversations"."id" = "messages"."conversation_id") AND (("conversations"."landlord_id" = "auth"."uid"()) OR ("conversations"."tenant_id" = "auth"."uid"()))))));
+
+
+
+CREATE POLICY "Users can create conversations" ON "public"."conversations" FOR INSERT TO "authenticated" WITH CHECK ((("auth"."uid"() = "landlord_id") OR ("auth"."uid"() = "tenant_id")));
 
 
 
@@ -857,7 +886,7 @@ CREATE POLICY "Users can send messages in their conversations" ON "public"."mess
 
 
 
-CREATE POLICY "Users can update their conversations" ON "public"."conversations" FOR UPDATE USING ((("auth"."uid"() = "landlord_id") OR ("auth"."uid"() = "tenant_id")));
+CREATE POLICY "Users can update their conversations" ON "public"."conversations" FOR UPDATE TO "authenticated" USING ((("auth"."uid"() = "landlord_id") OR ("auth"."uid"() = "tenant_id")));
 
 
 
@@ -877,7 +906,7 @@ CREATE POLICY "Users can view messages in their conversations" ON "public"."mess
 
 
 
-CREATE POLICY "Users can view their own conversations" ON "public"."conversations" FOR SELECT USING ((("auth"."uid"() = "landlord_id") OR ("auth"."uid"() = "tenant_id")));
+CREATE POLICY "Users can view their own conversations" ON "public"."conversations" FOR SELECT TO "authenticated" USING ((("auth"."uid"() = "landlord_id") OR ("auth"."uid"() = "tenant_id")));
 
 
 

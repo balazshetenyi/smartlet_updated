@@ -5,7 +5,7 @@ import { Alert } from "react-native";
 import zod from "zod";
 
 export async function signInWithEmail(
-  signInData: zod.infer<typeof signInSchema>
+  signInData: zod.infer<typeof signInSchema>,
 ): Promise<SignInResponse> {
   const {
     data: { session },
@@ -34,7 +34,7 @@ export async function signOutUser(): Promise<void> {
 }
 
 export const fetchUserProfile = async (
-  userId: string
+  userId: string,
 ): Promise<UserProfile | null> => {
   const { data, error } = await supabase
     .from("profiles")
@@ -44,7 +44,7 @@ export const fetchUserProfile = async (
         user_roles (
           role
         )
-      `
+      `,
     )
     .eq("id", userId)
     .single();
@@ -56,6 +56,25 @@ export const fetchUserProfile = async (
 
   const role = data.user_roles?.[0]?.role || "tenant";
   return { ...data, user_role: role };
+};
+
+export const signUpWithEmail = async (
+  signUpData: zod.infer<typeof signInSchema>,
+): Promise<{ success: boolean; error?: string }> => {
+  const { data, error } = await supabase.auth.signUp({
+    email: signUpData.email,
+    password: signUpData.password,
+  });
+
+  if (error) {
+    Alert.alert("Error", error.message);
+    return { success: false, error: error.message };
+  }
+
+  // Optionally, you can create a profile record here or rely on an auth trigger in the database
+  // to create it automatically when a new user signs up.
+
+  return { success: true };
 };
 
 // Password strength indicator

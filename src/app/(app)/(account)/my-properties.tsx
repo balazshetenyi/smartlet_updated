@@ -71,6 +71,9 @@ const Properties = () => {
           style: "destructive",
           onPress: async () => {
             try {
+              const { data: userData } = await supabase.auth.getUser();
+              console.log("user id:", userData?.user?.id);
+
               const data = await deleteProperty(propertyId);
               console.log("Deleted property:", data);
 

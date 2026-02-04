@@ -27,7 +27,12 @@ export default function SignIn() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 justify-between bg-white">
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colours.cardBackground,
+      }}
+    >
       <View className="p-4">
         <Controller
           control={control}
@@ -95,7 +100,6 @@ export default function SignIn() {
         style={{
           flex: 1,
           justifyContent: "space-between",
-          paddingBottom: 50,
         }}
       >
         <View className="p-4 self-stretch">
@@ -134,7 +138,7 @@ export default function SignIn() {
               marginBottom: 10,
             }}
           >
-            Don't have an account yet?
+            Don&#39;t have an account yet?
           </Text>
           <Button
             title="Sign up"

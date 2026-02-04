@@ -36,13 +36,13 @@ export const fetchAllProperties = async (): Promise<{
     }
 
     const long_term_properties = allProperties.filter(
-      (p) => p.rental_type === "long_term"
+      (p) => p.rental_type === "long_term",
     );
     const short_term_properties = allProperties.filter(
-      (p) => p.rental_type === "short_term"
+      (p) => p.rental_type === "short_term",
     );
     const holiday_properties = allProperties.filter(
-      (p) => p.rental_type === "holiday"
+      (p) => p.rental_type === "holiday",
     );
 
     return {
@@ -104,7 +104,7 @@ export const fetchAllProperties = async (): Promise<{
  * @returns {Promise<Property | null>} A promise that resolves to the property or null if not found.
  */
 export const fetchPropertyById = async (
-  id: string
+  id: string,
 ): Promise<Property | null> => {
   try {
     const { data, error } = await supabase
@@ -134,7 +134,7 @@ export const fetchPropertyById = async (
  */
 export const createProperty = async (
   property: Partial<Property>,
-  amenityIds?: string[]
+  amenityIds?: string[],
 ): Promise<Property> => {
   try {
     // Remove amenities from property object if it exists (it shouldn't be in properties table)
@@ -185,7 +185,7 @@ export const createProperty = async (
  */
 export const updateProperty = async (
   id: string,
-  updates: Partial<Property>
+  updates: Partial<Property>,
 ): Promise<Property> => {
   try {
     const { data, error } = await supabase
@@ -196,7 +196,7 @@ export const updateProperty = async (
 
     if (error) {
       throw new Error(
-        `Error updating property with ID ${id}: ${error.message}`
+        `Error updating property with ID ${id}: ${error.message}`,
       );
     }
 
@@ -215,13 +215,18 @@ export const updateProperty = async (
  */
 export const deleteProperty = async (id: string): Promise<void> => {
   try {
-    const { error } = await supabase.from("properties").delete().eq("id", id);
+    const { data, error } = await supabase
+      .from("properties")
+      .delete()
+      .eq("id", id)
+      .select("id, landlord_id");
 
     if (error) {
       throw new Error(
-        `Error deleting property with ID ${id}: ${error.message}`
+        `Error deleting property with ID ${id}: ${error.message}`,
       );
     }
+    return data;
   } catch (error) {
     console.error("Error deleting property:", error);
     throw error;
@@ -236,7 +241,7 @@ export const deleteProperty = async (id: string): Promise<void> => {
  */
 export const uploadPropertyImages = async (
   propertyId: string,
-  assets: Array<ImagePicker.ImagePickerAsset>
+  assets: Array<ImagePicker.ImagePickerAsset>,
 ): Promise<string[]> => {
   if (!assets || assets.length === 0) return [];
 
@@ -259,7 +264,7 @@ export const uploadPropertyImages = async (
         asset,
         bucket,
         session,
-        propertyId
+        propertyId,
       );
 
       if (!publicUrl) {
@@ -305,7 +310,7 @@ export const fetchPropertiesWithLandlords = async (): Promise<
 
     if (error) {
       throw new Error(
-        `Error fetching properties with landlords: ${error.message}`
+        `Error fetching properties with landlords: ${error.message}`,
       );
     }
 
@@ -322,7 +327,7 @@ export const fetchPropertiesWithLandlords = async (): Promise<
  * Falls back to first photo if no cover is set.
  */
 export const fetchCoverImageUrls = async (
-  propertyIds: string[]
+  propertyIds: string[],
 ): Promise<Record<string, string>> => {
   const map: Record<string, string> = {};
   if (!propertyIds.length) return map;
@@ -364,7 +369,7 @@ export const fetchCoverImageUrls = async (
 
 /** Fetch all photo URLs for a property with their metadata */
 export const fetchPropertyPhotos = async (
-  propertyId: string
+  propertyId: string,
 ): Promise<string[]> => {
   const { data, error } = await supabase
     .from("property_photos")
@@ -382,7 +387,7 @@ export const fetchPropertyPhotos = async (
 
 /** Fetch all photo details for a property including metadata */
 export const fetchPropertyPhotoDetails = async (
-  propertyId: string
+  propertyId: string,
 ): Promise<Array<{ id: string; image_url: string; is_cover: boolean }>> => {
   const { data, error } = await supabase
     .from("property_photos")
@@ -410,7 +415,7 @@ export const fetchPropertyPhotoDetails = async (
  */
 export const setCoverImage = async (
   propertyId: string,
-  photoId: string
+  photoId: string,
 ): Promise<boolean> => {
   try {
     // First, unset all existing cover images for this property
