@@ -35,13 +35,13 @@ export default function SearchResultsScreen() {
       let query = supabase
         .from("properties")
         .select("*")
-        .eq("is_available", true)
-        .eq("rental_type", "holiday");
+        .eq("is_available", true);
+      // .eq("rental_type", "short_term");
 
       // Filter by location if provided
       if (searchParams.location) {
         query = query.or(
-          `city.ilike.%${searchParams.location}%,address.ilike.%${searchParams.location}%`
+          `city.ilike.%${searchParams.location}%,address.ilike.%${searchParams.location}%`,
         );
       }
 
@@ -74,7 +74,7 @@ export default function SearchResultsScreen() {
             }
 
             return property;
-          }
+          },
         );
 
         const results = await Promise.all(availabilityPromises);

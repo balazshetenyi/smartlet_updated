@@ -387,7 +387,7 @@ ALTER TABLE "public"."profiles" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."properties" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "landlord_id" "uuid",
+    "landlord_id" "uuid" DEFAULT "auth"."uid"(),
     "title" "text" NOT NULL,
     "description" "text",
     "address" "text",
@@ -820,7 +820,7 @@ CREATE POLICY "Enable delete for users based on user_id" ON "public"."conversati
 
 
 
-CREATE POLICY "Enable delete for users based on user_id" ON "public"."properties" FOR DELETE USING ((( SELECT "auth"."uid"() AS "uid") = "landlord_id"));
+CREATE POLICY "Enable delete for users based on user_id" ON "public"."properties" FOR DELETE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "landlord_id"));
 
 
 
@@ -836,7 +836,7 @@ CREATE POLICY "Enable delete for users based on user_id" ON "public"."property_u
 
 
 
-CREATE POLICY "Enable insert for authenticated users only" ON "public"."properties" FOR INSERT TO "authenticated" WITH CHECK (true);
+CREATE POLICY "Enable insert for authenticated users only" ON "public"."properties" FOR INSERT TO "authenticated" WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "landlord_id"));
 
 
 
@@ -844,7 +844,7 @@ CREATE POLICY "Enable insert for authenticated users only" ON "public"."property
 
 
 
-CREATE POLICY "Enable read access for all users" ON "public"."properties" FOR SELECT USING (true);
+CREATE POLICY "Enable read access for all users" ON "public"."properties" FOR SELECT TO "authenticated" USING (true);
 
 
 
@@ -852,7 +852,7 @@ CREATE POLICY "Enable read access for all users" ON "public"."property_photos" F
 
 
 
-CREATE POLICY "Enable update for users based on email" ON "public"."properties" FOR UPDATE USING ((( SELECT "auth"."uid"() AS "uid") = "landlord_id")) WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "landlord_id"));
+CREATE POLICY "Enable update for users based on email" ON "public"."properties" FOR UPDATE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "landlord_id")) WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "landlord_id"));
 
 
 

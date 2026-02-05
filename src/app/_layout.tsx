@@ -11,6 +11,8 @@ import {
 import { SearchProvider } from "@/context/SearchContext";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { colours } from "@/styles/colours.ts";
+import "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
@@ -37,42 +39,48 @@ export default function RootLayout() {
   // Optional but recommended: don't render routing until we know the auth state
   if (loading) {
     return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SearchProvider>
+          <StripeProvider
+            publishableKey={
+              process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
+            }
+            merchantIdentifier={process.env.EXPO_PUBLIC_APPLE_MERCHANT_ID || ""}
+          >
+            <StatusBar style="auto" />
+            <SafeAreaView className="flex-1 bg-white" />
+          </StripeProvider>
+        </SearchProvider>
+      </GestureHandlerRootView>
+    );
+  }
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <SearchProvider>
         <StripeProvider
           publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""}
           merchantIdentifier={process.env.EXPO_PUBLIC_APPLE_MERCHANT_ID || ""}
         >
           <StatusBar style="auto" />
-          <SafeAreaView className="flex-1 bg-white" />
+          <SafeAreaView
+            edges={["top"]}
+            style={{
+              flex: 1,
+              backgroundColor: colours.cardBackground,
+              paddingBottom: Math.min(insets.bottom, 0),
+            }}
+          >
+            <Stack>
+              <Stack.Protected guard={isLoggedIn}>
+                <Stack.Screen name="(app)" options={{ headerShown: false }} />
+              </Stack.Protected>
+              <Stack.Protected guard={!isLoggedIn}>
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              </Stack.Protected>
+            </Stack>
+          </SafeAreaView>
         </StripeProvider>
       </SearchProvider>
-    );
-  }
-  return (
-    <SearchProvider>
-      <StripeProvider
-        publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""}
-        merchantIdentifier={process.env.EXPO_PUBLIC_APPLE_MERCHANT_ID || ""}
-      >
-        <StatusBar style="auto" />
-        <SafeAreaView
-          edges={["top"]}
-          style={{
-            flex: 1,
-            backgroundColor: colours.background,
-            paddingBottom: Math.min(insets.bottom, 0),
-          }}
-        >
-          <Stack>
-            <Stack.Protected guard={isLoggedIn}>
-              <Stack.Screen name="(app)" options={{ headerShown: false }} />
-            </Stack.Protected>
-            <Stack.Protected guard={!isLoggedIn}>
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            </Stack.Protected>
-          </Stack>
-        </SafeAreaView>
-      </StripeProvider>
-    </SearchProvider>
+    </GestureHandlerRootView>
   );
 }

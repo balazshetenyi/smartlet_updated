@@ -1,4 +1,4 @@
-import { signInSchema } from "@/config/schemas";
+import { signInSchema, signUpSchema } from "@/config/schemas";
 import { supabase } from "@/lib/supabase";
 import { SignInResponse } from "@/types/auth";
 import { Alert } from "react-native";
@@ -59,22 +59,57 @@ export const fetchUserProfile = async (
 };
 
 export const signUpWithEmail = async (
-  signUpData: zod.infer<typeof signInSchema>,
+  signUpData: zod.infer<typeof signUpSchema>,
 ): Promise<{ success: boolean; error?: string }> => {
-  const { data, error } = await supabase.auth.signUp({
-    email: signUpData.email,
-    password: signUpData.password,
-  });
-
-  if (error) {
-    Alert.alert("Error", error.message);
-    return { success: false, error: error.message };
+  if (
+    !signUpData.email ||
+    !signUpData.password ||
+    !signUpData.first_name ||
+    !signUpData.last_name
+  ) {
+    return { success: false, error: "All fields are required." };
   }
 
-  // Optionally, you can create a profile record here or rely on an auth trigger in the database
-  // to create it automatically when a new user signs up.
+  try {
+    const {
+      data: { session },
+      error: signUpError,
+    } = await supabase.auth.signUp({
+      email: signUpData.email,
+      password: signUpData.password,
+      options: {
+        data: {
+          first_name: signUpData.first_name,
+          last_name: signUpData.last_name,
+          user_role: signUpData.user_type,
+        },
+      },
+    });
 
-  return { success: true };
+    if (signUpError) {
+      return { success: false, error: signUpError.message };
+    }
+
+    // If a user is immediately signed in, update the profile with a role
+    if (session?.user?.id) {
+      await supabase
+        .from("profiles")
+        .update({
+          user_role: signUpData.user_type,
+          first_name: signUpData.first_name,
+          last_name: signUpData.last_name,
+        })
+        .eq("id", session.user.id);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Sign up error:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again.",
+    };
+  }
 };
 
 // Password strength indicator

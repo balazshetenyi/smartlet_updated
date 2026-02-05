@@ -137,7 +137,7 @@ export const createProperty = async (
   amenityIds?: string[],
 ): Promise<Property> => {
   try {
-    // Remove amenities from property object if it exists (it shouldn't be in properties table)
+    // Remove amenities from a property object if it exists (it shouldn't be in the properties table)
     const { amenities, ...propertyData } = property as any;
 
     const { data, error } = await supabase
@@ -165,7 +165,7 @@ export const createProperty = async (
 
       if (amenitiesError) {
         console.error("Error inserting amenities:", amenitiesError);
-        // Don't throw error here, property is still created
+        // Don't throw an error here, property is still created
       }
     }
 
@@ -219,7 +219,7 @@ export const deleteProperty = async (id: string): Promise<void> => {
       .from("properties")
       .delete()
       .eq("id", id)
-      .select("id, landlord_id");
+      .select("id");
 
     if (error) {
       throw new Error(

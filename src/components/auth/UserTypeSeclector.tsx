@@ -8,7 +8,7 @@ interface UserTypeSelectorProps {
   error?: string;
 }
 
-const UserTypeSelector = ({
+export const UserTypeSelector = ({
   value,
   onChange,
   error,
@@ -137,5 +137,3 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
 });
-
-export default UserTypeSelector;

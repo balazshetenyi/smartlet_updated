@@ -3,6 +3,7 @@ import {
   fetchUserProfile,
   signInWithEmail,
   signOutUser,
+  signUpWithEmail,
 } from "@/utils/auth-utils";
 import { Session } from "@supabase/supabase-js";
 import { create } from "zustand";
@@ -57,7 +58,12 @@ export const useAuthStore = create<AuthStore & AuthActions>((set, get) => ({
     set({ signingOut: false });
   },
 
-  signUpWithEmail: async (_data) => {},
+  signUpWithEmail: async (_data) => {
+    set({ loading: true });
+    const result = await signUpWithEmail(_data);
+    set({ loading: false });
+    return result;
+  },
 
   refreshProfile: async () => {
     const userId = get().session?.user?.id;

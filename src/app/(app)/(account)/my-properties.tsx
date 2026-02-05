@@ -53,7 +53,7 @@ const Properties = () => {
     }
   }, [profile?.id]);
 
-  // Load properties when screen is focused
+  // Load properties when the screen is focused
   useFocusEffect(
     useCallback(() => {
       loadProperties();
@@ -72,13 +72,11 @@ const Properties = () => {
           onPress: async () => {
             try {
               const { data: userData } = await supabase.auth.getUser();
-              console.log("user id:", userData?.user?.id);
 
               const data = await deleteProperty(propertyId);
-              console.log("Deleted property:", data);
 
               Alert.alert("Success", "Property deleted successfully");
-              loadProperties();
+              await loadProperties();
             } catch (error) {
               console.error("Error deleting property:", error);
               Alert.alert("Error", "Failed to delete property");
