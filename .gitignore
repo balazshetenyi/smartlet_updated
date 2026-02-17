@@ -39,8 +39,8 @@ yarn-error.*
 app-example
 
 # generated native folders
-/ios
-/android
+ios
+android
 
 .env
 .env.*
@@ -49,3 +49,6 @@ supabase/.temp
 
 # IDE
 .idea/
+
+# Turborepo
+.turbo

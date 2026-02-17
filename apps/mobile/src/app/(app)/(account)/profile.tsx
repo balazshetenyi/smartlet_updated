@@ -61,7 +61,7 @@ export default function ProfileScreen() {
         formData.first_name,
         formData.last_name,
         formData.phone,
-        profile!.id
+        profile!.id,
       );
       setIsEditing(false);
     } catch (error) {
@@ -237,6 +237,24 @@ export default function ProfileScreen() {
               <View style={styles.menuItemLeft}>
                 <MaterialIcons name="home" size={24} color={colours.text} />
                 <Text style={styles.menuItemText}>My Properties</Text>
+              </View>
+              <MaterialIcons
+                name="chevron-right"
+                size={24}
+                color={colours.muted}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => router.push("/payout-setup")}
+            >
+              <View style={styles.menuItemLeft}>
+                <MaterialIcons name="payments" size={24} color={colours.text} />
+                <Text style={styles.menuItemText}>
+                  {profile?.stripe_account_id
+                    ? "Manage Payouts"
+                    : "Connect Stripe Account"}
+                </Text>
               </View>
               <MaterialIcons
                 name="chevron-right"

@@ -39,6 +39,12 @@ Use this checklist to track your progress towards production deployment.
 - [ ] Android: Create Google Play Console app
 - [ ] Generate signing certificates via EAS
 
+### Deep Linking & Universal Links
+- [ ] Upgrade from custom scheme (`kiado://`) to Universal Links (`https://kiado.app`)
+- [ ] Configure `apple-app-site-association` (iOS) and `assetlinks.json` (Android)
+- [ ] Update `app.json` with `associatedDomains` and `intentFilters`
+- [ ] Update Stripe Edge Function `refresh_url` and `return_url` to use HTTPS links
+
 ## 🔧 Phase 3: Backend & Services
 
 ### Supabase Production Setup

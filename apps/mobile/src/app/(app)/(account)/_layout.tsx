@@ -91,6 +91,25 @@ export default function AccountLayout() {
           }}
         />
         <Stack.Screen
+          name="payout-setup"
+          options={{
+            title: "Payout Settings",
+            headerShown: true,
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{ marginLeft: 8, padding: 4 }}
+              >
+                <MaterialIcons
+                  name="arrow-back"
+                  size={24}
+                  color={colours.text}
+                />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <Stack.Screen
           name="booking-requests"
           options={{
             title: "Booking Requests",

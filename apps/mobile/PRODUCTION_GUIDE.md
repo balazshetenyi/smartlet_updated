@@ -110,6 +110,16 @@ Fill in production values:
 5. Set up alerts and notifications
 6. Configure release tracking
 
+### Universal Links (Production Recommendation)
+
+While `kiado://` is used for development, you should switch to Universal Links for production to provide a seamless user experience (avoiding the "Open in Kiado?" browser prompt).
+
+1. **Host Association Files**: Create a `.well-known` directory on your production domain and host the AASA (iOS) and Asset Links (Android) files.
+2. **Update App Config**: Add your domain to the `ios.associatedDomains` in `app.json`.
+3. **Update Redirects**: In your Supabase Edge Functions (e.g., `create-or-connect-stripe-account`), update the Stripe `accountLinks` URLs:
+    - From: `kiado://payout-setup?success=true`
+    - To: `https://kiado.app/payout-setup?success=true`
+
 ---
 
 ## Environment Setup

@@ -10,6 +10,9 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+
+const logoImg = require("@/assets/images/kiado-logo.png");
 
 export default function AppBar() {
   const router = useRouter();
@@ -50,8 +53,7 @@ export default function AppBar() {
       <View style={styles.appBarContent}>
         {/* Logo/Brand */}
         <View style={styles.brandContainer}>
-          <MaterialIcons name="home" size={28} color={colours.primary} />
-          <Text style={styles.brandText}>Kiado</Text>
+          <Image source={logoImg} style={styles.logo} contentFit="contain" />
         </View>
 
         {/* Search and Profile */}
@@ -105,12 +107,10 @@ const styles = StyleSheet.create({
   brandContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
   },
-  brandText: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.text,
+  logo: {
+    height: 32, // Adjust height as needed
+    width: 120, // Adjust width as needed
   },
   appBarActions: {
     flexDirection: "row",
