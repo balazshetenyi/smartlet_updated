@@ -17,7 +17,11 @@ export default function Home() {
 
     if (result.error) {
       setStatus("error");
-      setMessage(result.error);
+      const errorMessage =
+        typeof result.error === "string"
+          ? result.error
+          : result.error.errors.join(", ");
+      setMessage(errorMessage);
     } else {
       setStatus("success");
       setMessage("You're on the list!");
@@ -28,7 +32,12 @@ export default function Home() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 font-sans dark:bg-darkslateblue dark:text-zinc-50">
       <main className="flex max-w-2xl flex-col items-center text-center">
         <div className="mb-8 flex items-center gap-2">
-          <Image src={logo} alt={"Kiado Logo"} width={360} height={130} />
+          <Image
+            src={logo}
+            alt="Kiado Logo for Intelligence for Your Property platform"
+            width={360}
+            height={130}
+          />
         </div>
 
         <h1 className="mb-4 text-4xl text-darkslateblue font-extrabold tracking-tight sm:text-6xl">
@@ -36,8 +45,9 @@ export default function Home() {
         </h1>
 
         <p className="mb-10 text-lg text-zinc-600 dark:text-zinc-400 sm:text-xl">
-          The ultimate platform for managing your lets simplifies everything
-          from maintenance to payments. We are launching soon.
+          Looking to simplify property management and rental processes? Kiado
+          offers cutting-edge property intelligence, streamlining maintenance,
+          payments, and more.
         </p>
 
         <form
@@ -73,7 +83,10 @@ export default function Home() {
       </main>
 
       <footer className="absolute bottom-8 flex gap-6 text-sm text-zinc-500">
-        <a href="#" className="hover:text-darkslateblue dark:hover:text-white">
+        <a
+          href="mailto:info@kiado.mozaiksoftwaresolutions.com"
+          className="hover:text-darkslateblue dark:hover:text-white"
+        >
           Contact
         </a>
       </footer>
