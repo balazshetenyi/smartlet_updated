@@ -30,7 +30,7 @@ serve(async (req) => {
         from: "Kiado <info@kiado.mozaiksoftwaresolutions.com>",
         to: [email],
         subject: "Welcome to the Waitlist!",
-        html: "<strong>Thank you for joining our waitlist!</strong><p>We will notify you as soon as we launch.</p>",
+        html: "<strong>Thank you for joining!</strong><p>We will notify you as soon as we launch.</p>",
       }),
     });
 
