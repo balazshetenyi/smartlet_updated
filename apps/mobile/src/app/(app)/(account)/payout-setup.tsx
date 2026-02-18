@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { supabase } from "@/lib/supabase";
-import { colours } from "@/styles/colours";
+import { supabase } from "../../../../../../packages/shared/lib/supabase";
+import { colours } from "../../../../../../packages/shared/styles/colours.ts";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import * as WebBrowser from "expo-web-browser";

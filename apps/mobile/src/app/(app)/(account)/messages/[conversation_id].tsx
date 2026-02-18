@@ -1,6 +1,9 @@
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@/styles/colours";
-import { Conversation, Message } from "@/types/message";
+import { colours } from "../../../../../../../packages/shared/styles/colours.ts";
+import {
+  Conversation,
+  Message,
+} from "../../../../../../../packages/shared/types/message";
 import { pickImage } from "@/utils/image-picker-utils";
 import {
   fetchConversationById,
@@ -90,7 +93,7 @@ export default function ChatScreen() {
             }
           }
         });
-      }
+      },
     );
 
     return () => {
@@ -167,7 +170,7 @@ export default function ChatScreen() {
         conversation_id,
         profile.id,
         image,
-        inputText.trim() || undefined
+        inputText.trim() || undefined,
       );
 
       if (message) {

@@ -1,4 +1,4 @@
-import { colours } from "@/styles/colours";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
 import { useSearch } from "@/context/SearchContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
@@ -168,11 +168,16 @@ export default function SearchBar() {
           style={styles.searchRow}
           onPress={() => setShowGuestPicker(true)}
         >
-          <MaterialIcons name="person" size={24} color={colours.textSecondary} />
+          <MaterialIcons
+            name="person"
+            size={24}
+            color={colours.textSecondary}
+          />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Who</Text>
             <Text style={styles.searchValue}>
-              {searchParams.guests} {searchParams.guests === 1 ? "guest" : "guests"}
+              {searchParams.guests}{" "}
+              {searchParams.guests === 1 ? "guest" : "guests"}
             </Text>
           </View>
         </TouchableOpacity>
@@ -212,12 +217,12 @@ export default function SearchBar() {
               {!tempDates.checkIn
                 ? "Select check-in date"
                 : !tempDates.checkOut
-                ? "Select check-out date"
-                : `${Math.ceil(
-                    (new Date(tempDates.checkOut).getTime() -
-                      new Date(tempDates.checkIn).getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )} nights selected`}
+                  ? "Select check-out date"
+                  : `${Math.ceil(
+                      (new Date(tempDates.checkOut).getTime() -
+                        new Date(tempDates.checkIn).getTime()) /
+                        (1000 * 60 * 60 * 24),
+                    )} nights selected`}
             </Text>
 
             <Calendar

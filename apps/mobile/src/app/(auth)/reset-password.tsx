@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase } from "@/lib/supabase";
-import { colours } from "@/styles/colours";
+import { supabase } from "../../../../../packages/shared/lib/supabase";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -46,7 +46,7 @@ export default function ResetPasswordScreen() {
   }, [params]);
 
   const handleUpdatePassword = async (
-    data: zod.infer<typeof resetPasswordSchema>
+    data: zod.infer<typeof resetPasswordSchema>,
   ) => {
     setLoading(true);
 

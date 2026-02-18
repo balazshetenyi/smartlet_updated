@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/store/auth-store";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@kiado/shared";
 import "@/styles/global.css";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -10,7 +10,7 @@ import {
 } from "react-native-safe-area-context";
 import { SearchProvider } from "@/context/SearchContext";
 import { StripeProvider } from "@stripe/stripe-react-native";
-import { colours } from "@/styles/colours.ts";
+import { colours } from "@kiado/shared/styles/colours.ts";
 import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 

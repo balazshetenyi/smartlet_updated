@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../../packages/shared/lib/supabase";
 import { Alert } from "react-native";
 
 /**
@@ -11,7 +11,7 @@ import { Alert } from "react-native";
 export async function sendPushNotification(
   expoPushToken: string,
   title?: string,
-  body?: string
+  body?: string,
 ): Promise<void> {
   const message = {
     to: expoPushToken,

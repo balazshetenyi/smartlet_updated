@@ -1,21 +1,21 @@
 import Button from "@/components/shared/Button";
-import { colours } from "@/styles/colours";
-import { PropertyUnavailableDate } from "@/types/property";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { PropertyUnavailableDate } from "../../../../../packages/shared/types/property";
 import {
-    addUnavailableDates,
-    fetchUnavailableDateRanges,
-    removeUnavailableDates,
+  addUnavailableDates,
+  fetchUnavailableDateRanges,
+  removeUnavailableDates,
 } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -150,7 +150,7 @@ export default function UnavailableDatesManager({
       const success = await addUnavailableDates(
         propertyId,
         selectedDates.start,
-        selectedDates.end
+        selectedDates.end,
       );
 
       if (success) {
@@ -190,7 +190,7 @@ export default function UnavailableDatesManager({
             }
           },
         },
-      ]
+      ],
     );
   };
 

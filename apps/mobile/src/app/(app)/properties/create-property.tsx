@@ -1,10 +1,10 @@
 import AmenitySelector from "@/components/properties/AmenitySelector";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../../../../packages/shared/lib/supabase";
 import { AddNewProperty, propertySchema } from "@/schemas/property-schema";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@/styles/colours";
+import { colours } from "../../../../../../packages/shared/styles/colours.ts";
 import {
   createProperty,
   setCoverImage,

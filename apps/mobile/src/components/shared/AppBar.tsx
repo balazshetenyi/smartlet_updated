@@ -1,7 +1,7 @@
 import { useAuthStore } from "@/store/auth-store";
 import { useMessageStore } from "@/store/message-store";
-import { colours } from "@/styles/colours";
-import { Message } from "@/types/message";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { Message } from "@kiado/shared";
 import {
   fetchTotalUnreadCount,
   subscribeToMessages,
@@ -12,7 +12,7 @@ import React, { useCallback } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 
-const logoImg = require("@/assets/images/kiado-logo.png");
+const logoImg = require("@kiado/shared/assets/images/kiado-logo.png");
 
 export default function AppBar() {
   const router = useRouter();

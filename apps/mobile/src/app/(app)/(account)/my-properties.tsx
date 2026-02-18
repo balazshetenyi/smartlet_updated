@@ -1,9 +1,9 @@
 import PropertyCard from "@/components/properties/PropertyCard";
 import Button from "@/components/shared/Button";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../../../../packages/shared/lib/supabase";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@/styles/colours";
-import { Property } from "@/types/property";
+import { colours } from "../../../../../../packages/shared/styles/colours.ts";
+import { Property } from "../../../../../../packages/shared/types/property";
 import { deleteProperty, fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";

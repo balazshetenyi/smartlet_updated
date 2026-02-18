@@ -1,6 +1,6 @@
 import Button from "@/components/shared/Button";
-import { colours } from "@/styles/colours";
-import { Property } from "@/types/property";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { Property } from "../../../../../packages/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Calendar, DateData } from "react-native-calendars";
 import React, { useMemo, useState } from "react";
@@ -36,14 +36,14 @@ export default function BookingModal({
     const marked: any = {};
 
     // Mark blocked dates
-    blockedDates.forEach(date => {
+    blockedDates.forEach((date) => {
       marked[date] = {
         disabled: true,
         disableTouchEvent: true,
         textColor: colours.textSecondary,
         customContainerStyle: {
           backgroundColor: colours.border,
-        }
+        },
       };
     });
 
@@ -53,7 +53,7 @@ export default function BookingModal({
         ...marked[checkIn],
         startingDay: true,
         color: colours.primary,
-        textColor: 'white',
+        textColor: "white",
         disabled: false,
         disableTouchEvent: false,
       };
@@ -63,7 +63,7 @@ export default function BookingModal({
         ...marked[checkOut],
         endingDay: true,
         color: colours.primary,
-        textColor: 'white',
+        textColor: "white",
         disabled: false,
         disableTouchEvent: false,
       };
@@ -72,11 +72,11 @@ export default function BookingModal({
       const start = new Date(checkIn);
       const end = new Date(checkOut);
       for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = d.toISOString().split("T")[0];
         if (dateStr !== checkIn && dateStr !== checkOut) {
           marked[dateStr] = {
             ...marked[dateStr],
-            color: colours.primary + '40',
+            color: colours.primary + "40",
             textColor: colours.text,
             disabled: blockedDates.includes(dateStr),
             disableTouchEvent: blockedDates.includes(dateStr),
@@ -126,11 +126,11 @@ export default function BookingModal({
       const start = new Date(checkIn);
       const end = new Date(selectedDate);
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = d.toISOString().split("T")[0];
         if (blockedDates.includes(dateStr)) {
           Alert.alert(
             "Unavailable",
-            "Selected range includes unavailable dates. Please choose different dates."
+            "Selected range includes unavailable dates. Please choose different dates.",
           );
           setCheckIn(null);
           setCheckOut(null);
@@ -184,14 +184,22 @@ export default function BookingModal({
                 <View style={styles.dateInfo}>
                   <Text style={styles.dateInfoLabel}>Check-in</Text>
                   <Text style={styles.dateInfoValue}>
-                    {checkIn ? new Date(checkIn).toLocaleDateString() : 'Select date'}
+                    {checkIn
+                      ? new Date(checkIn).toLocaleDateString()
+                      : "Select date"}
                   </Text>
                 </View>
-                <MaterialIcons name="arrow-forward" size={20} color={colours.textSecondary} />
+                <MaterialIcons
+                  name="arrow-forward"
+                  size={20}
+                  color={colours.textSecondary}
+                />
                 <View style={styles.dateInfo}>
                   <Text style={styles.dateInfoLabel}>Check-out</Text>
                   <Text style={styles.dateInfoValue}>
-                    {checkOut ? new Date(checkOut).toLocaleDateString() : 'Select date'}
+                    {checkOut
+                      ? new Date(checkOut).toLocaleDateString()
+                      : "Select date"}
                   </Text>
                 </View>
               </View>
@@ -200,18 +208,18 @@ export default function BookingModal({
                 markingType="period"
                 markedDates={markedDates}
                 onDayPress={handleDayPress}
-                minDate={new Date().toISOString().split('T')[0]}
+                minDate={new Date().toISOString().split("T")[0]}
                 theme={{
                   backgroundColor: colours.surface,
                   calendarBackground: colours.surface,
                   textSectionTitleColor: colours.text,
                   selectedDayBackgroundColor: colours.primary,
-                  selectedDayTextColor: 'white',
+                  selectedDayTextColor: "white",
                   todayTextColor: colours.primary,
                   dayTextColor: colours.text,
                   textDisabledColor: colours.textSecondary,
                   dotColor: colours.primary,
-                  selectedDotColor: 'white',
+                  selectedDotColor: "white",
                   arrowColor: colours.primary,
                   monthTextColor: colours.text,
                   indicatorColor: colours.primary,

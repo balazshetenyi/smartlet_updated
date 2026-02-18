@@ -1,5 +1,5 @@
 import { signUpSchema } from "@/config/schemas";
-import { colours } from "@/styles/colours";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
 import {
   getPasswordStrength,
   getPasswordStrengthText,

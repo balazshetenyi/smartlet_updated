@@ -2,7 +2,7 @@ import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import { signInSchema } from "@/config/schemas";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@/styles/colours";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React from "react";

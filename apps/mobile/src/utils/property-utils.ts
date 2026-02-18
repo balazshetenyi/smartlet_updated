@@ -1,5 +1,8 @@
-import { supabase } from "@/lib/supabase";
-import { Property, PropertyWithLandlord } from "@/types/property";
+import { supabase } from "../../../../packages/shared/lib/supabase";
+import {
+  Property,
+  PropertyWithLandlord,
+} from "../../../../packages/shared/types/property";
 import * as ImagePicker from "expo-image-picker";
 import { uploadImageToStorage } from "./image-picker-utils";
 

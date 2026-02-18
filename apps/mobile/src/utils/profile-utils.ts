@@ -1,5 +1,5 @@
-import { supabase } from "@/lib/supabase";
-import { colours } from "@/styles/colours";
+import { supabase } from "../../../../packages/shared/lib/supabase";
+import { colours } from "../../../../packages/shared/styles/colours.ts";
 import { Alert } from "react-native";
 
 export const getRoleColor = (role?: string) => {
@@ -32,7 +32,7 @@ export const handleProfileSave = async (
   firstName: string,
   lastName: string,
   phone: string,
-  profileId: string
+  profileId: string,
 ) => {
   try {
     const { error } = await supabase

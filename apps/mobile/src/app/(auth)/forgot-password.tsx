@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase } from "@/lib/supabase";
-import { colours } from "@/styles/colours";
+import { supabase } from "../../../../../packages/shared/lib/supabase";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -25,7 +25,7 @@ export default function ForgotPasswordScreen() {
   const router = useRouter();
 
   const handleResetPassword = async (
-    data: zod.infer<typeof forgotPasswordSchema>
+    data: zod.infer<typeof forgotPasswordSchema>,
   ) => {
     setLoading(true);
 

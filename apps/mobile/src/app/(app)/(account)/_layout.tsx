@@ -1,4 +1,4 @@
-import { colours } from "@/styles/colours";
+import { colours } from "../../../../../../packages/shared/styles/colours.ts";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";

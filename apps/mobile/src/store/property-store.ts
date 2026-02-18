@@ -1,5 +1,6 @@
-import { Property } from "@/types/property";
+import { Property } from "../../../../packages/shared/types/property";
 import { fetchAllProperties } from "@/utils/property-utils";
+import { create } from "zustand";
 
 type PropertyStore = {
   longTermProperties: Property[];
@@ -12,8 +13,6 @@ type PropertyActions = {
   setLoading: (loading: boolean) => void;
 };
 
-import { create } from "zustand";
-
 export const usePropertyStore = create<PropertyStore & PropertyActions>(
   (set) => ({
     longTermProperties: [],
@@ -22,19 +21,25 @@ export const usePropertyStore = create<PropertyStore & PropertyActions>(
     loading: false,
     loadProperties: async () => {
       set({ loading: true });
-      const {
-        long_term_properties,
-        short_term_properties,
-        holiday_properties,
-      } = await fetchAllProperties();
+      try {
+        const {
+          long_term_properties,
+          short_term_properties,
+          holiday_properties,
+        } = await fetchAllProperties();
 
-      set({
-        longTermProperties: long_term_properties,
-        shortTermProperties: short_term_properties,
-        holidayProperties: holiday_properties,
-        loading: false,
-      });
+        set({
+          longTermProperties: long_term_properties,
+          shortTermProperties: short_term_properties,
+          holidayProperties: holiday_properties,
+          loading: false,
+        });
+      } catch (error) {
+        console.error("Failed to fetch properties:", error);
+      } finally {
+        set({ loading: false });
+      }
     },
     setLoading: (loading: boolean) => set({ loading }),
-  })
+  }),
 );

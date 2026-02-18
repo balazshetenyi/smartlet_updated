@@ -4,18 +4,16 @@
     "slug": "kiado",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/images/icon.png",
+    "icon": "../../packages/shared/assets/images/icon.png",
     "scheme": "kiado",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./src/assets/images/splash-icon.png",
+      "image": "../../packages/shared/assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.kiado.app",
@@ -25,9 +23,7 @@
       },
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
-        "CFBundleLocalizations": [
-          "en"
-        ],
+        "CFBundleLocalizations": ["en"],
         "NSCameraUsageDescription": "Kiado needs access to your camera to take photos of properties.",
         "NSPhotoLibraryUsageDescription": "Kiado needs access to your photo library to select property images.",
         "NSLocationWhenInUseUsageDescription": "Kiado uses your location to show nearby properties and help you search in your area."
@@ -38,9 +34,9 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./src/assets/images/android-icon-foreground.png",
-        "backgroundImage": "./src/assets/images/android-icon-background.png",
-        "monochromeImage": "./src/assets/images/android-icon-monochrome.png"
+        "foregroundImage": "../../packages/shared/assets/images/android-icon-foreground.png",
+        "backgroundImage": "../../packages/shared/assets/images/android-icon-background.png",
+        "monochromeImage": "../../packages/shared/assets/images/android-icon-monochrome.png"
       },
       "permissions": [
         "android.permission.CAMERA",
@@ -56,46 +52,8 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./src/assets/images/favicon.png"
+      "favicon": "../../packages/shared/assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./src/assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
-        }
-      ],
-      [
-        "expo-secure-store",
-        {
-          "configureAndroidBackup": true,
-          "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
-        }
-      ],
-      "@sentry/react-native"
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "your-project-id-here"
-      }
-    },
-    "owner": "your-expo-username",
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    }
+    "plugins": ["expo-router"]
   }
 }

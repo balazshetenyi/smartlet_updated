@@ -1,5 +1,5 @@
-import { colours } from "@/styles/colours";
-import { Property } from "@/types/property";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { Property } from "../../../../../packages/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";

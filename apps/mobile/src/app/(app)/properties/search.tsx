@@ -1,10 +1,10 @@
 import PropertyCard from "@/components/properties/PropertyCard";
 import { useSearch } from "@/context/SearchContext";
-import { colours } from "@/styles/colours";
-import { Property } from "@/types/property";
+import { colours } from "../../../../../../packages/shared/styles/colours.ts";
+import { Property } from "../../../../../../packages/shared/types/property";
 import { fetchBookedDates } from "@/utils/booking-utils";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../../../../packages/shared/lib/supabase";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";

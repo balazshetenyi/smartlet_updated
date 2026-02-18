@@ -1,5 +1,6 @@
 {
-  "name": "kiado-monorepo",
+  "name": "@kiado-monorepo",
+  "version": "0.0.1",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -11,6 +12,7 @@
     "lint": "turbo run lint"
   },
   "devDependencies": {
+    "babel-plugin-react-compiler": "^1.0.0",
     "turbo": "^2.8.9"
   },
   "packageManager": "npm@11.3.0"

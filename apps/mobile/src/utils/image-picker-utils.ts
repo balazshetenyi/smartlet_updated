@@ -1,5 +1,5 @@
 import { ImageSourceType } from "@/enums/image-source-type";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@kiado/shared";
 import { Session } from "@supabase/supabase-js";
 import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
@@ -12,7 +12,7 @@ import { Alert } from "react-native";
  * @throws Will throw an error if the image picker fails.
  */
 export const pickImage = async (
-  sourceType: ImageSourceType = ImageSourceType.Library
+  sourceType: ImageSourceType = ImageSourceType.Library,
 ): Promise<ImagePicker.ImagePickerAsset | null> => {
   try {
     // Request permissions based on source type
@@ -21,7 +21,7 @@ export const pickImage = async (
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please grant camera permission to take photos"
+          "Please grant camera permission to take photos",
         );
         return null;
       }
@@ -31,7 +31,7 @@ export const pickImage = async (
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Please grant permission to access your photos"
+          "Please grant permission to access your photos",
         );
         return null;
       }
@@ -59,7 +59,7 @@ export const pickImage = async (
     console.error("Image picker error:", error);
     Alert.alert(
       "Error",
-      "There was a problem selecting or processing the image."
+      "There was a problem selecting or processing the image.",
     );
   }
   return null; // Return null if no image was selected or an error occurred
@@ -79,7 +79,7 @@ export const uploadImageToStorage = async (
   image: ImagePicker.ImageInfo,
   bucketName: string,
   session: Session,
-  folder?: string
+  folder?: string,
 ): Promise<string | null> => {
   if (!image.base64 || !session?.user) {
     Alert.alert("Error", "No image selected or user session not found.");
@@ -95,7 +95,7 @@ export const uploadImageToStorage = async (
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
     console.log(
-      `Uploading image: ${filePath}, size: ${arrayBuffer.byteLength} bytes`
+      `Uploading image: ${filePath}, size: ${arrayBuffer.byteLength} bytes`,
     );
     console.log(`Bucket: ${bucketName}, User ID: ${session.user.id}`);
 
@@ -142,7 +142,7 @@ export const uploadImageToStorage = async (
     throw new Error(
       `Upload Error: ${
         error?.message || "Failed to upload file. Please try again."
-      }`
+      }`,
     );
   }
 };
@@ -157,7 +157,7 @@ export const uploadImageToStorage = async (
  */
 export const removeImageFromStorage = async (
   mediaUrl: string,
-  bucketName: string
+  bucketName: string,
 ): Promise<void> => {
   try {
     const filePath = mediaUrl.split("/").pop(); // Extract the file name from the URL

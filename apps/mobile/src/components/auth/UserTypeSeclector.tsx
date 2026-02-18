@@ -1,4 +1,4 @@
-import { colours } from "@/styles/colours";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 

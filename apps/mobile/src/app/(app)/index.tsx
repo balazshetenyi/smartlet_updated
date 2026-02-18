@@ -3,7 +3,7 @@ import AppBar from "@/components/shared/AppBar";
 import SearchBar from "@/components/shared/SearchBar";
 import { useAuthStore } from "@/store/auth-store";
 import { usePropertyStore } from "@/store/property-store";
-import { colours } from "@/styles/colours";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useEffect, useState } from "react";
 import {

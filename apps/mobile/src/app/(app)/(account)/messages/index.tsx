@@ -1,7 +1,7 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "../../../../../../../packages/shared/lib/supabase";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@/styles/colours";
-import { Conversation } from "@/types/message";
+import { colours } from "../../../../../../../packages/shared/styles/colours.ts";
+import { Conversation } from "../../../../../../../packages/shared/types/message";
 import { fetchUserConversations } from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -56,14 +56,14 @@ export default function MessagesScreen() {
           () => {
             // Small delay to ensure DB consistency
             setTimeout(() => loadConversations(), 100);
-          }
+          },
         )
         .subscribe();
 
       return () => {
         channel.unsubscribe();
       };
-    }, [session?.user?.id])
+    }, [session?.user?.id]),
   );
 
   const onRefresh = () => {
@@ -111,7 +111,7 @@ export default function MessagesScreen() {
           router.push(
             `/messages/${item.id}?propertyTitle=${
               item.property?.title || "Property"
-            }` as any
+            }` as any,
           )
         }
       >

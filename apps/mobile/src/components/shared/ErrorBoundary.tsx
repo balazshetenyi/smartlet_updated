@@ -3,12 +3,12 @@
  * Catches JavaScript errors anywhere in the component tree and displays a fallback UI
  */
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { colours } from '@/styles/colours';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { captureError } from '@/config/sentry';
-import { logger } from '@/utils/logger';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { captureError } from "@/config/sentry";
+import { logger } from "@/utils/logger";
 
 interface Props {
   children: ReactNode;
@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error to console in development
-    logger.error('Error Boundary caught an error:', error, errorInfo);
+    logger.error("Error Boundary caught an error:", error, errorInfo);
 
     // Send error to Sentry
     captureError(error, {
@@ -64,16 +64,23 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <View style={styles.container}>
           <View style={styles.content}>
-            <MaterialIcons name="error-outline" size={64} color={colours.error} />
+            <MaterialIcons
+              name="error-outline"
+              size={64}
+              color={colours.error}
+            />
             <Text style={styles.title}>Oops! Something went wrong</Text>
             <Text style={styles.message}>
-              We're sorry for the inconvenience. The error has been reported to our team.
+              We're sorry for the inconvenience. The error has been reported to
+              our team.
             </Text>
 
             {__DEV__ && this.state.error && (
               <View style={styles.errorDetails}>
                 <Text style={styles.errorTitle}>Error Details (Dev Only):</Text>
-                <Text style={styles.errorText}>{this.state.error.toString()}</Text>
+                <Text style={styles.errorText}>
+                  {this.state.error.toString()}
+                </Text>
               </View>
             )}
 
@@ -93,26 +100,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colours.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   content: {
-    alignItems: 'center',
+    alignItems: "center",
     maxWidth: 400,
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     color: colours.text,
     marginTop: 16,
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   message: {
     fontSize: 16,
     color: colours.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 24,
   },
   errorDetails: {
@@ -120,18 +127,18 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     marginBottom: 24,
-    width: '100%',
+    width: "100%",
   },
   errorTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colours.error,
     marginBottom: 8,
   },
   errorText: {
     fontSize: 12,
     color: colours.textSecondary,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
   },
   button: {
     backgroundColor: colours.primary,
@@ -140,8 +147,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

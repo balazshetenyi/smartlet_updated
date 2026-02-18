@@ -3,17 +3,17 @@
  * Shows a banner when the device is offline
  */
 
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import NetInfo from '@react-native-community/netinfo';
-import { colours } from '@/styles/colours';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export function OfflineIndicator() {
   const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
       const offline = !state.isConnected || state.isInternetReachable === false;
       setIsOffline(offline);
     });
@@ -35,17 +35,17 @@ export function OfflineIndicator() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F44336',
+    backgroundColor: "#F44336",
     paddingVertical: 8,
     paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
   },
   text: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

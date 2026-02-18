@@ -1,4 +1,4 @@
-import { Message } from "@/types/message";
+import { Message } from "../../../../packages/shared/types/message";
 
 type MessageStore = {
   unreadCount: number;

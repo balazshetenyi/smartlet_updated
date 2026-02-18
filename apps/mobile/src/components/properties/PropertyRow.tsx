@@ -1,5 +1,5 @@
-import { colours } from "@/styles/colours";
-import { Property } from "@/types/property";
+import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { Property } from "../../../../../packages/shared/types/property";
 import { Link, useRouter } from "expo-router";
 import React from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
