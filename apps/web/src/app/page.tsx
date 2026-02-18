@@ -29,7 +29,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 font-sans dark:bg-darkslateblue dark:text-zinc-50">
+    <div className="flex gap-12 min-h-screen flex-col items-center justify-center bg-white px-6 font-sans dark:bg-darkslateblue dark:text-zinc-50">
       <main className="flex max-w-2xl flex-col items-center text-center">
         <div className="mb-8 flex items-center gap-2">
           <Image
@@ -58,7 +58,7 @@ export default function Home() {
             type="email"
             name="email"
             placeholder="Enter your email"
-            className="h-12 flex-1 rounded-full border border-zinc-200 bg-zinc-50 px-6 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-50"
+            className="p-3 flex-1 rounded-full border border-zinc-200 bg-zinc-50 px-6 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-50"
             required
             disabled={status === "loading" || status === "success"}
           />
@@ -82,7 +82,7 @@ export default function Home() {
         </p>
       </main>
 
-      <footer className="absolute bottom-8 flex gap-6 text-sm text-zinc-500">
+      <footer className="flex gap-6 text-md text-zinc-500">
         <a
           href="mailto:info@kiado.mozaiksoftwaresolutions.com"
           className="hover:text-darkslateblue dark:hover:text-white"
