@@ -25,7 +25,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 font-sans text-zinc-900 dark:bg-black dark:text-zinc-50">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6 font-sans dark:bg-darkslateblue dark:text-zinc-50">
       <main className="flex max-w-2xl flex-col items-center text-center">
         <div className="mb-8 flex items-center gap-2">
           <Image src={logo} alt={"Kiado Logo"} width={360} height={130} />
@@ -46,6 +46,7 @@ export default function Home() {
         >
           <input
             type="email"
+            name="email"
             placeholder="Enter your email"
             className="h-12 flex-1 rounded-full border border-zinc-200 bg-zinc-50 px-6 text-sm focus:outline-none focus:ring-2 focus:ring-black dark:border-zinc-800 dark:bg-zinc-900 dark:focus:ring-zinc-50"
             required

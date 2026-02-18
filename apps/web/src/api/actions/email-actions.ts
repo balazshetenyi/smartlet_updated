@@ -1,16 +1,32 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
 );
 
-export async function subscribeToWaitlist(formData: FormData) {
-  const email = formData.get("email") as string;
+const WaitlistSchema = z.object({
+  email: z.email("Please enter a valid email address"),
+});
 
-  if (!email) return { error: "Email is required" };
+export async function subscribeToWaitlist(formData: FormData) {
+  const emailInput = formData.get("email") as string;
+
+  const validatedFields = WaitlistSchema.safeParse({
+    email: emailInput,
+  });
+
+  // Return early if the form data is invalid
+  if (!validatedFields.success) {
+    return {
+      error: z.treeifyError(validatedFields.error) || "Invalid email",
+    };
+  }
+
+  const { email } = validatedFields.data;
 
   const { error } = await supabase.from("waitlist").insert([{ email }]);
 
