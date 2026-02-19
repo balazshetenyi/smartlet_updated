@@ -29,8 +29,11 @@ serve(async (req) => {
       body: JSON.stringify({
         from: "Kiado <info@kiado.mozaiksoftwaresolutions.com>",
         to: [email],
-        subject: "Welcome to the Waitlist!",
-        html: "<strong>Thank you for joining!</strong><p>We will notify you as soon as we launch.</p>",
+        subject: "Welcome to Kiado!",
+        html:
+          "<h3>You are now on our waiting list.</h3>" +
+          "<p>Thank you for joining!</p>" +
+          "<p>We will notify you as soon as we launch.</p>",
       }),
     });
 
