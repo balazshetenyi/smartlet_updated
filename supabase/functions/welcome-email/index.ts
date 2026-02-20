@@ -29,11 +29,19 @@ serve(async (req) => {
       body: JSON.stringify({
         from: "Kiado <info@kiado.mozaiksoftwaresolutions.com>",
         to: [email],
-        subject: "Welcome to Kiado!",
-        html:
-          "<h3>You are now on our waiting list.</h3>" +
-          "<p>Thank you for joining!</p>" +
-          "<p>We will notify you as soon as we launch.</p>",
+        subject: "You're on the Kiado early access list",
+        html: `
+          <p>Hi there,</p>
+          <p>Thank you for joining the Kiado early access list.</p>
+          <p>We’re building a simpler way to manage property — bringing rent, tenants and maintenance together in one clear, affordable platform.</p>
+          <p>You’re now among the first to hear when Kiado becomes available. We’ll keep you updated as we move closer to launch.</p>
+          <p>No noise. No unnecessary emails. Just meaningful updates.</p>
+          <p>If you have any questions in the meantime, simply reply to this email — we read every message.</p>
+          <p>Thank you for being early.</p>
+          <p>—<br>
+          Kiado<br>
+          Mozaik Software Solutions</p>
+        `,
       }),
     });
 
