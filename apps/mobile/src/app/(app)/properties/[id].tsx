@@ -128,6 +128,7 @@ export default function PropertyDetailsScreen() {
   }, [property, profile, navigation]);
 
   useEffect(() => {
+    console.log("Fetching property with ID:", id);
     fetchPropertyDetails();
   }, [id]);
 
