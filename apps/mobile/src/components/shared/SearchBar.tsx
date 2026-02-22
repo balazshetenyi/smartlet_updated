@@ -27,7 +27,8 @@ export default function SearchBar() {
   });
   const [tempGuests, setTempGuests] = useState(searchParams.guests);
 
-  const handleSearch = () => {
+  const handleSearch = (event) => {
+    event.preventDefault();
     // Navigate to search results
     router.push("/properties/search");
   };
@@ -121,7 +122,7 @@ export default function SearchBar() {
     <View style={styles.container}>
       <View style={styles.searchCard}>
         {/* Location Input */}
-        <TouchableOpacity style={styles.searchRow} onPress={handleSearch}>
+        <View style={styles.searchRow}>
           <MaterialIcons
             name="search"
             size={24}
@@ -134,7 +135,7 @@ export default function SearchBar() {
             value={searchParams.location}
             onChangeText={(text) => updateSearchParams({ location: text })}
           />
-        </TouchableOpacity>
+        </View>
 
         <View style={styles.divider} />
 
@@ -372,7 +373,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colours.primary,
+    backgroundColor: colours.darkSlateBlue,
     borderRadius: 12,
     padding: 16,
     marginTop: 12,
@@ -437,11 +438,11 @@ const styles = StyleSheet.create({
     color: colours.text,
   },
   saveButton: {
-    flex: 1,
     padding: 16,
     borderRadius: 12,
-    backgroundColor: colours.primary,
+    backgroundColor: colours.darkSlateBlue,
     alignItems: "center",
+    marginBottom: 12,
   },
   saveButtonDisabled: {
     backgroundColor: colours.muted,
