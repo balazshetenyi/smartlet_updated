@@ -1,13 +1,9 @@
 import BookingModal from "@/components/properties/BookingModal";
 import Button from "@/components/shared/Button";
-import { supabase } from "../../../../../../packages/shared/lib/supabase";
+import { colours, supabase } from "@kiado/shared";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { CreateBookingData } from "../../../../../../packages/shared/types/bookings";
-import {
-  Amenity,
-  Property,
-} from "../../../../../../packages/shared/types/property";
+import { CreateBookingData } from "@kiado/shared/types/bookings";
+import { Amenity, Property } from "@kiado/shared/types/property";
 import { createBooking, fetchBlockedDates } from "@/utils/booking-utils";
 import { fetchPropertyPhotos } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
