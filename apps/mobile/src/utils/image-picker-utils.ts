@@ -1,9 +1,9 @@
-import { ImageSourceType } from "@/enums/image-source-type";
-import { supabase } from "@kiado/shared";
-import { Session } from "@supabase/supabase-js";
-import { decode } from "base64-arraybuffer";
+import {ImageSourceType} from "@/enums/image-source-type";
+import {supabase} from "@kiado/shared";
+import {Session} from "@supabase/supabase-js";
+import {decode} from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
-import { Alert } from "react-native";
+import {Alert} from "react-native";
 
 /**
  * @description Opens the image picker to select an image from the device's library.

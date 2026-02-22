@@ -13,6 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "experiments": {
+      "autolinkingModuleResolution": true
+    },
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,

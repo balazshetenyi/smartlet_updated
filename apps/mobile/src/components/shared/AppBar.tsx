@@ -1,16 +1,13 @@
-import { useAuthStore } from "@/store/auth-store";
-import { useMessageStore } from "@/store/message-store";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
-import { Message } from "@kiado/shared";
-import {
-  fetchTotalUnreadCount,
-  subscribeToMessages,
-} from "@/utils/message-utils";
+import {useAuthStore} from "@/store/auth-store";
+import {useMessageStore} from "@/store/message-store";
+import {colours} from "../../../../../packages/shared/styles/colours.ts";
+import {Message} from "@kiado/shared";
+import {fetchTotalUnreadCount, subscribeToMessages,} from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Image } from "expo-image";
+import {useFocusEffect, useRouter} from "expo-router";
+import React, {useCallback} from "react";
+import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Image} from "expo-image";
 
 const logoImg = require("@kiado/shared/assets/images/kiado-logo.png");
 

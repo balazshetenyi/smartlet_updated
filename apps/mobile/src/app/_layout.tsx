@@ -1,18 +1,14 @@
-import { useAuthStore } from "@/store/auth-store";
-import { supabase } from "@kiado/shared";
+import {useAuthStore} from "@/store/auth-store";
+import {colours, supabase} from "@kiado/shared";
 import "@/styles/global.css";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from "react";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import { SearchProvider } from "@/context/SearchContext";
-import { StripeProvider } from "@stripe/stripe-react-native";
-import { colours } from "@kiado/shared/styles/colours.ts";
+import {Stack} from "expo-router";
+import {StatusBar} from "expo-status-bar";
+import React, {useEffect} from "react";
+import {SafeAreaView, useSafeAreaInsets,} from "react-native-safe-area-context";
+import {SearchProvider} from "@/context/SearchContext";
+import {StripeProvider} from "@/components/shared/StripeProviderWrapper";
 import "react-native-gesture-handler";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();

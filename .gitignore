@@ -46,6 +46,7 @@ android
 .env.*
 
 supabase/.temp
+supabase/seed*
 
 # IDE
 .idea/
