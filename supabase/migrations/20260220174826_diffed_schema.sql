@@ -76,7 +76,7 @@ using ((auth.role() = 'authenticated'::text));
 with check (true);
 
 
-CREATE TRIGGER send_welcome_email AFTER INSERT ON public.waitlist FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://zsgbjmttkdoptrpntglu.supabase.co/functions/v1/welcome-email', 'POST', '{"Content-type":"application/json","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpzZ2JqbXR0a2RvcHRycG50Z2x1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjg1NzU4MiwiZXhwIjoyMDY4NDMzNTgyfQ.2Bdtfo8vs8t1qGrr5eCrgPco-KCxa5ueg3RODx9hPxU"}', '{}', '5000');
+CREATE TRIGGER send_welcome_email AFTER INSERT ON public.waitlist FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://zsgbjmttkdoptrpntglu.supabase.co/functions/v1/welcome-email', 'POST', '{"Content-type":"application/json","Authorization":"Bearer ..."}', '{}', '5000');
 
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_signup();
 
