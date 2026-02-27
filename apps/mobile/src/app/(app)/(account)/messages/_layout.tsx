@@ -1,12 +1,9 @@
 import { colours } from "@kiado/shared";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Stack, useRouter } from "expo-router";
-import { TouchableOpacity } from "react-native";
+import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
 
 export default function MessagesLayout() {
-  const router = useRouter();
-
   return (
     <SafeAreaView
       edges={["bottom"]}
@@ -28,19 +25,7 @@ export default function MessagesLayout() {
           name="index"
           options={{
             title: "Messages",
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
+            headerLeft: () => <HeaderBackButton />,
           }}
         />
         <Stack.Screen
@@ -49,19 +34,7 @@ export default function MessagesLayout() {
             const titleParam = (route.params as any)?.propertyTitle;
             return {
               title: titleParam || "Chat",
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() => router.back()}
-                  style={{ marginLeft: 8, padding: 4 }}
-                  accessibilityLabel="Go back"
-                >
-                  <MaterialIcons
-                    name="arrow-back"
-                    size={24}
-                    color={colours.text}
-                  />
-                </TouchableOpacity>
-              ),
+              headerLeft: () => <HeaderBackButton />,
             };
           }}
         />

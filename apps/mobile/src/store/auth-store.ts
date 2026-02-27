@@ -1,4 +1,4 @@
-import { SignInData, SignUpData } from "../../../../packages/shared/types/auth";
+import { SignInData, SignUpData } from "@kiado/shared/types/auth";
 import {
   fetchUserProfile,
   signInWithEmail,

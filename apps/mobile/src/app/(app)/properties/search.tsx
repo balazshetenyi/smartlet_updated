@@ -1,10 +1,9 @@
 import PropertyCard from "@/components/properties/PropertyCard";
 import { useSearch } from "@/context/SearchContext";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { Property } from "../../../../../../packages/shared/types/property";
+import { colours, supabase } from "@kiado/shared";
+import { Property } from "@kiado/shared/types/property";
 import { fetchBookedDates } from "@/utils/booking-utils";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
-import { supabase } from "../../../../../../packages/shared/lib/supabase";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -18,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
 
 export default function SearchResultsScreen() {
   const { searchParams, clearSearchParams } = useSearch();
@@ -165,14 +165,7 @@ export default function SearchResultsScreen() {
         options={{
           title: "Search Results",
           headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: 8, padding: 4 }}
-            >
-              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
-            </TouchableOpacity>
-          ),
+          headerLeft: () => <HeaderBackButton />,
         }}
       />
       <SafeAreaView style={styles.container} edges={["bottom"]}>

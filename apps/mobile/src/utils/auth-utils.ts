@@ -1,6 +1,6 @@
 import { signInSchema, signUpSchema } from "@/config/schemas";
-import { supabase } from "../../../../packages/shared/lib/supabase";
-import { SignInResponse } from "../../../../packages/shared/types/auth";
+import { supabase } from "@kiado/shared";
+import { SignInResponse } from "@kiado/shared/types/auth";
 import { Alert } from "react-native";
 import zod from "zod";
 

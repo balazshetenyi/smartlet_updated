@@ -1,8 +1,7 @@
 import Button from "@/components/shared/Button";
-import { supabase } from "../../../../../../packages/shared/lib/supabase";
+import { colours, supabase } from "@kiado/shared";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { BookingWithProperty } from "../../../../../../packages/shared/types/bookings";
+import { BookingWithProperty } from "@kiado/shared/types/bookings";
 import { CardField, useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";

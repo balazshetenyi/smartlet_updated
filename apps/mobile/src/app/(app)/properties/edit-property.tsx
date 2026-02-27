@@ -2,11 +2,10 @@ import AmenitySelector from "@/components/properties/AmenitySelector";
 import RentalTypeSelector from "@/components/properties/RentalTypeSelector";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase } from "../../../../../../packages/shared/lib/supabase";
+import { colours, supabase } from "@kiado/shared";
 import { AddNewProperty, propertySchema } from "@/schemas/property-schema";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { Property } from "../../../../../../packages/shared/types/property";
+import { Property } from "@kiado/shared/types/property";
 import {
   fetchPropertyPhotoDetails,
   setCoverImage,

@@ -2,12 +2,19 @@ import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import { signInSchema } from "@/config/schemas";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Text, TouchableOpacity, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /**
  * Auth component for user authentication.
@@ -16,6 +23,9 @@ import { Text, TouchableOpacity, View } from "react-native";
  */
 export default function SignIn() {
   const { loading, signIn } = useAuthStore();
+  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
+  const keyboardOffset = headerHeight + insets.bottom;
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -27,11 +37,10 @@ export default function SignIn() {
   const router = useRouter();
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: colours.cardBackground,
-      }}
+    <KeyboardAvoidingView
+      behavior="translate-with-padding"
+      keyboardVerticalOffset={keyboardOffset}
+      style={{ flex: 1, backgroundColor: colours.surface }}
     >
       <View className="p-4">
         <Controller
@@ -159,6 +168,6 @@ export default function SignIn() {
           />
         </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

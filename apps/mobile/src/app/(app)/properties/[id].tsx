@@ -32,6 +32,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { PropertyType } from "@/enums/property-enums.ts";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -314,23 +315,11 @@ export default function PropertyDetailsScreen() {
         options={{
           title: property.title,
           headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: 8, padding: 4 }}
-              accessibilityLabel="Go back"
-            >
-              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
-            </TouchableOpacity>
-          ),
-          headerStyle: {
-            backgroundColor: colours.surface,
-          },
-          headerTintColor: colours.text,
+          headerLeft: () => <HeaderBackButton />,
+          headerTintColor: colours.darkSlateBlue,
           headerTitleStyle: {
             fontWeight: "700",
           },
-          headerShadowVisible: false,
         }}
       />
       <ScrollView style={styles.scrollView}>

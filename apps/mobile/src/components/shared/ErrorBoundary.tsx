@@ -4,8 +4,8 @@
  */
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { colours } from "@kiado/shared";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { captureError } from "@/config/sentry";
 import { logger } from "@/utils/logger";
@@ -71,8 +71,8 @@ export class ErrorBoundary extends Component<Props, State> {
             />
             <Text style={styles.title}>Oops! Something went wrong</Text>
             <Text style={styles.message}>
-              We're sorry for the inconvenience. The error has been reported to
-              our team.
+              We&#39;re sorry for the inconvenience. The error has been reported
+              to our team.
             </Text>
 
             {__DEV__ && this.state.error && (

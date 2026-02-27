@@ -1,8 +1,7 @@
 import { Stack, useRouter } from "expo-router";
-import { TouchableOpacity } from "react-native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { colours } from "@kiado/shared";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
 
 export default function PropertiesLayout() {
   const router = useRouter();
@@ -20,19 +19,7 @@ export default function PropertiesLayout() {
           options={{
             title: "Create New Property",
             headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
+            headerLeft: () => <HeaderBackButton />,
           }}
         />
         <Stack.Screen
@@ -40,19 +27,7 @@ export default function PropertiesLayout() {
           options={{
             title: "Edit Property",
             headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
+            headerLeft: () => <HeaderBackButton />,
           }}
         />
       </Stack>

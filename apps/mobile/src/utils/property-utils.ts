@@ -1,8 +1,5 @@
-import { supabase } from "../../../../packages/shared/lib/supabase";
-import {
-  Property,
-  PropertyWithLandlord,
-} from "../../../../packages/shared/types/property";
+import { supabase } from "@kiado/shared";
+import { Property, PropertyWithLandlord } from "@kiado/shared/types/property";
 import * as ImagePicker from "expo-image-picker";
 import { uploadImageToStorage } from "./image-picker-utils";
 

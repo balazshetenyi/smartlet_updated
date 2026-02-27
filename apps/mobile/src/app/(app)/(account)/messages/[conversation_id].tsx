@@ -1,9 +1,6 @@
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../../packages/shared/styles/colours.ts";
-import {
-  Conversation,
-  Message,
-} from "../../../../../../../packages/shared/types/message";
+import { colours } from "@kiado/shared";
+import { Conversation, Message } from "@kiado/shared/types/message";
 import { pickImage } from "@/utils/image-picker-utils";
 import {
   fetchConversationById,
@@ -21,8 +18,6 @@ import {
   Alert,
   FlatList,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -30,7 +25,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { useHeaderHeight } from "@react-navigation/elements";
 
 export default function ChatScreen() {
   // Align param name with file `[conversation_id].tsx`
@@ -48,6 +48,9 @@ export default function ChatScreen() {
   const flatListRef = useRef<FlatList>(null);
   // Track message IDs to prevent duplicates when combining optimistic updates + realtime
   const messageIdsRef = useRef<Set<string>>(new Set());
+  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
+  const keyboardOffset = headerHeight + insets.bottom + 28;
 
   // Determine other participant
   const otherParticipant = conversation
@@ -332,10 +335,11 @@ export default function ChatScreen() {
           ),
         }}
       />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        behavior="translate-with-padding"
+        keyboardVerticalOffset={keyboardOffset}
       >
         <FlatList
           ref={flatListRef}
@@ -521,7 +525,6 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: "row",
-    alignItems: "flex-end",
     padding: 12,
     borderTopWidth: 1,
     borderTopColor: colours.border,
@@ -533,7 +536,6 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    maxHeight: 100,
     backgroundColor: colours.background,
     borderRadius: 20,
     paddingHorizontal: 16,

@@ -1,9 +1,9 @@
-import { supabase } from "../../../../packages/shared/lib/supabase";
+import { supabase } from "@kiado/shared";
 import {
   Conversation,
   CreateMessageData,
   Message,
-} from "../../../../packages/shared/types/message";
+} from "@kiado/shared/types/message";
 import { uploadImageToStorage } from "@/utils/image-picker-utils";
 import { sendPushNotification } from "@/utils/push-notifications-utils";
 import * as ImagePicker from "expo-image-picker";

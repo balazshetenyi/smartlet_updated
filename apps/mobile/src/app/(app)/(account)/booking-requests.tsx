@@ -1,7 +1,6 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { supabase } from "../../../../../../packages/shared/lib/supabase";
+import { colours, supabase } from "@kiado/shared";
 import { BookingWithTenant, fetchBookingRequests } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";

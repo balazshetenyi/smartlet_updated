@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { BookingWithProperty } from "../../../../../../packages/shared/types/bookings";
+import { colours } from "@kiado/shared";
+import { BookingWithProperty } from "@kiado/shared/types/bookings";
 import {
   cancelBooking,
   fetchMyBookings,

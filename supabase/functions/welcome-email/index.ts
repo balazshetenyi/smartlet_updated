@@ -1,54 +1,73 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   try {
     const payload = await req.json();
-    console.log("Webhook received payload:", JSON.stringify(payload));
 
-    // Supabase Webhooks wrap the data in a 'record' object for INSERTs
-    const { record } = payload;
+    // Support both direct SDK invocation (payload.email) and Webhooks (payload.record.email)
+    const email = payload.record?.email || payload.email;
 
-    if (!record || !record.email) {
-      console.error("Missing email in payload record");
-      return new Response(JSON.stringify({ error: "Missing email" }), {
-        status: 400,
-      });
+    if (!email) {
+      throw new Error("Missing email in request payload");
     }
 
-    const email = record.email;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY is not set in environment variables");
+    }
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
         from: "Kiado <info@kiado.mozaiksoftwaresolutions.com>",
         to: [email],
         subject: "Welcome to Kiado!",
-        html:
-          "<h3>You are now on our waiting list.</h3>" +
-          "<p>Thank you for joining!</p>" +
-          "<p>We will notify you as soon as we launch.</p>",
+        html: `
+          <p>Hi there,</p>
+          <p>Thank you for joining the Kiado early access list.</p>
+          <p>We’re building a simpler way to manage property — bringing rent, tenants and maintenance together in one clear, affordable platform.</p>
+          <p>You’re now among the first to hear when Kiado becomes available. We’ll keep you updated as we move closer to launch.</p>
+          <p>No noise. No unnecessary emails. Just meaningful updates.</p>
+          <p>If you have any questions in the meantime, simply reply to this email — we read every message.</p>
+          <p>Thank you for being early.</p>
+          <p>—<br>
+          Kiado<br>
+          Mozaik Software Solutions</p>
+        `,
       }),
     });
 
     const data = await res.json();
-    console.log("Resend response:", JSON.stringify(data));
+
+    if (!res.ok) {
+      throw new Error(`Resend API error: ${JSON.stringify(data)}`);
+    }
 
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Function error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+    console.error("Function error:", (error as Error).message);
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

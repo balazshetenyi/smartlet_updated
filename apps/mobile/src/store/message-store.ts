@@ -1,4 +1,5 @@
-import { Message } from "../../../../packages/shared/types/message";
+import { Message } from "@kiado/shared/types/message";
+import { create } from "zustand";
 
 type MessageStore = {
   unreadCount: number;
@@ -6,8 +7,6 @@ type MessageStore = {
   setUnreadCount: (count: number) => void;
   loadMessages: (messages: Message[]) => void;
 };
-
-import { create } from "zustand";
 
 export const useMessageStore = create<MessageStore>((set) => ({
   unreadCount: 0,

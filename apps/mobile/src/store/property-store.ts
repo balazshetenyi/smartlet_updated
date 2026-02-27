@@ -1,4 +1,4 @@
-import { Property } from "../../../../packages/shared/types/property";
+import { Property } from "@kiado/shared/types/property";
 import { fetchAllProperties } from "@/utils/property-utils";
 import { create } from "zustand";
 

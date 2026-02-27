@@ -1,7 +1,8 @@
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
 
 export default function AccountLayout() {
   const router = useRouter();
@@ -22,19 +23,7 @@ export default function AccountLayout() {
           options={{
             title: "Profile",
             headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
+            headerLeft: () => <HeaderBackButton />,
           }}
         />
         <Stack.Screen
@@ -42,19 +31,7 @@ export default function AccountLayout() {
           options={{
             title: "My Bookings",
             headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
+            headerLeft: () => <HeaderBackButton />,
           }}
         />
         <Stack.Screen
@@ -62,19 +39,7 @@ export default function AccountLayout() {
           options={{
             title: "My Properties",
             headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
+            headerLeft: () => <HeaderBackButton />,
             headerRight: () => (
               <TouchableOpacity
                 onPress={() => router.push("/properties/create-property")}
@@ -95,18 +60,7 @@ export default function AccountLayout() {
           options={{
             title: "Payout Settings",
             headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
+            headerLeft: () => <HeaderBackButton />,
           }}
         />
         <Stack.Screen
@@ -114,19 +68,7 @@ export default function AccountLayout() {
           options={{
             title: "Booking Requests",
             headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
+            headerLeft: () => <HeaderBackButton />,
           }}
         />
       </Stack>

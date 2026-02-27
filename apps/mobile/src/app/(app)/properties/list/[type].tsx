@@ -1,7 +1,6 @@
 import PropertyCard from "@/components/properties/PropertyCard";
-import { supabase } from "../../../../../../../packages/shared/lib/supabase";
-import { colours } from "../../../../../../../packages/shared/styles/colours.ts";
-import { Property } from "../../../../../../../packages/shared/types/property";
+import { colours, supabase } from "@kiado/shared";
+import { Property } from "@kiado/shared/types/property";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -17,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
 
 type RentalType = "long-term" | "short-term" | "holiday";
 
@@ -152,15 +152,7 @@ export default function PropertyCategoryScreen() {
         options={{
           title: config.title,
           headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: 8, padding: 4 }}
-              accessibilityLabel="Go back"
-            >
-              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
-            </TouchableOpacity>
-          ),
+          headerLeft: () => <HeaderBackButton />,
           headerStyle: {
             backgroundColor: colours.surface,
           },

@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import {
   getRoleColor,
   getRoleIcon,

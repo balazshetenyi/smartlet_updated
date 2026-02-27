@@ -1,6 +1,5 @@
-import { supabase } from "../../../../../packages/shared/lib/supabase";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
-import { Amenity } from "../../../../../packages/shared/types/property";
+import { colours, supabase } from "@kiado/shared";
+import { Amenity } from "@kiado/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useEffect, useState } from "react";
 import {

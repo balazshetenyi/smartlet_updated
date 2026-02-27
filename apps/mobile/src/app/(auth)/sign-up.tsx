@@ -1,5 +1,5 @@
 import { signUpSchema } from "@/config/schemas";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import {
   getPasswordStrength,
   getPasswordStrengthText,
@@ -8,26 +8,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import Input from "@/components/shared/Input.tsx";
 import Button from "@/components/shared/Button.tsx";
 import { UserTypeSelector } from "@/components/auth/UserTypeSeclector.tsx";
 import { Toast } from "react-native-toast-notifications";
 import zod from "zod";
 import { useAuthStore } from "@/store/auth-store.ts";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const SignUp = () => {
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
   const { signUpWithEmail, loading, session } = useAuthStore();
+  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
+  const keyboardOffset = headerHeight + insets.bottom;
 
   const { control, handleSubmit, formState, watch } = useForm({
     resolver: zodResolver(signUpSchema),
@@ -93,30 +91,10 @@ const SignUp = () => {
     }
   };
 
-  const scrollToInput = (inputRef: any) => {
-    if (inputRef && scrollViewRef.current) {
-      inputRef.measure(
-        (
-          x: number,
-          y: number,
-          width: number,
-          height: number,
-          pageX: number,
-          pageY: number,
-        ) => {
-          scrollViewRef.current?.scrollTo({
-            x: 0,
-            y: pageY - 200, // Offset to show validation messages
-            animated: true,
-          });
-        },
-      );
-    }
-  };
-
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior="translate-with-padding"
+      keyboardVerticalOffset={keyboardOffset}
       style={styles.container}
     >
       <ScrollView
@@ -150,7 +128,6 @@ const SignUp = () => {
                   color: colours.muted,
                 }}
                 onChangeText={onChange}
-                onFocus={(e) => scrollToInput(e.target)}
                 onBlur={onBlur}
                 value={value}
                 placeholder="Your first name"
@@ -180,7 +157,6 @@ const SignUp = () => {
                   color: colours.muted,
                 }}
                 onChangeText={onChange}
-                onFocus={(e) => scrollToInput(e.target)}
                 onBlur={onBlur}
                 value={value}
                 placeholder="Your last name"
@@ -210,7 +186,6 @@ const SignUp = () => {
                   color: colours.muted,
                 }}
                 onChangeText={onChange}
-                onFocus={(e) => scrollToInput(e.target)}
                 onBlur={onBlur}
                 value={value}
                 placeholder="email@address.com"
@@ -243,7 +218,6 @@ const SignUp = () => {
                     color: colours.muted,
                   }}
                   onChangeText={onChange}
-                  onFocus={(e) => scrollToInput(e.target)}
                   onBlur={onBlur}
                   value={value}
                   secureTextEntry={true}
@@ -339,7 +313,6 @@ const SignUp = () => {
                     color: colours.muted,
                   }}
                   onChangeText={onChange}
-                  onFocus={(e) => scrollToInput(e.target)}
                   onBlur={onBlur}
                   value={value}
                   secureTextEntry={true}

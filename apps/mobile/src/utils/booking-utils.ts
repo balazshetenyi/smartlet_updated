@@ -1,15 +1,15 @@
-import { supabase } from "../../../../packages/shared/lib/supabase";
+import { supabase } from "@kiado/shared";
 import {
   Booking,
   BookingWithProperty,
   BookingWithTenant,
   CreateBookingData,
   UpdateBookingData,
-} from "../../../../packages/shared/types/bookings";
+} from "@kiado/shared/types/bookings";
 import {
   Notification,
   PropertyUnavailableDate,
-} from "../../../../packages/shared/types/property";
+} from "@kiado/shared/types/property";
 
 /**
  * Fetch booked dates for a property to show as unavailable

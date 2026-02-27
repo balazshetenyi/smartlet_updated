@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { Property } from "../../../../../../packages/shared/types/property";
+import { colours } from "@kiado/shared";
+import { Property } from "@kiado/shared/types/property";
 import {
   calculateBookingPrice,
   createBooking,
@@ -17,12 +17,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CreateBookingData } from "../../../../../../packages/shared/types/bookings";
+import { CreateBookingData } from "@kiado/shared/types/bookings";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
 
 export default function BookPropertyScreen() {
   const { propertyId } = useLocalSearchParams();
@@ -285,14 +285,7 @@ export default function BookPropertyScreen() {
         options={{
           title: "Book Property",
           headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: 8, padding: 4 }}
-            >
-              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
-            </TouchableOpacity>
-          ),
+          headerLeft: () => <HeaderBackButton />,
         }}
       />
       <ScrollView style={styles.scrollView}>

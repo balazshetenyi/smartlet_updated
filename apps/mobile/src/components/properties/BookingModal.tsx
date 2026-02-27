@@ -1,6 +1,6 @@
 import Button from "@/components/shared/Button";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
-import { Property } from "../../../../../packages/shared/types/property";
+import { colours } from "@kiado/shared";
+import { Property } from "@kiado/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Calendar, DateData } from "react-native-calendars";
 import React, { useMemo, useState } from "react";

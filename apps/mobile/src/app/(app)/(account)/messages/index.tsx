@@ -1,7 +1,6 @@
-import { supabase } from "../../../../../../../packages/shared/lib/supabase";
+import { colours, supabase } from "@kiado/shared";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../../packages/shared/styles/colours.ts";
-import { Conversation } from "../../../../../../../packages/shared/types/message";
+import { Conversation } from "@kiado/shared/types/message";
 import { fetchUserConversations } from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";

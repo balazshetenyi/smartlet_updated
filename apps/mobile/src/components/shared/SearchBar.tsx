@@ -1,4 +1,4 @@
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import { useSearch } from "@/context/SearchContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
