@@ -1,10 +1,10 @@
 import PropertyCard from "@/components/properties/PropertyCard";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { useSearch } from "@/context/SearchContext";
-import { colours, supabase } from "@kiado/shared";
-import { Property } from "@kiado/shared/types/property";
-import { fetchBookedDates } from "@/utils/booking-utils";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { colours, supabase } from "@kiado/shared";
+import { Property } from "@kiado/shared/types/property.js";
 import { Stack, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -17,7 +17,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
+
+const PAGE_SIZE = 20;
 
 export default function SearchResultsScreen() {
   const { searchParams, clearSearchParams } = useSearch();
@@ -26,86 +27,74 @@ export default function SearchResultsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [coverMap, setCoverMap] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const searchProperties = useCallback(async () => {
-    try {
-      setLoading(true);
+  const searchProperties = useCallback(
+    async (pageNumber = 0, append = false) => {
+      try {
+        if (pageNumber === 0) setLoading(true);
+        else setLoadingMore(true);
+        console.log("searchParams", searchParams);
 
-      // Base query - only holiday rentals that are available
-      let query = supabase
-        .from("properties")
-        .select("*")
-        .eq("is_available", true);
-      // .eq("rental_type", "short_term");
+        const { data, error } = await supabase.rpc("search_properties", {
+          p_location: searchParams.location || null,
+          p_check_in: searchParams.checkIn || null,
+          p_check_out: searchParams.checkOut || null,
+          p_guests: searchParams.guests > 0 ? searchParams.guests : null,
+          p_rental_type: searchParams.rentalType?.toLowerCase() || null,
+          p_min_price: searchParams.minPrice || null,
+          p_max_price: searchParams.maxPrice || null,
+          p_page: pageNumber,
+          p_page_size: PAGE_SIZE,
+        });
 
-      // Filter by location if provided
-      if (searchParams.location) {
-        query = query.or(
-          `city.ilike.%${searchParams.location}%,address.ilike.%${searchParams.location}%`,
-        );
+        console.log("data: ", data);
+
+        if (error) throw error;
+
+        const results: Property[] = data || [];
+
+        setHasMore(results.length === PAGE_SIZE);
+        setProperties((prev) => (append ? [...prev, ...results] : results));
+
+        if (results.length) {
+          const ids = results.map((p) => p.id);
+          const map = await fetchCoverImageUrls(ids);
+          setCoverMap((prev) => ({ ...prev, ...map }));
+        } else if (!append) {
+          setCoverMap({});
+        }
+      } catch (error) {
+        console.error("Error searching properties:", error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+        setLoadingMore(false);
       }
-
-      const { data, error } = await query.order("created_at", {
-        ascending: false,
-      });
-
-      if (error) throw error;
-
-      let availableProperties = data || [];
-
-      // Filter by availability if dates are selected
-      if (searchParams.checkIn && searchParams.checkOut) {
-        const availabilityPromises = availableProperties.map(
-          async (property) => {
-            const bookedDates = await fetchBookedDates(property.id);
-
-            // Check if property is available for selected dates
-            const start = new Date(searchParams.checkIn!);
-            const end = new Date(searchParams.checkOut!);
-
-            for (
-              let d = new Date(start);
-              d <= end;
-              d.setDate(d.getDate() + 1)
-            ) {
-              if (bookedDates.includes(d.toISOString().split("T")[0])) {
-                return null; // Property not available
-              }
-            }
-
-            return property;
-          },
-        );
-
-        const results = await Promise.all(availabilityPromises);
-        availableProperties = results.filter((p) => p !== null) as Property[];
-      }
-
-      setProperties(availableProperties);
-
-      // Fetch cover images
-      if (availableProperties.length) {
-        const ids = availableProperties.map((p) => p.id);
-        const map = await fetchCoverImageUrls(ids);
-        setCoverMap(map);
-      } else {
-        setCoverMap({});
-      }
-    } catch (error) {
-      console.error("Error searching properties:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [searchParams]);
+    },
+    [searchParams],
+  );
 
   useEffect(() => {
-    searchProperties();
+    setPage(0);
+    setHasMore(true);
+    searchProperties(0, false);
   }, [searchProperties]);
 
   const onRefresh = () => {
     setRefreshing(true);
-    searchProperties();
+    setPage(0);
+    setHasMore(true);
+    searchProperties(0, false);
+  };
+
+  const onEndReached = () => {
+    if (!hasMore || loadingMore || loading) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    searchProperties(nextPage, true);
   };
 
   const handlePropertyPress = (propertyId: string) => {
@@ -189,6 +178,17 @@ export default function SearchResultsScreen() {
             ListHeaderComponent={renderHeader}
             ListEmptyComponent={renderEmpty}
             contentContainerStyle={styles.listContent}
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              loadingMore ? (
+                <ActivityIndicator
+                  size="small"
+                  color={colours.primary}
+                  style={{ paddingVertical: 16 }}
+                />
+              ) : null
+            }
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

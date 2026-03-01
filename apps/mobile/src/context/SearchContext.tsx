@@ -1,10 +1,13 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
 export type SearchParams = {
   location: string;
   checkIn: string | null;
   checkOut: string | null;
   guests: number;
+  rentalType: string | null;
+  minPrice: number | null;
+  maxPrice: number | null;
 };
 
 type SearchContextType = {
@@ -19,10 +22,13 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [searchParams, setSearchParams] = useState<SearchParams>({
-    location: '',
+    location: "",
     checkIn: null,
     checkOut: null,
     guests: 1,
+    rentalType: null,
+    minPrice: null,
+    maxPrice: null,
   });
 
   const updateSearchParams = (params: Partial<SearchParams>) => {
@@ -31,10 +37,13 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const clearSearchParams = () => {
     setSearchParams({
-      location: '',
+      location: "",
       checkIn: null,
       checkOut: null,
       guests: 1,
+      rentalType: null,
+      minPrice: null,
+      maxPrice: null,
     });
   };
 
@@ -50,7 +59,7 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({
 export const useSearch = () => {
   const context = useContext(SearchContext);
   if (!context) {
-    throw new Error('useSearch must be used within SearchProvider');
+    throw new Error("useSearch must be used within SearchProvider");
   }
   return context;
 };

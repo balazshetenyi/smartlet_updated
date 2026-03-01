@@ -1,10 +1,12 @@
-import { colours } from "@kiado/shared";
 import { useSearch } from "@/context/SearchContext";
+import { PropertyType, RentalType } from "@/enums/property-enums";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { colours } from "@kiado/shared";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -13,11 +15,19 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 
+const RENTAL_TYPES = [
+  "Any",
+  RentalType.get(PropertyType.Holiday),
+  RentalType.get(PropertyType.ShortTerm),
+];
+
 export default function SearchBar() {
   const { searchParams, updateSearchParams } = useSearch();
   const router = useRouter();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGuestPicker, setShowGuestPicker] = useState(false);
+  const [showPricePicker, setShowPricePicker] = useState(false);
+  const [showTypePicker, setShowTypePicker] = useState(false);
   const [tempDates, setTempDates] = useState<{
     checkIn: string | null;
     checkOut: string | null;
@@ -26,8 +36,17 @@ export default function SearchBar() {
     checkOut: searchParams.checkOut,
   });
   const [tempGuests, setTempGuests] = useState(searchParams.guests);
+  const [tempMinPrice, setTempMinPrice] = useState<string>(
+    searchParams.minPrice ? String(searchParams.minPrice) : "",
+  );
+  const [tempMaxPrice, setTempMaxPrice] = useState<string>(
+    searchParams.maxPrice ? String(searchParams.maxPrice) : "",
+  );
+  const [tempRentalType, setTempRentalType] = useState<string>(
+    searchParams.rentalType ?? "Any",
+  );
 
-  const handleSearch = (event) => {
+  const handleSearch = (event: any) => {
     event.preventDefault();
     // Navigate to search results
     router.push("/properties/search");
@@ -101,6 +120,29 @@ export default function SearchBar() {
       day: "numeric",
       month: "short",
     })}`;
+  };
+
+  const formatPriceRange = () => {
+    const { minPrice, maxPrice } = searchParams;
+    if (!minPrice && !maxPrice) return "Any price";
+    if (minPrice && maxPrice) return `£${minPrice} - £${maxPrice}`;
+    if (minPrice) return `From £${minPrice}`;
+    return `Up to £${maxPrice}`;
+  };
+
+  const savePrices = () => {
+    updateSearchParams({
+      minPrice: tempMinPrice ? Number(tempMinPrice) : undefined,
+      maxPrice: tempMaxPrice ? Number(tempMaxPrice) : undefined,
+    });
+    setShowPricePicker(false);
+  };
+
+  const saveRentalType = () => {
+    updateSearchParams({
+      rentalType: tempRentalType === "Any" ? undefined : tempRentalType,
+    });
+    setShowTypePicker(false);
   };
 
   const saveDates = () => {
@@ -179,6 +221,54 @@ export default function SearchBar() {
             <Text style={styles.searchValue}>
               {searchParams.guests}{" "}
               {searchParams.guests === 1 ? "guest" : "guests"}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
+        {/* Price Range Selector */}
+        <TouchableOpacity
+          style={styles.searchRow}
+          onPress={() => setShowPricePicker(true)}
+        >
+          <MaterialIcons
+            name="attach-money"
+            size={24}
+            color={colours.textSecondary}
+          />
+          <View style={styles.searchContent}>
+            <Text style={styles.searchLabel}>Price</Text>
+            <Text
+              style={[
+                styles.searchValue,
+                !searchParams.minPrice &&
+                  !searchParams.maxPrice &&
+                  styles.searchPlaceholder,
+              ]}
+            >
+              {formatPriceRange()}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
+        {/* Rental Type Selector */}
+        <TouchableOpacity
+          style={styles.searchRow}
+          onPress={() => setShowTypePicker(true)}
+        >
+          <MaterialIcons name="home" size={24} color={colours.textSecondary} />
+          <View style={styles.searchContent}>
+            <Text style={styles.searchLabel}>Type</Text>
+            <Text
+              style={[
+                styles.searchValue,
+                !searchParams.rentalType && styles.searchPlaceholder,
+              ]}
+            >
+              {searchParams.rentalType ?? "Any type"}
             </Text>
           </View>
         </TouchableOpacity>
@@ -319,6 +409,121 @@ export default function SearchBar() {
           </View>
         </View>
       </Modal>
+
+      {/* Price Range Modal */}
+      <Modal
+        visible={showPricePicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowPricePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.priceModalContent]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Price Range</Text>
+              <TouchableOpacity onPress={() => setShowPricePicker(false)}>
+                <MaterialIcons name="close" size={24} color={colours.text} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.priceRow}>
+              <View style={styles.priceInputWrapper}>
+                <Text style={styles.priceInputLabel}>Min price (£)</Text>
+                <TextInput
+                  style={styles.priceInput}
+                  placeholder="0"
+                  placeholderTextColor={colours.textSecondary}
+                  keyboardType="numeric"
+                  value={tempMinPrice}
+                  onChangeText={setTempMinPrice}
+                />
+              </View>
+              <Text style={styles.priceSeparator}>–</Text>
+              <View style={styles.priceInputWrapper}>
+                <Text style={styles.priceInputLabel}>Max price (£)</Text>
+                <TextInput
+                  style={styles.priceInput}
+                  placeholder="Any"
+                  placeholderTextColor={colours.textSecondary}
+                  keyboardType="numeric"
+                  value={tempMaxPrice}
+                  onChangeText={setTempMaxPrice}
+                />
+              </View>
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={() => {
+                  setTempMinPrice("");
+                  setTempMaxPrice("");
+                }}
+              >
+                <Text style={styles.clearButtonText}>Clear</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={savePrices}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Rental Type Modal */}
+      <Modal
+        visible={showTypePicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowTypePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.typeModalContent]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Property Type</Text>
+              <TouchableOpacity onPress={() => setShowTypePicker(false)}>
+                <MaterialIcons name="close" size={24} color={colours.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView>
+              {RENTAL_TYPES.map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  style={[
+                    styles.typeOption,
+                    tempRentalType === type && styles.typeOptionSelected,
+                  ]}
+                  onPress={() => setTempRentalType(type as string)}
+                >
+                  <Text
+                    style={[
+                      styles.typeOptionText,
+                      tempRentalType === type && styles.typeOptionTextSelected,
+                    ]}
+                  >
+                    {type}
+                  </Text>
+                  {tempRentalType === type && (
+                    <MaterialIcons
+                      name="check"
+                      size={20}
+                      color={colours.primary}
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={[styles.saveButton, { marginTop: 16 }]}
+              onPress={saveRentalType}
+            >
+              <Text style={styles.saveButtonText}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -402,6 +607,12 @@ const styles = StyleSheet.create({
   guestModalContent: {
     maxHeight: "40%",
   },
+  priceModalContent: {
+    maxHeight: "45%",
+  },
+  typeModalContent: {
+    maxHeight: "60%",
+  },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -476,5 +687,55 @@ const styles = StyleSheet.create({
     color: colours.text,
     minWidth: 60,
     textAlign: "center",
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 16,
+  },
+  priceInputWrapper: {
+    flex: 1,
+  },
+  priceInputLabel: {
+    fontSize: 12,
+    color: colours.textSecondary,
+    marginBottom: 8,
+  },
+  priceInput: {
+    borderWidth: 1,
+    borderColor: colours.border,
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 16,
+    color: colours.text,
+    backgroundColor: colours.background ?? colours.surface,
+  },
+  priceSeparator: {
+    fontSize: 18,
+    color: colours.textSecondary,
+    marginTop: 20,
+  },
+  typeOption: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: colours.border,
+  },
+  typeOptionSelected: {
+    backgroundColor: colours.primaryLight,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+  typeOptionText: {
+    fontSize: 16,
+    color: colours.text,
+  },
+  typeOptionTextSelected: {
+    fontWeight: "600",
+    color: colours.primary,
   },
 });
