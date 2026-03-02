@@ -2,6 +2,12 @@ import React, { createContext, useContext, useState } from "react";
 
 export type SearchParams = {
   location: string;
+  /** Geocoded latitude — null until the location string has been resolved */
+  lat: number | null;
+  /** Geocoded longitude — null until the location string has been resolved */
+  lng: number | null;
+  /** Radius in kilometres used when coordinates are available (default: 30) */
+  radiusKm: number;
   checkIn: string | null;
   checkOut: string | null;
   guests: number;
@@ -18,11 +24,16 @@ type SearchContextType = {
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
+export const DEFAULT_RADIUS_KM = 30;
+
 export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [searchParams, setSearchParams] = useState<SearchParams>({
     location: "",
+    lat: null,
+    lng: null,
+    radiusKm: DEFAULT_RADIUS_KM,
     checkIn: null,
     checkOut: null,
     guests: 1,
@@ -38,6 +49,9 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({
   const clearSearchParams = () => {
     setSearchParams({
       location: "",
+      lat: null,
+      lng: null,
+      radiusKm: DEFAULT_RADIUS_KM,
       checkIn: null,
       checkOut: null,
       guests: 1,

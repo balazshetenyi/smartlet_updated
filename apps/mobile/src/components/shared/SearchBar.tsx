@@ -17,9 +17,12 @@ import { Calendar } from "react-native-calendars";
 
 const RENTAL_TYPES = [
   "Any",
-  RentalType.get(PropertyType.Holiday),
-  RentalType.get(PropertyType.ShortTerm),
+  PropertyType.LongTerm,
+  PropertyType.ShortTerm,
+  PropertyType.Holiday,
 ];
+
+const RADIUS_OPTIONS = [5, 15, 30, 50, 100] as const;
 
 export default function SearchBar() {
   const { searchParams, updateSearchParams } = useSearch();
@@ -28,6 +31,7 @@ export default function SearchBar() {
   const [showGuestPicker, setShowGuestPicker] = useState(false);
   const [showPricePicker, setShowPricePicker] = useState(false);
   const [showTypePicker, setShowTypePicker] = useState(false);
+  const [showRadiusPicker, setShowRadiusPicker] = useState(false);
   const [tempDates, setTempDates] = useState<{
     checkIn: string | null;
     checkOut: string | null;
@@ -48,7 +52,6 @@ export default function SearchBar() {
 
   const handleSearch = (event: any) => {
     event.preventDefault();
-    // Navigate to search results
     router.push("/properties/search");
   };
 
@@ -56,10 +59,8 @@ export default function SearchBar() {
     const dateString = day.dateString;
 
     if (!tempDates.checkIn || (tempDates.checkIn && tempDates.checkOut)) {
-      // Start new selection
       setTempDates({ checkIn: dateString, checkOut: null });
     } else {
-      // Complete selection
       if (new Date(dateString) < new Date(tempDates.checkIn)) {
         setTempDates({ checkIn: dateString, checkOut: tempDates.checkIn });
       } else {
@@ -175,9 +176,26 @@ export default function SearchBar() {
             placeholder="Where are you going?"
             placeholderTextColor={colours.textSecondary}
             value={searchParams.location}
-            onChangeText={(text) => updateSearchParams({ location: text })}
+            onChangeText={(text) =>
+              // Reset geocoded coords whenever the location text changes
+              updateSearchParams({ location: text, lat: null, lng: null })
+            }
           />
         </View>
+
+        <View style={styles.divider} />
+
+        {/* Radius Selector */}
+        <TouchableOpacity
+          style={styles.searchRow}
+          onPress={() => setShowRadiusPicker(true)}
+        >
+          <MaterialIcons name="radar" size={22} color={colours.textSecondary} />
+          <View style={styles.searchContent}>
+            <Text style={styles.searchLabel}>Radius</Text>
+            <Text style={styles.searchValue}>{searchParams.radiusKm} km</Text>
+          </View>
+        </TouchableOpacity>
 
         <View style={styles.divider} />
 
@@ -291,6 +309,55 @@ export default function SearchBar() {
         <MaterialIcons name="search" size={24} color="white" />
         <Text style={styles.searchButtonText}>Search</Text>
       </TouchableOpacity>
+
+      {/* Radius Picker Modal */}
+      <Modal
+        visible={showRadiusPicker}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowRadiusPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.radiusModalContent]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Search Radius</Text>
+              <TouchableOpacity onPress={() => setShowRadiusPicker(false)}>
+                <MaterialIcons name="close" size={24} color={colours.text} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalHint}>
+              How far from the location should we search?
+            </Text>
+
+            <View style={styles.radiusOptions}>
+              {RADIUS_OPTIONS.map((km) => (
+                <TouchableOpacity
+                  key={km}
+                  style={[
+                    styles.radiusChip,
+                    searchParams.radiusKm === km && styles.radiusChipSelected,
+                  ]}
+                  onPress={() => {
+                    updateSearchParams({ radiusKm: km });
+                    setShowRadiusPicker(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.radiusChipText,
+                      searchParams.radiusKm === km &&
+                        styles.radiusChipTextSelected,
+                    ]}
+                  >
+                    {km} km
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Date Picker Modal */}
       <Modal
@@ -534,14 +601,14 @@ export default function SearchBar() {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   searchCard: {
-    backgroundColor: colours.surface,
+    backgroundColor: colours.cardBackground,
     borderRadius: 16,
-    padding: 4,
-    elevation: 4,
-    shadowColor: "#000",
+    padding: 8,
+    elevation: 3,
+    shadowColor: colours.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -549,7 +616,7 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
+    padding: 12,
     gap: 12,
   },
   locationInput: {
@@ -566,8 +633,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   searchValue: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 15,
+    fontWeight: "600",
     color: colours.text,
   },
   searchPlaceholder: {
@@ -576,13 +643,13 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: colours.border,
-    marginHorizontal: 16,
+    marginHorizontal: 12,
   },
   searchButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colours.darkSlateBlue,
+    backgroundColor: colours.primary,
     borderRadius: 12,
     padding: 16,
     marginTop: 12,
@@ -594,37 +661,40 @@ const styles = StyleSheet.create({
   searchButtonText: {
     color: "white",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: colours.surface,
+    backgroundColor: colours.cardBackground,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
-    maxHeight: "80%",
+    padding: 24,
+    maxHeight: "85%",
   },
   guestModalContent: {
-    maxHeight: "40%",
+    maxHeight: 280,
   },
   priceModalContent: {
-    maxHeight: "45%",
+    maxHeight: 320,
   },
   typeModalContent: {
-    maxHeight: "60%",
+    maxHeight: 400,
+  },
+  radiusModalContent: {
+    maxHeight: 280,
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
     color: colours.text,
   },
@@ -637,66 +707,66 @@ const styles = StyleSheet.create({
   modalActions: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 20,
+    marginTop: 16,
   },
   clearButton: {
     flex: 1,
-    padding: 16,
+    padding: 14,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colours.border,
     alignItems: "center",
   },
   clearButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
-    color: colours.text,
+    color: colours.primary,
   },
   saveButton: {
-    padding: 16,
+    padding: 14,
     borderRadius: 12,
-    backgroundColor: colours.darkSlateBlue,
+    backgroundColor: colours.primary,
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   saveButtonDisabled: {
     backgroundColor: colours.muted,
   },
   saveButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
     color: "white",
   },
   guestSelector: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 32,
-    gap: 32,
+    paddingVertical: 12,
+    gap: 24,
   },
   guestButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colours.primaryLight,
     alignItems: "center",
     justifyContent: "center",
   },
   guestButtonDisabled: {
-    backgroundColor: colours.border,
+    backgroundColor: colours.surface,
   },
   guestCount: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "700",
     color: colours.text,
-    minWidth: 60,
+    minWidth: 40,
     textAlign: "center",
   },
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingVertical: 16,
+    paddingVertical: 8,
   },
   priceInputWrapper: {
     flex: 1,
@@ -704,19 +774,19 @@ const styles = StyleSheet.create({
   priceInputLabel: {
     fontSize: 12,
     color: colours.textSecondary,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   priceInput: {
     borderWidth: 1,
     borderColor: colours.border,
-    borderRadius: 10,
-    padding: 14,
-    fontSize: 16,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 15,
     color: colours.text,
-    backgroundColor: colours.background ?? colours.surface,
+    backgroundColor: colours.surface,
   },
   priceSeparator: {
-    fontSize: 18,
+    fontSize: 20,
     color: colours.textSecondary,
     marginTop: 20,
   },
@@ -724,22 +794,49 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 4,
     borderBottomWidth: 1,
     borderBottomColor: colours.border,
   },
   typeOptionSelected: {
     backgroundColor: colours.primaryLight,
-    borderRadius: 10,
+    borderRadius: 8,
     paddingHorizontal: 12,
   },
   typeOptionText: {
-    fontSize: 16,
+    fontSize: 15,
     color: colours.text,
   },
   typeOptionTextSelected: {
+    fontWeight: "700",
+    color: colours.primary,
+  },
+  radiusOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    justifyContent: "center",
+    paddingVertical: 8,
+  },
+  radiusChip: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: colours.border,
+    backgroundColor: colours.surface,
+  },
+  radiusChipSelected: {
+    borderColor: colours.primary,
+    backgroundColor: colours.primaryLight,
+  },
+  radiusChipText: {
+    fontSize: 15,
     fontWeight: "600",
+    color: colours.textSecondary,
+  },
+  radiusChipTextSelected: {
     color: colours.primary,
   },
 });

@@ -1,12 +1,13 @@
 import PropertyCard from "@/components/properties/PropertyCard";
 import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { useSearch } from "@/context/SearchContext";
+import { geocodeLocation } from "@/utils/geocoding-utils";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { colours, supabase } from "@kiado/shared";
 import { Property } from "@kiado/shared/types/property.js";
 import { Stack, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -21,7 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const PAGE_SIZE = 20;
 
 export default function SearchResultsScreen() {
-  const { searchParams, clearSearchParams } = useSearch();
+  const { searchParams, updateSearchParams, clearSearchParams } = useSearch();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,16 +31,64 @@ export default function SearchResultsScreen() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+
+  /**
+   * Tracks the last location string we successfully geocoded so we can skip
+   * re-geocoding when the same location fires searchProperties multiple times.
+   */
+  const geocodedForRef = useRef<string | null>(null);
+
+  /**
+   * Resolves the current location text to lat/lng.
+   * Re-uses cached coords in context when the location string hasn't changed.
+   * Returns the resolved (or already-cached) coordinates.
+   */
+  const ensureGeocoded = useCallback(async (): Promise<{
+    lat: number | null;
+    lng: number | null;
+  }> => {
+    const { location, lat, lng } = searchParams;
+
+    // Already have fresh coords for this exact location string — reuse them
+    if (lat !== null && lng !== null && geocodedForRef.current === location) {
+      return { lat, lng };
+    }
+
+    if (!location.trim()) {
+      return { lat: null, lng: null };
+    }
+
+    setGeocoding(true);
+    try {
+      const result = await geocodeLocation(location);
+      if (result) {
+        geocodedForRef.current = location;
+        updateSearchParams({ lat: result.lat, lng: result.lng });
+        return { lat: result.lat, lng: result.lng };
+      }
+    } catch {
+      // Geocoding failed — fall through to text-only search
+    } finally {
+      setGeocoding(false);
+    }
+
+    return { lat: null, lng: null };
+  }, [searchParams, updateSearchParams]);
 
   const searchProperties = useCallback(
     async (pageNumber = 0, append = false) => {
       try {
         if (pageNumber === 0) setLoading(true);
         else setLoadingMore(true);
-        console.log("searchParams", searchParams);
+
+        const { lat, lng } = await ensureGeocoded();
 
         const { data, error } = await supabase.rpc("search_properties", {
           p_location: searchParams.location || null,
+          p_lat: lat,
+          p_lng: lng,
+          p_radius_km: searchParams.radiusKm,
           p_check_in: searchParams.checkIn || null,
           p_check_out: searchParams.checkOut || null,
           p_guests: searchParams.guests > 0 ? searchParams.guests : null,
@@ -49,8 +98,6 @@ export default function SearchResultsScreen() {
           p_page: pageNumber,
           p_page_size: PAGE_SIZE,
         });
-
-        console.log("data: ", data);
 
         if (error) throw error;
 
@@ -74,7 +121,7 @@ export default function SearchResultsScreen() {
         setLoadingMore(false);
       }
     },
-    [searchParams],
+    [searchParams, ensureGeocoded],
   );
 
   useEffect(() => {
@@ -108,9 +155,22 @@ export default function SearchResultsScreen() {
           {properties.length}{" "}
           {properties.length === 1 ? "property" : "properties"} found
         </Text>
+
         {searchParams.location && (
-          <Text style={styles.searchLocation}>in {searchParams.location}</Text>
+          <View style={styles.locationRow}>
+            <MaterialIcons
+              name={searchParams.lat !== null ? "location-on" : "search"}
+              size={14}
+              color={colours.textSecondary}
+            />
+            <Text style={styles.searchLocation}>
+              {searchParams.lat !== null
+                ? `within ${searchParams.radiusKm} km of ${searchParams.location}`
+                : `matching "${searchParams.location}"`}
+            </Text>
+          </View>
         )}
+
         {searchParams.checkIn && searchParams.checkOut && (
           <Text style={styles.searchDates}>
             {new Date(searchParams.checkIn).toLocaleDateString("en-GB", {
@@ -143,7 +203,7 @@ export default function SearchResultsScreen() {
       <MaterialIcons name="search-off" size={64} color={colours.muted} />
       <Text style={styles.emptyText}>No properties found</Text>
       <Text style={styles.emptySubtext}>
-        Try adjusting your search criteria
+        Try adjusting your search criteria or expanding the radius
       </Text>
     </View>
   );
@@ -158,9 +218,12 @@ export default function SearchResultsScreen() {
         }}
       />
       <SafeAreaView style={styles.container} edges={["bottom"]}>
-        {loading && !refreshing ? (
+        {(loading || geocoding) && !refreshing ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colours.primary} />
+            {geocoding && (
+              <Text style={styles.geocodingText}>Locating area…</Text>
+            )}
           </View>
         ) : (
           <FlatList
@@ -212,6 +275,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    gap: 12,
+  },
+  geocodingText: {
+    fontSize: 14,
+    color: colours.textSecondary,
   },
   listContent: {
     padding: 16,
@@ -227,6 +295,7 @@ const styles = StyleSheet.create({
   },
   searchSummary: {
     flex: 1,
+    gap: 4,
   },
   resultsCount: {
     fontSize: 18,
@@ -234,10 +303,14 @@ const styles = StyleSheet.create({
     color: colours.text,
     marginBottom: 4,
   },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
   searchLocation: {
     fontSize: 14,
     color: colours.textSecondary,
-    marginBottom: 2,
   },
   searchDates: {
     fontSize: 14,
@@ -272,5 +345,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colours.textSecondary,
     marginTop: 4,
+    textAlign: "center",
   },
 });
