@@ -282,7 +282,11 @@ export default function SearchBar() {
             styles.searchButtonDisabled,
         ]}
         onPress={handleSearch}
-        disabled={!searchParams.location || !searchParams.checkIn}
+        disabled={
+          !searchParams.location ||
+          !searchParams.checkIn ||
+          !searchParams.checkOut
+        }
       >
         <MaterialIcons name="search" size={24} color="white" />
         <Text style={styles.searchButtonText}>Search</Text>

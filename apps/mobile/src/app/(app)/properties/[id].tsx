@@ -31,8 +31,8 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { PropertyType } from "@/enums/property-enums.ts";
-import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
+import { PropertyType } from "@/enums/property-enums";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -222,9 +222,9 @@ export default function PropertyDetailsScreen() {
     const amount = `£${property.price.toLocaleString()}`;
 
     switch (property.rental_type) {
-      case "short_term":
+      case PropertyType.ShortTerm:
         return { amount, period: "/week" };
-      case "holiday":
+      case PropertyType.Holiday:
         return { amount, period: "/night" };
       default:
         return { amount, period: "/month" };
@@ -237,7 +237,7 @@ export default function PropertyDetailsScreen() {
       short_term: { text: "Short Term Rental", icon: "calendar-today" },
       holiday: { text: "Holiday Rental", icon: "beach-access" },
     };
-    return labels[property?.rental_type || "long_term"];
+    return labels[property?.rental_type || PropertyType.LongTerm];
   };
 
   const handleContactLandlord = async () => {
@@ -432,6 +432,15 @@ export default function PropertyDetailsScreen() {
                 />
                 <Text style={styles.featureText}>
                   {property.bathrooms} Bathrooms
+                </Text>
+              </View>
+            )}
+            {property.max_guests !== undefined && property.max_guests > 0 && (
+              <View style={styles.feature}>
+                <MaterialIcons name="group" size={24} color={colours.primary} />
+                <Text style={styles.featureText}>
+                  {property.max_guests}{" "}
+                  {`Guest${property.max_guests > 1 ? "s" : ""}`}
                 </Text>
               </View>
             )}
@@ -711,6 +720,7 @@ const styles = StyleSheet.create({
   },
   featuresContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 16,
     marginBottom: 24,
   },

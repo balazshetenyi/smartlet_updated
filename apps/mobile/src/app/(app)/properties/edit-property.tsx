@@ -2,10 +2,8 @@ import AmenitySelector from "@/components/properties/AmenitySelector";
 import RentalTypeSelector from "@/components/properties/RentalTypeSelector";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { colours, supabase } from "@kiado/shared";
 import { AddNewProperty, propertySchema } from "@/schemas/property-schema";
 import { useAuthStore } from "@/store/auth-store";
-import { Property } from "@kiado/shared/types/property";
 import {
   fetchPropertyPhotoDetails,
   setCoverImage,
@@ -13,6 +11,7 @@ import {
 } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { colours, Property, supabase } from "@kiado/shared";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -67,6 +66,7 @@ export default function EditPropertyScreen() {
       price: 0,
       bedrooms: 0,
       bathrooms: 0,
+      max_guests: 0,
       amenities: [],
     },
   });
@@ -111,6 +111,7 @@ export default function EditPropertyScreen() {
         price: propertyData.price || 0,
         bedrooms: propertyData.bedrooms || 0,
         bathrooms: propertyData.bathrooms || 0,
+        max_guests: propertyData.max_guests || 0,
         amenities: [], // Will be populated from property_amenities
       });
 
@@ -275,6 +276,7 @@ export default function EditPropertyScreen() {
           price: data.price,
           bedrooms: data.bedrooms,
           bathrooms: data.bathrooms,
+          max_guests: data.max_guests,
           is_available: isAvailable,
         })
         .eq("id", id);
@@ -525,6 +527,23 @@ export default function EditPropertyScreen() {
               />
             </View>
           </View>
+
+          <Controller
+            control={control}
+            name="max_guests"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                label="Max Guests"
+                placeholder="e.g., 4"
+                keyboardType="numeric"
+                onChangeText={(text) => onChange(Number(text) || 0)}
+                onBlur={onBlur}
+                value={value?.toString() ?? ""}
+                errorMessage={errors.max_guests?.message}
+                style={styles.input}
+              />
+            )}
+          />
 
           <View style={styles.availabilityContainer}>
             <View style={styles.availabilityLabel}>

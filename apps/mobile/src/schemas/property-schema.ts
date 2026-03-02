@@ -21,6 +21,10 @@ export const propertySchema = zod.object({
     .number()
     .int({ message: "Bathrooms must be an integer" })
     .positive({ message: "Bathrooms must be a positive number" }),
+  max_guests: zod
+    .number()
+    .int({ message: "Max guests must be an integer" })
+    .positive({ message: "Max guests must be a positive number" }),
   amenities: zod.array(zod.string()).optional(),
 });
 

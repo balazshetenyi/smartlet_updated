@@ -1,7 +1,7 @@
 import AmenitySelector from "@/components/properties/AmenitySelector";
+import RentalTypeSelector from "@/components/properties/RentalTypeSelector";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { colours, supabase } from "@kiado/shared";
 import { AddNewProperty, propertySchema } from "@/schemas/property-schema";
 import { useAuthStore } from "@/store/auth-store";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { colours, supabase } from "@kiado/shared";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -25,7 +26,6 @@ import {
   Text,
   View,
 } from "react-native";
-import RentalTypeSelector from "@/components/properties/RentalTypeSelector.tsx";
 
 export default function CreatePropertyScreen() {
   const { profile } = useAuthStore();
@@ -51,6 +51,7 @@ export default function CreatePropertyScreen() {
       price: 0,
       bedrooms: 0,
       bathrooms: 0,
+      max_guests: 0,
       amenities: [],
     },
   });
@@ -350,6 +351,23 @@ export default function CreatePropertyScreen() {
               />
             </View>
           </View>
+
+          <Controller
+            control={control}
+            name="max_guests"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                label="Max Guests"
+                placeholder="e.g., 4"
+                keyboardType="numeric"
+                onChangeText={(text) => onChange(Number(text) || 0)}
+                onBlur={onBlur}
+                value={value?.toString() ?? ""}
+                errorMessage={errors.max_guests?.message}
+                style={styles.input}
+              />
+            )}
+          />
 
           <View style={styles.availabilityContainer}>
             <View style={styles.availabilityLabel}>
