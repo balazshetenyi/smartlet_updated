@@ -1,9 +1,10 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
 import { colours, supabase } from "@kiado/shared";
-import { BookingWithTenant, fetchBookingRequests } from "@/utils/booking-utils";
+import { BookingWithTenant } from "@kiado/shared/types/bookings";
+import { fetchBookingRequests } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -18,7 +19,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BookingRequestsScreen() {
-  const router = useRouter();
   const { profile } = useAuthStore();
   const [bookings, setBookings] = useState<BookingWithTenant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: colours.backgroundDark,
+    backgroundColor: colours.overlay,
     borderRadius: 6,
     alignSelf: "flex-start",
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
     padding: 12,
-    backgroundColor: colours.backgroundDark,
+    backgroundColor: colours.overlay,
     borderRadius: 8,
   },
   guestAvatar: {
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     padding: 12,
-    backgroundColor: colours.backgroundDark,
+    backgroundColor: colours.overlay,
     borderRadius: 8,
   },
   dateLabel: {

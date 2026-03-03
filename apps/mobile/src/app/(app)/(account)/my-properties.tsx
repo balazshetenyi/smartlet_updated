@@ -1,8 +1,7 @@
 import PropertyCard from "@/components/properties/PropertyCard";
 import Button from "@/components/shared/Button";
-import { colours, supabase } from "@kiado/shared";
+import { colours, supabase, Property } from "@kiado/shared";
 import { useAuthStore } from "@/store/auth-store";
-import { Property } from "@kiado/shared/types/property";
 import { deleteProperty, fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";

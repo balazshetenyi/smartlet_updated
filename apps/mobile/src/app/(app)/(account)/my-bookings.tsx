@@ -22,6 +22,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 export default function MyBookingsScreen() {
   const router = useRouter();
@@ -357,6 +358,7 @@ export default function MyBookingsScreen() {
         options={{
           title: "My Bookings",
           headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
         }}
       />
       <SafeAreaView style={styles.container} edges={["bottom"]}>

@@ -77,7 +77,17 @@ export default function RootLayout() {
                 paddingBottom: Math.min(insets.bottom, 0),
               }}
             >
-              <Stack>
+              <Stack
+                screenOptions={{
+                  headerStyle: {
+                    backgroundColor: colours.surface,
+                  },
+                  headerTintColor: colours.primary,
+                  headerTitleStyle: {
+                    fontWeight: "700",
+                  },
+                }}
+              >
                 <Stack.Protected guard={isLoggedIn}>
                   <Stack.Screen name="(app)" options={{ headerShown: false }} />
                 </Stack.Protected>

@@ -1,7 +1,7 @@
 import { colours } from "@kiado/shared";
 import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 export default function MessagesLayout() {
   return (
@@ -15,10 +15,6 @@ export default function MessagesLayout() {
       <Stack
         screenOptions={{
           headerShown: true,
-          headerStyle: {
-            backgroundColor: colours.surface,
-          },
-          headerTintColor: colours.text,
         }}
       >
         <Stack.Screen

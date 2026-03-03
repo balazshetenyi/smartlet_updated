@@ -2,7 +2,7 @@ import { colours } from "@kiado/shared";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
-import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 export default function AccountLayout() {
   const router = useRouter();
@@ -12,10 +12,6 @@ export default function AccountLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          headerStyle: {
-            backgroundColor: colours.surface,
-          },
-          headerTintColor: colours.text,
         }}
       >
         <Stack.Screen

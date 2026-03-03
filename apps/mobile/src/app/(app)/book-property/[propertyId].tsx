@@ -22,7 +22,7 @@ import {
 import { Calendar, DateData } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CreateBookingData } from "@kiado/shared/types/bookings";
-import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 export default function BookPropertyScreen() {
   const { propertyId } = useLocalSearchParams();

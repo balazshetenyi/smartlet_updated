@@ -316,10 +316,6 @@ export default function PropertyDetailsScreen() {
           title: property.title,
           headerShown: true,
           headerLeft: () => <HeaderBackButton />,
-          headerTintColor: colours.darkSlateBlue,
-          headerTitleStyle: {
-            fontWeight: "700",
-          },
         }}
       />
       <ScrollView style={styles.scrollView}>

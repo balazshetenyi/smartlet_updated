@@ -1,6 +1,5 @@
 import PropertyCard from "@/components/properties/PropertyCard";
-import { colours, supabase } from "@kiado/shared";
-import { Property } from "@kiado/shared/types/property";
+import { colours, supabase, Property } from "@kiado/shared";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -16,7 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 type RentalType = "long-term" | "short-term" | "holiday";
 
@@ -99,23 +98,6 @@ export default function PropertyCategoryScreen() {
     router.push(`/properties/${propertyId}`);
   };
 
-  const renderHeader = () => {
-    if (!config) return null;
-
-    return (
-      <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <MaterialIcons
-            name={config.icon as any}
-            size={32}
-            color={colours.primary}
-          />
-        </View>
-        <Text style={styles.title}>{config.title}</Text>
-      </View>
-    );
-  };
-
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <MaterialIcons name="home" size={64} color={colours.muted} />
@@ -153,14 +135,6 @@ export default function PropertyCategoryScreen() {
           title: config.title,
           headerShown: true,
           headerLeft: () => <HeaderBackButton />,
-          headerStyle: {
-            backgroundColor: colours.surface,
-          },
-          headerTintColor: colours.text,
-          headerTitleStyle: {
-            fontWeight: "700",
-          },
-          headerShadowVisible: false,
         }}
       />
       <FlatList
@@ -175,7 +149,6 @@ export default function PropertyCategoryScreen() {
             />
           </View>
         )}
-        ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={styles.listContent}
         refreshControl={
