@@ -13,6 +13,7 @@ import { StripeProvider } from "@/components/shared/StripeProviderWrapper";
 import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
@@ -82,6 +83,7 @@ export default function RootLayout() {
                   headerStyle: {
                     backgroundColor: colours.surface,
                   },
+                  headerLeft: () => <HeaderBackButton />,
                   headerTintColor: colours.primary,
                   headerTitleStyle: {
                     fontWeight: "700",

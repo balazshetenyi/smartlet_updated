@@ -12,6 +12,7 @@ export const HeaderBackButton = () => {
       onPress={() => router.back()}
       style={{
         padding: 4,
+        marginLeft: 8,
       }}
       accessibilityLabel="Go back"
     >

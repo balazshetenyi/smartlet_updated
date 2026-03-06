@@ -15,7 +15,9 @@
     "experiments": {
       "autolinkingModuleResolution": true
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "uk.co.kiado.app",
@@ -25,11 +27,14 @@
       },
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
-        "CFBundleLocalizations": ["en"],
+        "CFBundleLocalizations": [
+          "en"
+        ],
         "NSCameraUsageDescription": "Kiado needs access to your camera to take photos of properties.",
         "NSPhotoLibraryUsageDescription": "Kiado needs access to your photo library to select property images.",
         "NSLocationWhenInUseUsageDescription": "Kiado uses your location to show nearby properties and help you search in your area."
-      }
+      },
+      "appleTeamId": "KX78CU7UBV"
     },
     "android": {
       "package": "uk.co.kiado.app",

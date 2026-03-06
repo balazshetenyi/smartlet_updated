@@ -33,6 +33,7 @@
       }
     },
     "production": {
+      "distribution": "store",
       "autoIncrement": true,
       "ios": {
         "simulator": false

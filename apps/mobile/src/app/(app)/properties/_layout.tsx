@@ -1,10 +1,9 @@
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { colours } from "@kiado/shared";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { HeaderBackButton } from "@/components/shared/HeaderBackButton.tsx";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 export default function PropertiesLayout() {
-  const router = useRouter();
   return (
     <SafeAreaView
       edges={["bottom"]}
