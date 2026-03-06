@@ -129,7 +129,6 @@ export default function MyBookingsScreen() {
               status: "cancelled",
             });
             if (success) {
-              Alert.alert("Success", "Booking cancelled successfully");
               await loadBookings();
             } else {
               Alert.alert("Error", "Failed to cancel booking");
@@ -307,38 +306,17 @@ export default function MyBookingsScreen() {
             )}
           </View>
 
-          {item.status === "pending" && (
-            <View style={styles.actionsContainer}>
-              <Button
-                title="Cancel Request"
-                onPress={() => handleCancelBooking(item)}
-                type="outline"
-                buttonStyle={styles.cancelButton}
-              />
-            </View>
-          )}
-
-          {item.status === "pending" && !isPast && (
-            <View style={styles.actionsContainer}>
-              <Button
-                title="Cancel Request"
-                onPress={() => handleCancelBooking(item)}
-                type="outline"
-                buttonStyle={styles.cancelButton}
-              />
-            </View>
-          )}
-
-          {item.status === "confirmed" && !isPast && (
-            <View style={styles.actionsContainer}>
-              <Button
-                title="Cancel Booking"
-                onPress={() => handleCancelBooking(item)}
-                type="outline"
-                buttonStyle={styles.cancelButton}
-              />
-            </View>
-          )}
+          {(item.status === "pending" || item.status === "confirmed") &&
+            !isPast && (
+              <View style={styles.actionsContainer}>
+                <Button
+                  title="Cancel Request"
+                  onPress={() => handleCancelBooking(item)}
+                  type="outline"
+                  buttonStyle={styles.cancelButton}
+                />
+              </View>
+            )}
         </View>
       </TouchableOpacity>
     );

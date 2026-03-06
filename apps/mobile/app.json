@@ -4,12 +4,11 @@
     "slug": "kiado",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "../../packages/shared/assets/images/icon.png",
+    "icon": "../../packages/shared/assets/images/kiado_app_icon.png",
     "scheme": "kiado",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
-      "image": "../../packages/shared/assets/images/splash-icon.png",
+      "image": "../../packages/shared/assets/images/kiado_splash_screen.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,7 +18,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kiado.app",
+      "bundleIdentifier": "uk.co.kiado.app",
       "buildNumber": "1",
       "config": {
         "usesNonExemptEncryption": false
@@ -33,13 +32,12 @@
       }
     },
     "android": {
-      "package": "com.kiado.app",
+      "package": "uk.co.kiado.app",
       "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "../../packages/shared/assets/images/android-icon-foreground.png",
-        "backgroundImage": "../../packages/shared/assets/images/android-icon-background.png",
-        "monochromeImage": "../../packages/shared/assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#1F2A37",
+        "foregroundImage": "../../packages/shared/assets/images/kiado_android_foreground_icon.png",
+        "monochromeImage": "../../packages/shared/assets/images/kiado_android_monochrome_icon.png"
       },
       "permissions": [
         "android.permission.CAMERA",
@@ -49,14 +47,38 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.INTERNET"
       ],
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "../../packages/shared/assets/images/favicon.png"
+      "favicon": "../../packages/shared/assets/images/favicon.ico"
     },
-    "plugins": ["expo-router"]
+    "plugins": [
+      "expo-router",
+      "@react-native-community/datetimepicker",
+      [
+        "@sentry/react-native",
+        {
+          "uploadSourceMaps": false
+        }
+      ],
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.uk.co.kiado.app"
+        }
+      ],
+      "expo-image",
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a28f9395-6497-4116-a831-a92f580d405e"
+      }
+    },
+    "owner": "mozaik-software-solutions-ltd"
   }
 }

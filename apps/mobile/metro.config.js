@@ -7,7 +7,8 @@ const monorepoRoot = path.resolve(projectRoot, "../..");
 
 const config = getDefaultConfig(projectRoot);
 
-config.watchFolders = [monorepoRoot];
+// Merge with Expo's default watchFolders instead of replacing them
+config.watchFolders = [...(config.watchFolders ?? []), monorepoRoot];
 
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),

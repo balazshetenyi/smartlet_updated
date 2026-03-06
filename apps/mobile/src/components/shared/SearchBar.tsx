@@ -16,8 +16,7 @@ import {
 import { Calendar } from "react-native-calendars";
 
 const RENTAL_TYPES = [
-  "Any",
-  PropertyType.LongTerm,
+  PropertyType.Any,
   PropertyType.ShortTerm,
   PropertyType.Holiday,
 ];
@@ -286,7 +285,7 @@ export default function SearchBar() {
                 !searchParams.rentalType && styles.searchPlaceholder,
               ]}
             >
-              {searchParams.rentalType ?? "Any type"}
+              {RentalType.get(searchParams.rentalType ?? "any")}
             </Text>
           </View>
         </TouchableOpacity>
@@ -573,7 +572,7 @@ export default function SearchBar() {
                       tempRentalType === type && styles.typeOptionTextSelected,
                     ]}
                   >
-                    {type}
+                    {RentalType.get(type)}
                   </Text>
                   {tempRentalType === type && (
                     <MaterialIcons
