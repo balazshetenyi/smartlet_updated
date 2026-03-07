@@ -1,4 +1,5 @@
 import { useSearch } from "@/context/SearchContext";
+import LocationAutocomplete from "@/components/search/LocationAutocomplete";
 import { PropertyType, RentalType } from "@/enums/property-enums";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { colours } from "@kiado/shared";
@@ -163,24 +164,21 @@ export default function SearchBar() {
   return (
     <View style={styles.container}>
       <View style={styles.searchCard}>
-        {/* Location Input */}
-        <View style={styles.searchRow}>
-          <MaterialIcons
-            name="search"
-            size={24}
-            color={colours.textSecondary}
-          />
-          <TextInput
-            style={styles.locationInput}
-            placeholder="Where are you going?"
-            placeholderTextColor={colours.textSecondary}
-            value={searchParams.location}
-            onChangeText={(text) =>
-              // Reset geocoded coords whenever the location text changes
-              updateSearchParams({ location: text, lat: null, lng: null })
-            }
-          />
-        </View>
+        {/* Location Input with Autocomplete */}
+        <LocationAutocomplete
+          initialValue={searchParams.location}
+          onChangeText={(text) =>
+            updateSearchParams({ location: text, lat: null, lng: null })
+          }
+          onSelect={(description, lat, lng) => {
+            updateSearchParams({
+              location: description,
+              lat,
+              lng,
+            });
+            // Optional: Automatically trigger search or move focus
+          }}
+        />
 
         <View style={styles.divider} />
 
@@ -189,7 +187,7 @@ export default function SearchBar() {
           style={styles.searchRow}
           onPress={() => setShowRadiusPicker(true)}
         >
-          <MaterialIcons name="radar" size={22} color={colours.textSecondary} />
+          <MaterialIcons name="radar" size={22} color={colours.darkSlateBlue} />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Radius</Text>
             <Text style={styles.searchValue}>{searchParams.radiusKm} km</Text>
@@ -206,7 +204,7 @@ export default function SearchBar() {
           <MaterialIcons
             name="calendar-today"
             size={22}
-            color={colours.textSecondary}
+            color={colours.darkSlateBlue}
           />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>When</Text>
@@ -231,7 +229,7 @@ export default function SearchBar() {
           <MaterialIcons
             name="person"
             size={24}
-            color={colours.textSecondary}
+            color={colours.darkSlateBlue}
           />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Who</Text>
@@ -250,9 +248,9 @@ export default function SearchBar() {
           onPress={() => setShowPricePicker(true)}
         >
           <MaterialIcons
-            name="attach-money"
+            name="currency-pound"
             size={24}
-            color={colours.textSecondary}
+            color={colours.darkSlateBlue}
           />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Price</Text>
@@ -276,7 +274,7 @@ export default function SearchBar() {
           style={styles.searchRow}
           onPress={() => setShowTypePicker(true)}
         >
-          <MaterialIcons name="home" size={24} color={colours.textSecondary} />
+          <MaterialIcons name="home" size={24} color={colours.darkSlateBlue} />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Type</Text>
             <Text
@@ -603,14 +601,16 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   searchCard: {
-    backgroundColor: colours.cardBackground,
+    backgroundColor: colours.surface,
     borderRadius: 16,
     padding: 8,
-    elevation: 3,
+    elevation: 4,
     shadowColor: colours.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.9,
     shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: colours.border,
   },
   searchRow: {
     flexDirection: "row",

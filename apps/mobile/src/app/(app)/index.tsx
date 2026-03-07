@@ -36,14 +36,6 @@ export default function HomeScreen() {
     loadProperties();
   }, [loadProperties, profile?.id]);
 
-  const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <MaterialIcons name="home" size={64} color={colours.muted} />
-      <Text style={styles.emptyText}>No properties available</Text>
-      <Text style={styles.emptySubtext}>Check back later for new listings</Text>
-    </View>
-  );
-
   if (loading) {
     return (
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>

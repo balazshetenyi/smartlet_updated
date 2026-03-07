@@ -32,6 +32,7 @@ export default function SearchResultsScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
+  const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
 
   /**
    * Tracks the last location string we successfully geocoded so we can skip
@@ -50,12 +51,13 @@ export default function SearchResultsScreen() {
   }> => {
     const { location, lat, lng } = searchParams;
 
-    // Already have fresh coords for this exact location string — reuse them
-    if (lat !== null && lng !== null && geocodedForRef.current === location) {
+    // If we already have coords from the Autocomplete selection, just use them
+    if (lat !== null && lng !== null) {
       return { lat, lng };
     }
 
-    if (!location.trim()) {
+    // Fallback: If user just typed text and hit enter, try to geocode once
+    if (!location.trim() || geocodedForRef.current === location) {
       return { lat: null, lng: null };
     }
 
@@ -76,32 +78,99 @@ export default function SearchResultsScreen() {
     return { lat: null, lng: null };
   }, [searchParams, updateSearchParams]);
 
+  // Abstracted the RPC call to keep it clean
+  const fetchPropertiesByRadius = async (
+    lat: number,
+    lng: number,
+    radius: number,
+    pageNumber: number,
+  ) => {
+    const { data, error } = await supabase.rpc("search_properties", {
+      p_location: null, // Force geo-search
+      p_lat: lat,
+      p_lng: lng,
+      p_radius_km: radius,
+      p_check_in: searchParams.checkIn || null,
+      p_check_out: searchParams.checkOut || null,
+      p_guests: searchParams.guests > 0 ? searchParams.guests : null,
+      p_rental_type: searchParams.rentalType?.toLowerCase() || null,
+      p_min_price: searchParams.minPrice || null,
+      p_max_price: searchParams.maxPrice || null,
+      p_page: pageNumber,
+      p_page_size: PAGE_SIZE,
+    });
+    if (error) throw error;
+    return data as Property[];
+  };
+
   const searchProperties = useCallback(
     async (pageNumber = 0, append = false) => {
       try {
-        if (pageNumber === 0) setLoading(true);
-        else setLoadingMore(true);
+        if (pageNumber === 0) {
+          setLoading(true);
+          setFallbackMessage(null);
+        } else {
+          setLoadingMore(true);
+        }
 
         const { lat, lng } = await ensureGeocoded();
+        let results: Property[] = [];
 
-        const { data, error } = await supabase.rpc("search_properties", {
-          p_location: searchParams.location || null,
-          p_lat: lat,
-          p_lng: lng,
-          p_radius_km: searchParams.radiusKm,
-          p_check_in: searchParams.checkIn || null,
-          p_check_out: searchParams.checkOut || null,
-          p_guests: searchParams.guests > 0 ? searchParams.guests : null,
-          p_rental_type: searchParams.rentalType?.toLowerCase() || null,
-          p_min_price: searchParams.minPrice || null,
-          p_max_price: searchParams.maxPrice || null,
-          p_page: pageNumber,
-          p_page_size: PAGE_SIZE,
-        });
+        // IF WE HAVE COORDINATES: Do the Fallback Strategy
+        if (lat && lng) {
+          // Attempt 1: Strict Radius (e.g., 30km)
+          results = await fetchPropertiesByRadius(
+            lat,
+            lng,
+            searchParams.radiusKm,
+            pageNumber,
+          );
 
-        if (error) throw error;
+          // Attempt 2: Expanded Radius (e.g., 100km)
+          if (results.length === 0 && pageNumber === 0) {
+            results = await fetchPropertiesByRadius(lat, lng, 100, pageNumber);
+            if (results.length > 0) {
+              setFallbackMessage(
+                `No homes found strictly within ${searchParams.location}. Showing nearby results instead.`,
+              );
+            }
+          }
 
-        const results: Property[] = data || [];
+          // Attempt 3: Global / Closest Available (e.g., 20,000km)
+          if (results.length === 0 && pageNumber === 0) {
+            results = await fetchPropertiesByRadius(
+              lat,
+              lng,
+              20000,
+              pageNumber,
+            );
+            if (results.length > 0) {
+              setFallbackMessage(
+                `No homes found in ${searchParams.location} yet. Showing the closest available properties.`,
+              );
+            }
+          }
+        }
+        // IF NO COORDINATES: Fallback to text search (existing logic)
+        else {
+          const { data, error } = await supabase.rpc("search_properties", {
+            p_location: searchParams.location || null,
+            p_lat: null,
+            p_lng: null,
+            p_radius_km: searchParams.radiusKm,
+            p_check_in: searchParams.checkIn || null,
+            p_check_out: searchParams.checkOut || null,
+            p_guests: searchParams.guests > 0 ? searchParams.guests : null,
+            p_rental_type: searchParams.rentalType?.toLowerCase() || null,
+            p_min_price: searchParams.minPrice || null,
+            p_max_price: searchParams.maxPrice || null,
+            p_page: pageNumber,
+            p_page_size: PAGE_SIZE,
+          });
+
+          if (error) throw error;
+          results = data || [];
+        }
 
         setHasMore(results.length === PAGE_SIZE);
         setProperties((prev) => (append ? [...prev, ...results] : results));
@@ -114,10 +183,9 @@ export default function SearchResultsScreen() {
           setCoverMap({});
         }
       } catch (error) {
-        console.error("Error searching properties:", error);
+        console.error("Search Error:", error);
       } finally {
         setLoading(false);
-        setRefreshing(false);
         setLoadingMore(false);
       }
     },
@@ -148,55 +216,54 @@ export default function SearchResultsScreen() {
     router.push(`/properties/${propertyId}`);
   };
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.searchSummary}>
-        <Text style={styles.resultsCount}>
-          {properties.length}{" "}
-          {properties.length === 1 ? "property" : "properties"} found
-        </Text>
+  const renderHeader = () => {
+    // Determine the descriptive label for the radius/location
+    const locationLabel = fallbackMessage
+      ? `Nearby ${searchParams.location}`
+      : `within ${searchParams.radiusKm} km of ${searchParams.location}`;
 
-        {searchParams.location && (
+    return (
+      <View style={styles.header}>
+        <View style={styles.searchSummary}>
+          <Text style={styles.resultsCount}>
+            {properties.length} {properties.length === 1 ? "home" : "homes"}{" "}
+            found
+          </Text>
           <View style={styles.locationRow}>
             <MaterialIcons
-              name={searchParams.lat !== null ? "location-on" : "search"}
+              name="location-on"
               size={14}
-              color={colours.textSecondary}
+              color={colours.primary}
             />
-            <Text style={styles.searchLocation}>
-              {searchParams.lat !== null
-                ? `within ${searchParams.radiusKm} km of ${searchParams.location}`
-                : `matching "${searchParams.location}"`}
-            </Text>
+            <Text style={styles.searchLocation}>{locationLabel}</Text>
           </View>
-        )}
+          {searchParams.checkIn && (
+            <Text style={styles.searchDates}>
+              {new Date(searchParams.checkIn).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+              })}{" "}
+              -{" "}
+              {new Date(searchParams.checkOut!).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+              })}
+            </Text>
+          )}
+        </View>
 
-        {searchParams.checkIn && searchParams.checkOut && (
-          <Text style={styles.searchDates}>
-            {new Date(searchParams.checkIn).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-            })}{" "}
-            -{" "}
-            {new Date(searchParams.checkOut).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-            })}
-          </Text>
-        )}
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={() => {
+            clearSearchParams();
+            router.back();
+          }}
+        >
+          <Text style={styles.clearButtonText}>Clear</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        style={styles.clearButton}
-        onPress={() => {
-          clearSearchParams();
-          router.back();
-        }}
-      >
-        <Text style={styles.clearButtonText}>Clear</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  };
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
@@ -226,40 +293,52 @@ export default function SearchResultsScreen() {
             )}
           </View>
         ) : (
-          <FlatList
-            data={properties}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.cardWrapper}>
-                <PropertyCard
-                  property={item}
-                  onPress={() => handlePropertyPress(item.id)}
-                  imageUrl={coverMap[item.id]}
+          <>
+            {fallbackMessage && (
+              <View style={styles.fallbackBanner}>
+                <MaterialIcons
+                  name="info-outline"
+                  size={20}
+                  color={colours.warning}
                 />
+                <Text style={styles.fallbackText}>{fallbackMessage}</Text>
               </View>
             )}
-            ListHeaderComponent={renderHeader}
-            ListEmptyComponent={renderEmpty}
-            contentContainerStyle={styles.listContent}
-            onEndReached={onEndReached}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              loadingMore ? (
-                <ActivityIndicator
-                  size="small"
-                  color={colours.primary}
-                  style={{ paddingVertical: 16 }}
+            <FlatList
+              data={properties}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View style={styles.cardWrapper}>
+                  <PropertyCard
+                    property={item}
+                    onPress={() => handlePropertyPress(item.id)}
+                    imageUrl={coverMap[item.id]}
+                  />
+                </View>
+              )}
+              ListHeaderComponent={renderHeader}
+              ListEmptyComponent={renderEmpty}
+              contentContainerStyle={styles.listContent}
+              onEndReached={onEndReached}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                loadingMore ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={colours.primary}
+                    style={{ paddingVertical: 16 }}
+                  />
+                ) : null
+              }
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor={colours.primary}
                 />
-              ) : null
-            }
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                tintColor={colours.primary}
-              />
-            }
-          />
+              }
+            />
+          </>
         )}
       </SafeAreaView>
     </>
@@ -292,6 +371,24 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: colours.border,
+  },
+  fallbackBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colours.warning + "15", // Adds 15% opacity to the warning color for a soft background
+    padding: 12,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colours.warning + "40",
+    gap: 12,
+  },
+  fallbackText: {
+    flex: 1,
+    fontSize: 14,
+    color: colours.text,
+    lineHeight: 20,
   },
   searchSummary: {
     flex: 1,

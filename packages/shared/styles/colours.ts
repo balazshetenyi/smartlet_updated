@@ -11,7 +11,7 @@ export const colours = {
   background: "#F9FAFB",
   surface: "#FFFFFF",
   cardBackground: "#FFFFFF",
-  text: "#1F2937",
+  text: "#2C3E50",
   textSecondary: "#6B7280",
   muted: "#9CA3AF",
   border: "#E5E7EB",
