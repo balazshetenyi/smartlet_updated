@@ -1,7 +1,6 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase } from "../../../../../packages/shared/lib/supabase";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { supabase, colours } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -60,7 +59,7 @@ export default function ForgotPasswordScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Reset Password</Text>
         <Text style={styles.subtitle}>
-          Enter your email address and we'll send you a link to reset your
+          Enter your email address and we&aposll send you a link to reset your
           password.
         </Text>
       </View>

@@ -284,7 +284,10 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account Settings</Text>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/reset-password")}
+        >
           <View style={styles.menuItemLeft}>
             <MaterialIcons name="lock" size={24} color={colours.text} />
             <Text style={styles.menuItemText}>Change Password</Text>

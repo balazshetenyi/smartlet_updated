@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
 import { colours, supabase } from "@kiado/shared";
-import { Booking, BookingWithTenant } from "@kiado/shared/types/bookings";
+import { BookingWithTenant } from "@kiado/shared/types/bookings";
 import { fetchBookingRequests } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack } from "expo-router";
@@ -139,7 +139,7 @@ export default function BookingRequestsScreen() {
     }
   };
 
-  const renderBookingCard = ({ item }: { item: Booking }) => {
+  const renderBookingCard = ({ item }: { item: BookingWithTenant }) => {
     const checkInDate = new Date(item.check_in);
     const checkOutDate = new Date(item.check_out);
     const nights = Math.ceil(
