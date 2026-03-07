@@ -3,7 +3,7 @@ import { colours } from "@kiado/shared";
 import { Property } from "@kiado/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Calendar, DateData } from "react-native-calendars";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   Alert,
   Modal,
@@ -31,6 +31,17 @@ export default function BookingModal({
 }: BookingModalProps) {
   const [checkIn, setCheckIn] = useState<string | null>(null);
   const [checkOut, setCheckOut] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Auto-scroll to the bottom when both dates are selected
+  useEffect(() => {
+    if (checkIn && checkOut) {
+      // Small timeout to allow the layout to calculate after the selection state change
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [checkIn, checkOut]);
 
   const markedDates = useMemo(() => {
     const marked: any = {};
@@ -169,6 +180,7 @@ export default function BookingModal({
           </View>
 
           <ScrollView
+            ref={scrollViewRef}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
@@ -281,7 +293,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   modalTitle: {
     fontSize: 20,

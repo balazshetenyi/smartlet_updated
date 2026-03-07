@@ -120,18 +120,20 @@ export default function PropertyCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colours.cardBackground,
-    borderRadius: 16,
-    shadowColor: colours.shadow,
+    borderRadius: 12,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: colours.overlay,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    overflow: "hidden",
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   image: {
     width: "100%",
     height: 200,
     backgroundColor: colours.background,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   cardUnavailable: {
     opacity: 0.75,

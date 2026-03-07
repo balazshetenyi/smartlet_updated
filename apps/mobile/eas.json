@@ -33,6 +33,7 @@
       }
     },
     "production": {
+      "channel": "production",
       "distribution": "store",
       "autoIncrement": true,
       "ios": {

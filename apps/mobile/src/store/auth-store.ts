@@ -1,4 +1,5 @@
 import { SignInData, SignUpData } from "@kiado/shared/types/auth";
+import { UserProfile } from "@kiado/shared/types/user";
 import {
   fetchUserProfile,
   signInWithEmail,

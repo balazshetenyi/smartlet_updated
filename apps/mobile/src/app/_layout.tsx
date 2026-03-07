@@ -20,22 +20,51 @@ export default function RootLayout() {
   const { isLoggedIn, loading, setSession, loadProfile } = useAuthStore();
 
   useEffect(() => {
+    let mounted = true;
+
+    // Safety timeout: If Supabase doesn't respond in 3s, show the app anyway
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("Auth initialization timed out - forcing app to load");
+        useAuthStore.setState({ loading: false });
+      }
+    }, 5000);
+
     // 1) Hydrate initial session (cold start)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!mounted) return;
+        setSession(session);
+        useAuthStore.setState({ loading: false });
+        clearTimeout(timeout);
+      })
+      .catch((err) => {
+        console.error("Supabase session error:", err);
+        if (mounted) useAuthStore.setState({ loading: false });
+        clearTimeout(timeout);
+      });
 
     // 2) Keep Zustand in sync with Supabase (sign-in/out/refresh)
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        if (session?.user?.id) await loadProfile(session.user.id);
-        else useAuthStore.setState({ profile: null });
-      },
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      console.log("Auth State Changed:", _event);
+      setSession(session);
+      if (session?.user?.id) await loadProfile(session.user.id);
+      else useAuthStore.setState({ profile: null });
 
-    return () => sub.subscription.unsubscribe();
-  }, [setSession, loadProfile]);
+      // Ensure loading is false after the first event
+      useAuthStore.setState({ loading: false });
+    });
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Optional but recommended: don't render routing until we know the auth state
   if (loading) {

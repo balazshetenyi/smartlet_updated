@@ -184,6 +184,7 @@ eas build --platform android --profile production
 Submit to stores:
 
 ```bash
+eas build --platform ios --profile production --auto-submit
 eas submit --platform ios --profile production
 eas submit --platform android --profile production
 ```
