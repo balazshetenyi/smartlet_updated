@@ -11,7 +11,7 @@ import {
   subscribeToMessages,
 } from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -39,7 +39,6 @@ export default function ChatScreen() {
     propertyTitle?: string;
   }>();
   const { profile } = useAuthStore();
-  const router = useRouter();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);

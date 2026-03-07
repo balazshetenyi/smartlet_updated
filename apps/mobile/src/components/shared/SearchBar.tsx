@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Calendar } from "react-native-calendars";
 
 const RENTAL_TYPES = [
@@ -485,57 +486,62 @@ export default function SearchBar() {
         transparent={true}
         onRequestClose={() => setShowPricePicker(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, styles.priceModalContent]}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Price Range</Text>
-              <TouchableOpacity onPress={() => setShowPricePicker(false)}>
-                <MaterialIcons name="close" size={24} color={colours.text} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.priceRow}>
-              <View style={styles.priceInputWrapper}>
-                <Text style={styles.priceInputLabel}>Min price (£)</Text>
-                <TextInput
-                  style={styles.priceInput}
-                  placeholder="0"
-                  placeholderTextColor={colours.textSecondary}
-                  keyboardType="numeric"
-                  value={tempMinPrice}
-                  onChangeText={setTempMinPrice}
-                />
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, styles.priceModalContent]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Price Range</Text>
+                <TouchableOpacity onPress={() => setShowPricePicker(false)}>
+                  <MaterialIcons name="close" size={24} color={colours.text} />
+                </TouchableOpacity>
               </View>
-              <Text style={styles.priceSeparator}>–</Text>
-              <View style={styles.priceInputWrapper}>
-                <Text style={styles.priceInputLabel}>Max price (£)</Text>
-                <TextInput
-                  style={styles.priceInput}
-                  placeholder="Any"
-                  placeholderTextColor={colours.textSecondary}
-                  keyboardType="numeric"
-                  value={tempMaxPrice}
-                  onChangeText={setTempMaxPrice}
-                />
-              </View>
-            </View>
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => {
-                  setTempMinPrice("");
-                  setTempMaxPrice("");
-                }}
-              >
-                <Text style={styles.clearButtonText}>Clear</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.saveButton} onPress={savePrices}>
-                <Text style={styles.saveButtonText}>Save</Text>
-              </TouchableOpacity>
+              <View style={styles.priceRow}>
+                <View style={styles.priceInputWrapper}>
+                  <Text style={styles.priceInputLabel}>Min price (£)</Text>
+                  <TextInput
+                    style={styles.priceInput}
+                    placeholder="0"
+                    placeholderTextColor={colours.textSecondary}
+                    keyboardType="numeric"
+                    value={tempMinPrice}
+                    onChangeText={setTempMinPrice}
+                  />
+                </View>
+                <Text style={styles.priceSeparator}>–</Text>
+                <View style={styles.priceInputWrapper}>
+                  <Text style={styles.priceInputLabel}>Max price (£)</Text>
+                  <TextInput
+                    style={styles.priceInput}
+                    placeholder="Any"
+                    placeholderTextColor={colours.textSecondary}
+                    keyboardType="numeric"
+                    value={tempMaxPrice}
+                    onChangeText={setTempMaxPrice}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => {
+                    setTempMinPrice("");
+                    setTempMaxPrice("");
+                  }}
+                >
+                  <Text style={styles.clearButtonText}>Clear</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={savePrices}
+                >
+                  <Text style={styles.saveButtonText}>Save</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Rental Type Modal */}
