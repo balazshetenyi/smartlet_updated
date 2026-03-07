@@ -1,7 +1,6 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase } from "../../../../../packages/shared/lib/supabase";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { supabase, colours } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
