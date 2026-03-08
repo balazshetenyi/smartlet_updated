@@ -8,66 +8,72 @@ export default function AccountLayout() {
   const router = useRouter();
 
   return (
-    <>
-      <Stack
-        screenOptions={{
-          headerShown: false,
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
         }}
-      >
-        <Stack.Screen
-          name="profile"
-          options={{
-            title: "Profile",
-            headerShown: true,
-            headerLeft: () => <HeaderBackButton />,
-          }}
-        />
-        <Stack.Screen
-          name="my-bookings"
-          options={{
-            title: "My Bookings",
-            headerShown: true,
-            headerLeft: () => <HeaderBackButton />,
-          }}
-        />
-        <Stack.Screen
-          name="my-properties"
-          options={{
-            title: "My Properties",
-            headerShown: true,
-            headerLeft: () => <HeaderBackButton />,
-            headerRight: () => (
-              <TouchableOpacity
-                onPress={() => router.push("/properties/create-property")}
-                style={{ marginRight: 8, padding: 4 }}
-                accessibilityLabel="Create Property"
-              >
-                <MaterialIcons
-                  name="add-home"
-                  size={24}
-                  color={colours.primary}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-        />
-        <Stack.Screen
-          name="payout-setup"
-          options={{
-            title: "Payout Settings",
-            headerShown: true,
-            headerLeft: () => <HeaderBackButton />,
-          }}
-        />
-        <Stack.Screen
-          name="booking-requests"
-          options={{
-            title: "Booking Requests",
-            headerShown: true,
-            headerLeft: () => <HeaderBackButton />,
-          }}
-        />
-      </Stack>
-    </>
+      />
+      <Stack.Screen
+        name="change-password"
+        options={{
+          title: "Change Password",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
+        name="my-bookings"
+        options={{
+          title: "My Bookings",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
+        name="my-properties"
+        options={{
+          title: "My Properties",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => router.push("/properties/create-property")}
+              style={{ marginRight: 8, padding: 4 }}
+              accessibilityLabel="Create Property"
+            >
+              <MaterialIcons
+                name="add-home"
+                size={24}
+                color={colours.primary}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="payout-setup"
+        options={{
+          title: "Payout Settings",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
+        name="booking-requests"
+        options={{
+          title: "Booking Requests",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+    </Stack>
   );
 }

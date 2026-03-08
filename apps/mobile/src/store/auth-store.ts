@@ -50,20 +50,40 @@ export const useAuthStore = create<AuthStore & AuthActions>((set, get) => ({
 
   signIn: async (data) => {
     set({ loading: true });
-    await signInWithEmail(data); // auth listener + setSession will populate session/profile
+    try {
+      await signInWithEmail(data);
+      // The onAuthStateChange listener in _layout.tsx will call setSession
+      // and loadProfile. We don't need to do it here, but we do need to
+      // ensure loading is cleared if the listener never fires (e.g. error).
+    } catch (e) {
+      console.error("[signIn] error:", e);
+    } finally {
+      // The listener sets loading: false itself, but guard against it not firing.
+      set((state) => ({ loading: state.loading ? false : state.loading }));
+    }
   },
 
   signOut: async () => {
     set({ signingOut: true });
-    await signOutUser(); // auth listener will clear session/profile
-    set({ signingOut: false });
+    try {
+      await signOutUser();
+    } catch (e) {
+      console.error("[signOut] error:", e);
+    } finally {
+      set({ signingOut: false });
+    }
   },
 
   signUpWithEmail: async (_data) => {
     set({ loading: true });
-    const result = await signUpWithEmail(_data);
-    set({ loading: false });
-    return result;
+    try {
+      return await signUpWithEmail(_data);
+    } catch (e) {
+      console.error("[signUpWithEmail] error:", e);
+      return { success: false, error: "An unexpected error occurred." };
+    } finally {
+      set({ loading: false });
+    }
   },
 
   refreshProfile: async () => {

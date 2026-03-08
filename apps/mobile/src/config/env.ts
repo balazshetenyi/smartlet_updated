@@ -5,11 +5,9 @@
 
 interface EnvConfig {
   SUPABASE_URL: string;
-  SUPABASE_SECRET_KEY: string;
   SUPABASE_PUBLISHABLE_KEY: string;
   SUPABASE_FUNCTIONS_URL: string;
   STRIPE_PUBLISHABLE_KEY: string;
-  STRIPE_SECRET_KEY: string;
   ENVIRONMENT: "development" | "staging" | "production";
 }
 
@@ -18,9 +16,7 @@ function validateEnv(): EnvConfig {
     SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY: process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     SUPABASE_FUNCTIONS_URL: process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL,
-    OPENCAGE_API_KEY: process.env.OPENCAGE_API_KEY,
     STRIPE_PUBLISHABLE_KEY: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     ENVIRONMENT: (process.env.EXPO_PUBLIC_ENVIRONMENT || "development") as
       | "development"
       | "staging"

@@ -286,7 +286,7 @@ export default function ProfileScreen() {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => router.push("/reset-password")}
+          onPress={() => router.push("/change-password")}
         >
           <View style={styles.menuItemLeft}>
             <MaterialIcons name="lock" size={24} color={colours.text} />
@@ -303,6 +303,28 @@ export default function ProfileScreen() {
               color={colours.text}
             />
             <Text style={styles.menuItemText}>Notifications</Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/terms-of-service")}
+        >
+          <View style={styles.menuItemLeft}>
+            <MaterialIcons name="gavel" size={24} color={colours.text} />
+            <Text style={styles.menuItemText}>Terms of Service</Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/privacy-policy")}
+        >
+          <View style={styles.menuItemLeft}>
+            <MaterialIcons name="privacy-tip" size={24} color={colours.text} />
+            <Text style={styles.menuItemText}>Privacy Policy</Text>
           </View>
           <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
         </TouchableOpacity>

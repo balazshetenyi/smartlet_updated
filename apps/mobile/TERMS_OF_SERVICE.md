@@ -1,177 +1,155 @@
 # Terms of Service for Kiado
 
-**Last Updated: [DATE]**
+**Last Updated:** 8 March 2026
 
-## 1. Acceptance of Terms
+These Terms of Service ("**Terms**") set out the terms on which you may use Kiado (the "**App**") and any related services made available by Kiado ("**we**", "**us**", or "**our**"). Please read them carefully. By accessing or using the App you agree to these Terms. If you do not agree, do not use the App.
 
-By accessing and using Kiado ("the App"), you accept and agree to be bound by these Terms of Service ("Terms"). If you
-do not agree to these Terms, please do not use the App.
+---
 
-## 2. Description of Service
+## 1. Key definitions
 
-Kiado is a property rental platform that connects landlords with tenants for long-term, short-term, and holiday rentals.
-The service includes:
+- **User**, **you** or **your** means any person who accesses or uses the App.
+- **Landlord** means a User who lists properties on the App.
+- **Tenant** means a User who searches for or books properties.
+- **Property** means a listing on the App offered by a Landlord.
+- **Booking** means a confirmed reservation for a Property through the App.
 
-- Property listings
-- Booking management
-- Payment processing
-- Messaging between users
+## 2. Acceptance and changes to these Terms
 
-## 3. User Accounts
+- By using the App you accept and agree to comply with these Terms.
+- We may modify these Terms at any time. We will notify you of material changes through the App, by email (if available), or by posting the updated version. Continued use after changes indicates acceptance of the revised Terms.
+- If you do not agree to the revised Terms, you must stop using the App.
 
-### Registration
+## 3. Who can use the App
 
-- You must provide accurate and complete information
-- You must be at least 18 years old
-- You are responsible for maintaining the security of your account
-- One person or entity may not maintain multiple accounts
+- You must be at least 18 years old to use the App.
+- You must provide complete and accurate information when registering and keep your account information up to date.
+- You are responsible for keeping your account credentials secure and for any activity that occurs under your account.
 
-### User Types
+## 4. Your content and listings
 
-- **Landlords**: Can list properties and manage bookings
-- **Tenants**: Can search for and book properties
+- You retain ownership of content you post (e.g., property descriptions, photos). You grant Kiado a non-exclusive, worldwide, royalty-free licence to use, reproduce, modify, publish, and display that content for the purpose of operating the App.
+- You must only post content that you have the right to use and that does not violate any laws or third-party rights.
+- We may remove or refuse content that violates these Terms or our policies.
 
-## 4. Property Listings
+## 5. Landlord obligations
 
-### Landlord Responsibilities
+- Landlords must provide accurate descriptions, pricing, availability, and photos for their Properties.
+- Landlords must comply with all local laws, safety standards, and any applicable licensing or registration requirements.
+- Landlords are responsible for managing bookings, accepting or rejecting requests (if applicable), and for communicating with Tenants in a timely and professional manner.
 
-- Provide accurate property information
-- Upload genuine photos
-- Set fair pricing
-- Maintain property availability calendar
-- Comply with all local laws and regulations
-- Ensure properties meet safety standards
+## 6. Tenant obligations and bookings
 
-### Prohibited Listings
+- Tenants must provide accurate booking information (name, contact details, payment details).
+- Bookings may be subject to the host’s approval or verification and to any property-specific rules.
+- Tenants must comply with the Property rules and respect the property and neighbours during their stay.
 
-- Illegal activities
-- Discriminatory practices
-- Misleading information
-- Properties you don't have authority to rent
+## 7. Payments, fees and refunds
 
-## 5. Bookings and Payments
+- Payments for Bookings are processed through third-party payment providers (for example, Stripe). When you make a Booking you agree to pay the amounts shown at checkout.
+- We may charge service fees; any fees will be disclosed at the time of payment.
+- Refunds, cancellations and rescheduling are governed by the Property’s cancellation policy and any local laws. Where applicable, we will facilitate refunds through our payment provider in accordance with the policy displayed at booking.
+- We are not responsible for payment provider fees, currency conversion fees, or banking charges applied by third parties.
 
-### Booking Process
+## 8. Security and refunds for fraudulent activity
 
-- Bookings are subject to landlord approval
-- Payment is processed through Stripe
-- Cancellation policies apply as stated in property listings
+- You should notify us immediately if you become aware of any unauthorised use of your account.
+- If a transaction is disputed (for example, because of fraud), we will cooperate with the payment provider and relevant authorities.
 
-### Fees
+## 9. Insurance and deposits
 
-- We may charge service fees for bookings
-- Payment processing fees apply
-- Fees are clearly disclosed before payment
+- Any security deposit requirement or insurance offering will be described on the listing or during booking.
+- We are not the insurer and do not guarantee that third-party insurance covers all events.
+- Landlords and Tenants should read the terms of any insurance or deposit arrangement carefully.
 
-### Refunds
+## 10. Prohibited conduct
 
-- Refund policies vary by property
-- Disputes should be resolved between landlord and tenant
-- We may mediate disputes at our discretion
+You must not:
 
-## 6. User Conduct
+- Violate applicable laws or regulations.
+- Post or transmit content that is unlawful, defamatory, abusive, obscene, or discriminatory.
+- Use the App to harass, stalk, threaten, or abuse other people.
+- Attempt to access or interfere with another user’s account.
+- Circumvent fees or payment processes, or attempt to hide or falsify your identity or contact details.
 
-You agree not to:
+## 11. Intellectual property
 
-- Violate any laws or regulations
-- Harass, abuse, or harm others
-- Post false or misleading information
-- Attempt to circumvent the platform
-- Collect user information without permission
-- Use the service for unauthorized commercial purposes
-- Interfere with the proper functioning of the App
+- All rights, title and interest in the App and its content (other than user content) are owned by or licensed to Kiado.
+- You may not copy, reproduce, modify, distribute or create derivative works without our prior written consent.
 
-## 7. Content
+## 12. Third-party services and links
 
-### Your Content
+- The App may include links to third-party services (for example, payment providers). We do not control these third-party services and are not responsible for their terms or practices.
+- You should review the privacy and terms of each third party before using them.
 
-- You retain ownership of content you post
-- You grant us license to use, display, and distribute your content
-- You are responsible for your content
-- We may remove content that violates these Terms
+## 13. Privacy and data protection
 
-### Prohibited Content
+- Our handling of personal data is set out in our Privacy Policy. By using the App you agree to the collection, use and disclosure of personal data in accordance with the Privacy Policy.
+- If you are in the UK, we will process personal data in accordance with applicable UK data protection law (including UK GDPR and the Data Protection Act 2018).
+- If you believe your data rights have been breached, contact us using the contact details below.
 
-- Illegal content
-- Offensive or harmful content
-- Spam or misleading content
-- Infringing content
+## 14. Disclaimers and no warranty
 
-## 8. Intellectual Property
+- The App is provided “as is” and “as available” without warranties of any kind.
+- To the fullest extent permitted by law, we disclaim all warranties, whether express or implied, including but not limited to fitness for a particular purpose, accuracy, availability, or non-infringement.
+- We do not warrant that the App will be uninterrupted, secure, or error-free.
 
-- The App and its content are protected by copyright and other laws
-- Kiado and its logos are our trademarks
-- You may not use our intellectual property without permission
+## 15. Limitation of liability
 
-## 9. Privacy
+- To the maximum extent permitted by law, Kiado’s total aggregate liability to you arising out of or in connection with the App or these Terms shall not exceed the total amount paid by you to Kiado in the 12 months preceding the claim (or £100, if greater protection is required by applicable law).
+- We are not liable for indirect, incidental, special, consequential or punitive damages, loss of profits, loss of data, or loss of goodwill.
+- Nothing in these Terms limits liability for: (i) death or personal injury caused by our negligence, (ii) fraud or fraudulent misrepresentation, or (iii) any other liability that cannot be limited under applicable law.
 
-Your use of the App is also governed by our Privacy Policy, which is incorporated into these Terms by reference.
+## 16. Indemnity
 
-## 10. Disclaimers
+- You agree to indemnify, defend and hold harmless Kiado and its officers, directors, employees, agents, and affiliates from and against any claims, damages, losses, liabilities and expenses (including reasonable legal fees) arising out of your use of the App, your breach of these Terms, or your violation of any law or the rights of a third party.
 
-### As-Is Service
+## 17. Termination and suspension
 
-- The App is provided "as is" without warranties
-- We don't guarantee uninterrupted or error-free service
-- We are not responsible for user-generated content
+- We may suspend or terminate your access to the App at any time for breach of these Terms, illegal activity, or where required by law.
+- You may close your account at any time. Termination does not affect rights or obligations accrued before termination.
 
-### No Guarantee
+## 18. Refunds and disputes
 
-- We don't guarantee the accuracy of listings
-- We don't endorse any users or properties
-- We are not a party to rental agreements
+- If you have a complaint about a Booking, please contact us promptly so we can try to resolve it.
+- In many cases disputes between Landlords and Tenants should be resolved between those parties; we may assist where appropriate.
+- For consumer Users in the UK, statutory consumer rights are not affected by these Terms.
 
-## 11. Limitation of Liability
+## 19. Governing law and jurisdiction
 
-To the maximum extent permitted by law:
+- These Terms shall be governed by and construed in accordance with the laws of England and Wales.
+- The courts of England and Wales shall have exclusive jurisdiction to resolve any disputes arising out of or in connection with these Terms, subject to any mandatory consumer protection laws that provide otherwise.
 
-- We are not liable for indirect, incidental, or consequential damages
-- Our liability is limited to the amount you paid us in the past 12 months
-- We are not responsible for disputes between users
+## 20. Changes to the App
 
-## 12. Indemnification
+- We may modify, suspend, or discontinue the App (or any part of it) at any time, temporarily or permanently, with or without notice.
 
-You agree to indemnify and hold us harmless from claims arising from:
+## 21. Notices
 
-- Your use of the App
-- Your violation of these Terms
-- Your violation of others' rights
+- We may provide notices to you via the App, email (if you have provided one), or in-app messaging. Notices will be effective when sent.
 
-## 13. Termination
+## 22. Severability and waiver
 
-- We may suspend or terminate your account at any time
-- You may close your account at any time
-- Provisions that should survive termination will remain in effect
+- If any provision of these Terms is held to be invalid or unenforceable, the remaining provisions remain in full force and effect.
+- Our failure to enforce any right or provision in these Terms does not constitute a waiver of that right.
 
-## 14. Dispute Resolution
+## 23. Entire agreement
 
-### Governing Law
+- These Terms, together with our Privacy Policy and any other documents expressly referred to in them, constitute the whole agreement between you and Kiado in relation to your use of the App.
 
-These Terms are governed by [YOUR JURISDICTION] law.
+## 24. Contact
 
-### Arbitration
+If you have questions, concerns, or a request under data protection law, contact us at:
 
-Disputes may be resolved through binding arbitration rather than court.
+- **Email:** info@mozaiksoftwaresolutions.com
+- **Address:** Suite RA01, 195-197 Wood Street, London, E17 3NU
 
-## 15. Changes to Terms
+## 25. Additional notes for Landlords and Tenants
 
-We may modify these Terms at any time. Continued use after changes constitutes acceptance.
+- Local laws relating to rental, housing, taxes and safety (for example licensing or registration) may apply to Landlords. Compliance is the responsibility of the Landlord.
+- Tenants should check property details and house rules carefully before booking.
 
-## 16. Contact
+## 26. Consumer information (UK)
 
-For questions about these Terms, contact us at:
-
-- Email: [YOUR EMAIL]
-- Address: [YOUR ADDRESS]
-
-## 17. Miscellaneous
-
-- If any provision is invalid, the rest remains in effect
-- Failure to enforce a right doesn't waive it
-- These Terms constitute the entire agreement
-- We may assign these Terms; you may not
-
-## 18. Emergency Situations
-
-In case of emergency at a rental property, contact local authorities immediately. Kiado is not responsible for emergency
-response.
+- Nothing in these Terms seeks to exclude or limit rights that you may have as a consumer under applicable UK consumer protection laws.
+- If you are a consumer, certain provisions may not apply to the extent they conflict with mandatory consumer rights.
