@@ -15,6 +15,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { ToastProvider } from "react-native-toast-notifications";
+import { useNotifications } from "@/hooks/useNotifications";
 
 function withTimeout<T>(
   promise: Promise<T>,
@@ -57,6 +58,7 @@ function Providers({ children }: { children: React.ReactElement }) {
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
   const { isLoggedIn, loading, setSession, loadProfile } = useAuthStore();
+  useNotifications();
 
   useEffect(() => {
     let mounted = true;

@@ -30,6 +30,14 @@ export default function AccountLayout() {
         }}
       />
       <Stack.Screen
+        name="notifications"
+        options={{
+          title: "Notifications",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
         name="my-bookings"
         options={{
           title: "My Bookings",

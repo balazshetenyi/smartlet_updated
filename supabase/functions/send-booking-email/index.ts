@@ -166,6 +166,24 @@ ${confirmUrl}
       throw new Error("Failed to send booking email");
     }
 
+    // Send push notification to landlord (non-blocking, best-effort)
+    fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify({
+        userId: property.landlord_id,
+        title: `New booking request`,
+        body: `${tenantName} requested "${property.title}"`,
+        data: {
+          screen: "booking-requests",
+          prefKey: "new_booking",
+        },
+      }),
+    }).catch((e) => console.error("push notification error:", e));
+
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
