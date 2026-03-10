@@ -12,11 +12,11 @@ export default function PropertiesLayout() {
         backgroundColor: colours.cardBackground,
       }}
     >
-      <Stack>
+      <Stack screenOptions={{ headerTitle: "" }}>
         <Stack.Screen
           name="create-property"
           options={{
-            title: "Create New Property",
+            headerTitle: "Create New Property",
             headerShown: true,
             headerLeft: () => <HeaderBackButton />,
           }}
@@ -24,7 +24,7 @@ export default function PropertiesLayout() {
         <Stack.Screen
           name="edit-property"
           options={{
-            title: "Edit Property",
+            headerTitle: "Edit Property",
             headerShown: true,
             headerLeft: () => <HeaderBackButton />,
           }}

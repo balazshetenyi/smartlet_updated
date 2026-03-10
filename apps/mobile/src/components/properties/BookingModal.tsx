@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSearch } from "@/context/SearchContext";
 
 interface BookingModalProps {
   visible: boolean;
@@ -29,9 +30,27 @@ export default function BookingModal({
   onClose,
   onConfirm,
 }: BookingModalProps) {
-  const [checkIn, setCheckIn] = useState<string | null>(null);
-  const [checkOut, setCheckOut] = useState<string | null>(null);
+  const { searchParams } = useSearch();
+  const [checkIn, setCheckIn] = useState<string | null>(
+    searchParams.checkIn ?? null,
+  );
+  const [checkOut, setCheckOut] = useState<string | null>(
+    searchParams.checkOut ?? null,
+  );
   const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (visible) {
+      setCheckIn(searchParams.checkIn ?? null);
+      setCheckOut(searchParams.checkOut ?? null);
+      // If dates are pre-populated from search, scroll to bottom after modal finishes animating
+      if (searchParams.checkIn && searchParams.checkOut) {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 400);
+      }
+    }
+  }, [visible]);
 
   // Auto-scroll to the bottom when both dates are selected
   useEffect(() => {

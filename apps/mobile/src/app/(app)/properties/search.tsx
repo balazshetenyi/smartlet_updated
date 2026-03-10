@@ -279,7 +279,7 @@ export default function SearchResultsScreen() {
     <>
       <Stack.Screen
         options={{
-          title: "Search Results",
+          headerTitle: "Search Results",
           headerShown: true,
           headerLeft: () => <HeaderBackButton />,
         }}

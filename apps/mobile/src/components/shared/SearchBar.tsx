@@ -60,10 +60,12 @@ export default function SearchBar() {
     const dateString = day.dateString;
 
     if (!tempDates.checkIn || (tempDates.checkIn && tempDates.checkOut)) {
+      // No selection yet, or starting fresh after a full range was picked
       setTempDates({ checkIn: dateString, checkOut: null });
     } else {
-      if (new Date(dateString) < new Date(tempDates.checkIn)) {
-        setTempDates({ checkIn: dateString, checkOut: tempDates.checkIn });
+      if (dateString <= tempDates.checkIn) {
+        // Earlier or same date tapped — reset check-in, clear check-out
+        setTempDates({ checkIn: dateString, checkOut: null });
       } else {
         setTempDates({ ...tempDates, checkOut: dateString });
       }

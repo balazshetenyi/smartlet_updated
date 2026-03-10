@@ -132,7 +132,7 @@ export default function PropertyCategoryScreen() {
     <>
       <Stack.Screen
         options={{
-          title: config.title,
+          headerTitle: config.title,
           headerShown: true,
           headerLeft: () => <HeaderBackButton />,
         }}
