@@ -1,9 +1,9 @@
-import {ImageSourceType} from "@/enums/image-source-type";
-import {supabase} from "@kiado/shared";
-import {Session} from "@supabase/supabase-js";
-import {decode} from "base64-arraybuffer";
+import { ImageSourceType } from "@/enums/image-source-type";
+import { supabase } from "@kiado/shared";
+import { Session } from "@supabase/supabase-js";
+import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
-import {Alert} from "react-native";
+import { Alert } from "react-native";
 
 /**
  * @description Opens the image picker to select an image from the device's library.
@@ -55,7 +55,14 @@ export const pickImage = async (
       const image = result.assets[0];
       return image; // Return the selected image object
     }
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "ERR_CAMERA_UNAVAILABLE_ON_SIMULATOR") {
+      Alert.alert(
+        "Camera Unavailable",
+        "The camera is not available on the simulator. Please test on a real device.",
+      );
+      return null;
+    }
     console.error("Image picker error:", error);
     Alert.alert(
       "Error",
@@ -76,7 +83,7 @@ export const pickImage = async (
  * @throws Will throw an error if the upload fails.
  */
 export const uploadImageToStorage = async (
-  image: ImagePicker.ImageInfo,
+  image: ImagePicker.ImagePickerAsset,
   bucketName: string,
   session: Session,
   folder?: string,

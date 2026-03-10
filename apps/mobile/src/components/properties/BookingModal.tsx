@@ -123,13 +123,15 @@ export default function BookingModal({
     }
 
     if (!checkIn || (checkIn && checkOut)) {
-      // Start new selection
+      // No selection yet, or starting over after a full range was picked
       setCheckIn(selectedDate);
       setCheckOut(null);
     } else {
-      // Complete the range
+      // checkIn is set, no checkOut yet
       if (selectedDate <= checkIn) {
-        Alert.alert("Error", "Check-out date must be after check-in date");
+        // User tapped an earlier (or same) date — treat it as a new check-in
+        setCheckIn(selectedDate);
+        setCheckOut(null);
         return;
       }
 

@@ -2,6 +2,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@kiado/shared";
 import { Conversation, Message } from "@kiado/shared/types/message";
 import { pickImage } from "@/utils/image-picker-utils";
+import { ImageSourceType } from "@/enums/image-source-type";
 import {
   fetchConversationById,
   fetchConversationMessages,
@@ -15,13 +16,16 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActionSheetIOS,
   ActivityIndicator,
   Alert,
+  Dimensions,
   FlatList,
   Image,
-  KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -30,6 +34,10 @@ import {
   View,
 } from "react-native";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { StatusBar } from "expo-status-bar";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 export default function ChatScreen() {
   const { conversation_id, propertyTitle, propertyId, landlordId, tenantId } =
@@ -51,14 +59,15 @@ export default function ChatScreen() {
     string | null
   >(isNew ? null : conversation_id);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(!isNew); // no loading needed for a new chat
+  const [loading, setLoading] = useState(!isNew);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
-  const flatListRef = useRef<FlatList>(null);
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(
+    undefined,
+  );
   const messageIdsRef = useRef<Set<string>>(new Set());
   const headerHeight = useHeaderHeight();
   const { width: screenWidth } = useWindowDimensions();
-  // Back button ~60pt, potential right button ~60pt, some padding
   const titleMaxWidth = screenWidth - 140;
   const subscriptionRef = useRef<ReturnType<typeof subscribeToMessages> | null>(
     null,
@@ -81,9 +90,8 @@ export default function ChatScreen() {
           : [newMessage];
         messagesToAdd.forEach((msg) => {
           if (!messageIdsRef.current.has(msg.id)) {
-            setMessages((prev) => [...prev, msg]);
+            setMessages((prev) => [msg, ...prev]);
             messageIdsRef.current.add(msg.id);
-            setTimeout(() => scrollToBottom(), 50);
             if (profile?.id && msg.sender_id !== profile.id) {
               markMessagesAsRead(convId, profile.id);
             }
@@ -127,16 +135,11 @@ export default function ChatScreen() {
       const data = await fetchConversationMessages(convId);
       setMessages(data);
       messageIdsRef.current = new Set(data.map((m) => m.id));
-      setTimeout(() => scrollToBottom(), 100);
     } catch (error) {
       console.error("Error loading messages:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const scrollToBottom = () => {
-    flatListRef.current?.scrollToEnd({ animated: true });
   };
 
   const handleSendMessage = async () => {
@@ -179,11 +182,10 @@ export default function ChatScreen() {
 
       if (message) {
         if (!messageIdsRef.current.has(message.id)) {
-          setMessages((prev) => [...prev, message]);
+          setMessages((prev) => [message, ...prev]);
           messageIdsRef.current.add(message.id);
         }
         setInputText("");
-        setTimeout(() => scrollToBottom(), 50);
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -193,61 +195,72 @@ export default function ChatScreen() {
     }
   };
 
-  const handleAttachment = async () => {
-    try {
-      const image = await pickImage();
-      if (!image || !profile?.id) return;
+  const handleAttachment = () => {
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        options: ["Cancel", "Take Photo", "Choose from Library"],
+        cancelButtonIndex: 0,
+      },
+      async (buttonIndex) => {
+        if (buttonIndex === 0) return;
 
-      setSending(true);
-      let convId = resolvedConversationId;
+        const sourceType =
+          buttonIndex === 1 ? ImageSourceType.Camera : ImageSourceType.Library;
 
-      // Same lazy-creation logic for attachments
-      if (!convId) {
-        if (!propertyId || !landlordId || !tenantId) {
-          Alert.alert("Error", "Missing conversation details");
-          return;
+        try {
+          const image = await pickImage(sourceType);
+          if (!image || !profile?.id) return;
+
+          setSending(true);
+          let convId = resolvedConversationId;
+
+          if (!convId) {
+            if (!propertyId || !landlordId || !tenantId) {
+              Alert.alert("Error", "Missing conversation details");
+              return;
+            }
+            const newConv = await getOrCreateConversation(
+              propertyId,
+              landlordId,
+              tenantId,
+            );
+            if (!newConv) {
+              Alert.alert("Error", "Failed to start conversation");
+              return;
+            }
+            convId = newConv.id;
+            setResolvedConversationId(convId);
+            setConversation(newConv);
+            router.replace(
+              `/messages/${convId}?propertyTitle=${encodeURIComponent(propertyTitle ?? "")}` as any,
+            );
+            subscribeToConversation(convId);
+          }
+
+          const message = await sendMessageWithAttachment(
+            convId,
+            profile.id,
+            image,
+            inputText.trim() || undefined,
+          );
+
+          if (message) {
+            if (!messageIdsRef.current.has(message.id)) {
+              setMessages((prev) => [message, ...prev]);
+              messageIdsRef.current.add(message.id);
+            }
+            setInputText("");
+          } else {
+            Alert.alert("Error", "Failed to send attachment");
+          }
+        } catch (error) {
+          console.error("Error sending attachment:", error);
+          Alert.alert("Error", "Failed to send attachment");
+        } finally {
+          setSending(false);
         }
-        const newConv = await getOrCreateConversation(
-          propertyId,
-          landlordId,
-          tenantId,
-        );
-        if (!newConv) {
-          Alert.alert("Error", "Failed to start conversation");
-          return;
-        }
-        convId = newConv.id;
-        setResolvedConversationId(convId);
-        setConversation(newConv);
-        router.replace(
-          `/messages/${convId}?propertyTitle=${encodeURIComponent(propertyTitle ?? "")}` as any,
-        );
-        subscribeToConversation(convId);
-      }
-
-      const message = await sendMessageWithAttachment(
-        convId,
-        profile.id,
-        image,
-        inputText.trim() || undefined,
-      );
-
-      if (message) {
-        if (!messageIdsRef.current.has(message.id)) {
-          setMessages((prev) => [...prev, message]);
-          messageIdsRef.current.add(message.id);
-        }
-        setInputText("");
-        setTimeout(() => scrollToBottom(), 50);
-      } else {
-        Alert.alert("Error", "Failed to send attachment");
-      }
-    } catch (error) {
-      console.error("Error sending attachment:", error);
-      Alert.alert("Error", "Failed to send attachment");
-    } finally {
-      setSending(false);
-    }
+      },
+    );
   };
 
   const formatTime = (dateString: string) => {
@@ -275,8 +288,8 @@ export default function ChatScreen() {
   const renderMessage = ({ item, index }: { item: Message; index: number }) => {
     const isOwnMessage = item.sender_id === profile?.id;
     const showDate =
-      index === 0 ||
-      formatDate(messages[index - 1].created_at) !==
+      index === messages.length - 1 ||
+      formatDate(messages[index + 1].created_at) !==
         formatDate(item.created_at);
 
     return (
@@ -296,7 +309,7 @@ export default function ChatScreen() {
             <Pressable
               onPress={() => {
                 if (item.attachment_type === "image") {
-                  Alert.alert("Image", "Image viewer coming soon");
+                  setSelectedImage(item.attachment_url);
                 }
               }}
             >
@@ -355,7 +368,7 @@ export default function ChatScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={headerHeight}
+      keyboardVerticalOffset={headerHeight + 60}
     >
       <Stack.Screen
         options={{
@@ -403,13 +416,13 @@ export default function ChatScreen() {
       />
 
       <FlatList
-        ref={flatListRef}
+        // ref={flatListRef}
         data={messages}
         renderItem={renderMessage}
         keyExtractor={(item) => item.id}
         style={styles.flatList}
         contentContainerStyle={styles.messagesList}
-        onContentSizeChange={scrollToBottom}
+        inverted
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <MaterialIcons
@@ -430,7 +443,7 @@ export default function ChatScreen() {
           disabled={sending}
         >
           <MaterialIcons
-            name="attach-file"
+            name="image"
             size={24}
             color={sending ? colours.muted : colours.primary}
           />
@@ -461,6 +474,39 @@ export default function ChatScreen() {
             <MaterialIcons name="send" size={24} color="#FFFFFF" />
           )}
         </TouchableOpacity>
+        <Modal
+          visible={!!selectedImage}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSelectedImage(undefined)}
+          statusBarTranslucent
+        >
+          <StatusBar hidden />
+          <View style={styles.imageViewerOverlay}>
+            <Pressable
+              style={styles.imageViewerClose}
+              onPress={() => setSelectedImage(undefined)}
+            >
+              <MaterialIcons name="close" size={28} color="#fff" />
+            </Pressable>
+            <ScrollView
+              contentContainerStyle={styles.imageViewerScrollContent}
+              maximumZoomScale={4}
+              minimumZoomScale={1}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              centerContent
+            >
+              {selectedImage && (
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={styles.imageViewerImage}
+                  resizeMode="contain"
+                />
+              )}
+            </ScrollView>
+          </View>
+        </Modal>
       </View>
     </KeyboardAvoidingView>
   );
@@ -514,7 +560,7 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     padding: 16,
-    flexGrow: 1,
+    // flexGrow: 1,
   },
   dateSeparator: {
     alignItems: "center",
@@ -635,5 +681,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colours.textSecondary,
     textAlign: "center",
+  },
+  imageViewerOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.95)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imageViewerClose: {
+    position: "absolute",
+    top: 52,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
+  },
+  imageViewerScrollContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  imageViewerImage: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_WIDTH,
   },
 });

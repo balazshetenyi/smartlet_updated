@@ -18,9 +18,12 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  FlatList,
   Image,
+  Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -35,6 +38,7 @@ import { PropertyType } from "@/enums/property-enums";
 import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { HeaderTitle } from "@/components/shared/HeaderTitle";
 import { findConversation } from "@/utils/message-utils";
+import { StatusBar } from "expo-status-bar";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -52,6 +56,8 @@ export default function PropertyDetailsScreen() {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [lightboxVisible, setLightboxVisible] = useState(false);
 
   const handleBookProperty = () => {
     if (!profile) {
@@ -339,11 +345,15 @@ export default function PropertyDetailsScreen() {
               }}
             >
               {photos.map((url, idx) => (
-                <Image
+                <Pressable
                   key={`${url}-${idx}`}
-                  source={{ uri: url }}
-                  style={styles.heroImage}
-                />
+                  onPress={() => {
+                    setLightboxIndex(idx);
+                    setLightboxVisible(true);
+                  }}
+                >
+                  <Image source={{ uri: url }} style={styles.heroImage} />
+                </Pressable>
               ))}
             </ScrollView>
           ) : (
@@ -535,6 +545,65 @@ export default function PropertyDetailsScreen() {
           onConfirm={handleBookingConfirm}
         />
       )}
+
+      <Modal
+        visible={lightboxVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLightboxVisible(false)}
+        statusBarTranslucent
+      >
+        <StatusBar hidden />
+        <View style={styles.lightboxContainer}>
+          <Pressable
+            style={styles.lightboxClose}
+            onPress={() => setLightboxVisible(false)}
+          >
+            <MaterialIcons name="close" size={28} color="#fff" />
+          </Pressable>
+
+          <FlatList
+            data={photos}
+            horizontal
+            pagingEnabled
+            initialScrollIndex={lightboxIndex}
+            getItemLayout={(_, index) => ({
+              length: SCREEN_WIDTH,
+              offset: SCREEN_WIDTH * index,
+              index,
+            })}
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(e) => {
+              const idx = Math.round(
+                e.nativeEvent.contentOffset.x / SCREEN_WIDTH,
+              );
+              setLightboxIndex(idx);
+            }}
+            keyExtractor={(url, idx) => `${url}-${idx}`}
+            renderItem={({ item }) => (
+              <ScrollView
+                style={{ width: SCREEN_WIDTH }}
+                contentContainerStyle={styles.lightboxImageContainer}
+                maximumZoomScale={4}
+                minimumZoomScale={1}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                centerContent
+              >
+                <Image
+                  source={{ uri: item }}
+                  style={styles.lightboxImage}
+                  resizeMode="contain"
+                />
+              </ScrollView>
+            )}
+          />
+
+          <Text style={styles.lightboxCounter}>
+            {lightboxIndex + 1} / {photos.length}
+          </Text>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -917,5 +986,33 @@ const styles = StyleSheet.create({
   bookButton: {
     flex: 1,
     backgroundColor: colours.primary,
+  },
+  // Slideshow
+  lightboxContainer: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  lightboxClose: {
+    position: "absolute",
+    top: 52,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
+  },
+  lightboxCounter: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+    paddingVertical: 16,
+  },
+  lightboxImageContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  lightboxImage: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_WIDTH * 1.2,
   },
 });

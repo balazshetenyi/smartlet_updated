@@ -9,8 +9,8 @@
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "../../packages/shared/assets/images/kiado_splash_screen.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#2C3E50"
+      "resizeMode": "contain",
+      "backgroundColor": "#1a2d45"
     },
     "experiments": {
       "autolinkingModuleResolution": true
@@ -59,6 +59,15 @@
       "favicon": "../../packages/shared/assets/images/favicon.ico"
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1a2d45",
+          "image": "../../packages/shared/assets/images/kiado_splash_screen.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
       "expo-router",
       "@react-native-community/datetimepicker",
       [

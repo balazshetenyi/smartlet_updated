@@ -241,7 +241,7 @@ export const fetchConversationMessages = async (
       `,
       )
       .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
     return (data || []) as Message[];
