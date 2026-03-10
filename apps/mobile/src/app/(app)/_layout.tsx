@@ -1,3 +1,4 @@
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { Stack } from "expo-router";
 
 export default function AppLayout() {
@@ -11,7 +12,7 @@ export default function AppLayout() {
         options={{
           headerShown: true,
           title: "Payment",
-          headerBackTitle: "Back",
+          headerLeft: () => <HeaderBackButton />,
         }}
       />
     </Stack>

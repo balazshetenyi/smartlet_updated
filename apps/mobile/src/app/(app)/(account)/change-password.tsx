@@ -7,8 +7,9 @@ import { Controller, useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { Toast } from "react-native-toast-notifications";
 import * as zod from "zod";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { router } from "expo-router";
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 
 const changePasswordSchema = zod
   .object({
@@ -31,6 +32,7 @@ const changePasswordSchema = zod
 
 export default function ChangePasswordScreen() {
   const [loading, setLoading] = useState(false);
+  const { keyboardOffset } = useKeyboardOffset();
 
   const { control, handleSubmit, formState, reset } = useForm<
     zod.infer<typeof changePasswordSchema>
@@ -75,7 +77,11 @@ export default function ChangePasswordScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior="translate-with-padding">
+    <KeyboardAwareScrollView
+      bottomOffset={keyboardOffset + 170}
+      keyboardShouldPersistTaps="handled"
+      style={{ flex: 1 }}
+    >
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>Change Password</Text>
@@ -181,7 +187,7 @@ export default function ChangePasswordScreen() {
           </View>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }
 

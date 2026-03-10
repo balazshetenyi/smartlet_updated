@@ -8,12 +8,15 @@ import { Controller, useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { Toast } from "react-native-toast-notifications";
 import * as zod from "zod";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 
 const forgotPasswordSchema = zod.object({
   email: zod.string().email({ message: "Invalid email address" }),
 });
 
 export default function ForgotPasswordScreen() {
+  const { keyboardOffset } = useKeyboardOffset();
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
@@ -55,7 +58,11 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAwareScrollView
+      bottomOffset={keyboardOffset}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.container}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Reset Password</Text>
         <Text style={styles.subtitle}>
@@ -117,7 +124,7 @@ export default function ForgotPasswordScreen() {
           />
         </View>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }
 

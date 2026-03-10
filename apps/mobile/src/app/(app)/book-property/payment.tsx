@@ -4,16 +4,21 @@ import { useAuthStore } from "@/store/auth-store";
 import { BookingWithProperty } from "@kiado/shared/types/bookings";
 import { CardField, useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  findNodeHandle,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { KeyboardToolbar } from "react-native-keyboard-controller";
 
 export default function PaymentScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
@@ -24,6 +29,9 @@ export default function PaymentScreen() {
   const [processing, setProcessing] = useState(false);
   const [booking, setBooking] = useState<BookingWithProperty | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const paymentSectionRef = useRef<View>(null);
+  const headerHeight = useHeaderHeight();
 
   useEffect(() => {
     fetchBookingDetails();
@@ -62,9 +70,7 @@ export default function PaymentScreen() {
       console.log("Raw response:", JSON.stringify(response, null, 2));
 
       if (response.error) {
-        // Try to get the actual error from the response body
         let errorMessage = "Setup intent failed";
-
         if (response.response) {
           try {
             const responseText = await response.response.text();
@@ -75,7 +81,6 @@ export default function PaymentScreen() {
             console.error("Could not parse error response:", e);
           }
         }
-
         throw new Error(errorMessage);
       }
 
@@ -147,6 +152,19 @@ export default function PaymentScreen() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  const scrollToPayment = () => {
+    const scrollNode = findNodeHandle(scrollViewRef.current);
+    if (!scrollNode || !paymentSectionRef.current) {
+      return;
+    }
+    paymentSectionRef.current.measure((_x, _y, _w, _h, _pageX, pageY) => {
+      scrollViewRef.current?.scrollTo({
+        y: pageY - headerHeight - 16,
+        animated: true,
+      });
+    });
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -168,68 +186,88 @@ export default function PaymentScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Complete Your Booking</Text>
+    <>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={headerHeight + 120}
+      >
+        <ScrollView
+          ref={scrollViewRef}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+        >
+          <View style={styles.content}>
+            <Text style={styles.title}>Complete Your Booking</Text>
 
-        {/* Booking Summary */}
-        <View style={styles.summaryCard}>
-          <Text style={styles.propertyTitle}>{booking.property.title}</Text>
-          <Text style={styles.propertyLocation}>{booking.property.city}</Text>
+            {/* Booking Summary */}
+            <View style={styles.summaryCard}>
+              <Text style={styles.propertyTitle}>{booking.property.title}</Text>
+              <Text style={styles.propertyLocation}>
+                {booking.property.city}
+              </Text>
 
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Check-in</Text>
-            <Text style={styles.summaryValue}>
-              {new Date(booking.check_in).toLocaleDateString()}
-            </Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Check-out</Text>
-            <Text style={styles.summaryValue}>
-              {new Date(booking.check_out).toLocaleDateString()}
-            </Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Nights</Text>
-            <Text style={styles.summaryValue}>{calculateNights()}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.summaryRow}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>
-              £{booking.total_price.toLocaleString()}
-            </Text>
-          </View>
-        </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Check-in</Text>
+                <Text style={styles.summaryValue}>
+                  {new Date(booking.check_in).toLocaleDateString()}
+                </Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Check-out</Text>
+                <Text style={styles.summaryValue}>
+                  {new Date(booking.check_out).toLocaleDateString()}
+                </Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Nights</Text>
+                <Text style={styles.summaryValue}>{calculateNights()}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.summaryRow}>
+                <Text style={styles.totalLabel}>Total Amount</Text>
+                <Text style={styles.totalValue}>
+                  £{booking.total_price.toLocaleString()}
+                </Text>
+              </View>
+            </View>
 
-        {/* Payment Form */}
-        <View style={styles.paymentSection}>
-          <Text style={styles.sectionTitle}>Payment Details</Text>
-          <CardField
-            postalCodeEnabled={true}
-            placeholders={{
-              number: "4242 4242 4242 4242",
-            }}
-            cardStyle={styles.card}
-            style={styles.cardField}
-          />
-        </View>
+            {/* Payment Form */}
+            <View ref={paymentSectionRef} style={styles.paymentSection}>
+              <Text style={styles.sectionTitle}>Payment Details</Text>
+              <CardField
+                postalCodeEnabled={true}
+                placeholders={{
+                  number: "4242 4242 4242 4242",
+                }}
+                cardStyle={styles.card}
+                style={styles.cardField}
+                onFocus={scrollToPayment}
+              />
+            </View>
 
-        <Button
-          title="Register Payment Method"
-          onPress={handlePayment}
-          loading={processing}
-          disabled={processing || !clientSecret}
-          buttonStyle={styles.payButton}
-        />
-      </ScrollView>
-    </SafeAreaView>
+            <Button
+              title="Register Payment Method"
+              onPress={handlePayment}
+              loading={processing}
+              disabled={processing || !clientSecret}
+              buttonStyle={styles.payButton}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <KeyboardToolbar />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colours.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
     backgroundColor: colours.background,
   },
   loadingContainer: {
@@ -308,6 +346,7 @@ const styles = StyleSheet.create({
   cardField: {
     width: "100%",
     height: 50,
+    marginBottom: 16,
   },
   card: {
     backgroundColor: colours.surface,

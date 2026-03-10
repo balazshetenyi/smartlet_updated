@@ -5,122 +5,127 @@ import { pickImage } from "@/utils/image-picker-utils";
 import {
   fetchConversationById,
   fetchConversationMessages,
+  getOrCreateConversation,
   markMessagesAsRead,
   sendMessage,
   sendMessageWithAttachment,
   subscribeToMessages,
 } from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useHeaderHeight } from "@react-navigation/elements";
 
 export default function ChatScreen() {
-  // Align param name with file `[conversation_id].tsx`
-  const { conversation_id, propertyTitle } = useLocalSearchParams<{
-    conversation_id: string;
-    propertyTitle?: string;
-  }>();
+  const { conversation_id, propertyTitle, propertyId, landlordId, tenantId } =
+    useLocalSearchParams<{
+      conversation_id: string;
+      propertyTitle?: string;
+      // Passed when opening a brand-new (not-yet-created) conversation
+      propertyId?: string;
+      landlordId?: string;
+      tenantId?: string;
+    }>();
+
+  const isNew = conversation_id === "new";
+
   const { profile } = useAuthStore();
+  const router = useRouter();
   const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [resolvedConversationId, setResolvedConversationId] = useState<
+    string | null
+  >(isNew ? null : conversation_id);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isNew); // no loading needed for a new chat
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const flatListRef = useRef<FlatList>(null);
-  // Track message IDs to prevent duplicates when combining optimistic updates + realtime
   const messageIdsRef = useRef<Set<string>>(new Set());
   const headerHeight = useHeaderHeight();
-  const insets = useSafeAreaInsets();
-  const keyboardOffset = headerHeight + insets.bottom + 28;
+  const { width: screenWidth } = useWindowDimensions();
+  // Back button ~60pt, potential right button ~60pt, some padding
+  const titleMaxWidth = screenWidth - 140;
+  const subscriptionRef = useRef<ReturnType<typeof subscribeToMessages> | null>(
+    null,
+  );
 
-  // Determine other participant
   const otherParticipant = conversation
     ? profile?.id === conversation.landlord_id
       ? conversation.tenant
       : conversation.landlord
     : null;
 
+  // Subscribe to realtime once we have a real conversation ID
+  const subscribeToConversation = (convId: string) => {
+    if (subscriptionRef.current) return; // already subscribed
+    subscriptionRef.current = subscribeToMessages(
+      convId,
+      (newMessage: Message | Message[]) => {
+        const messagesToAdd = Array.isArray(newMessage)
+          ? newMessage
+          : [newMessage];
+        messagesToAdd.forEach((msg) => {
+          if (!messageIdsRef.current.has(msg.id)) {
+            setMessages((prev) => [...prev, msg]);
+            messageIdsRef.current.add(msg.id);
+            setTimeout(() => scrollToBottom(), 50);
+            if (profile?.id && msg.sender_id !== profile.id) {
+              markMessagesAsRead(convId, profile.id);
+            }
+          }
+        });
+      },
+    );
+  };
+
   useEffect(() => {
-    if (!conversation_id) return;
+    if (isNew) return; // nothing to load for a new conversation
 
     const initializeConversation = async () => {
-      await loadConversation();
-      await loadMessages();
-
-      // Mark messages as read after loading
+      await loadConversation(conversation_id);
+      await loadMessages(conversation_id);
       if (profile?.id) {
         await markMessagesAsRead(conversation_id, profile.id);
       }
     };
 
     initializeConversation();
-
-    // Subscribe to new messages
-    const channel = subscribeToMessages(
-      conversation_id,
-      (newMessage: Message | Message[]) => {
-        // Handle both single message and array of messages
-        const messagesToAdd = Array.isArray(newMessage)
-          ? newMessage
-          : [newMessage];
-
-        messagesToAdd.forEach((msg) => {
-          // Dedupe in case optimistic insert already added it
-          if (!messageIdsRef.current.has(msg.id)) {
-            setMessages((prev) => [...prev, msg]);
-            messageIdsRef.current.add(msg.id);
-            setTimeout(() => scrollToBottom(), 50);
-
-            // Mark new message as read immediately if we're viewing this conversation
-            if (profile?.id && msg.sender_id !== profile.id) {
-              markMessagesAsRead(conversation_id, profile.id);
-            }
-          }
-        });
-      },
-    );
+    subscribeToConversation(conversation_id);
 
     return () => {
-      channel.unsubscribe();
+      subscriptionRef.current?.unsubscribe();
+      subscriptionRef.current = null;
     };
   }, [conversation_id, profile?.id]);
 
-  const loadConversation = async () => {
-    if (!conversation_id) return;
-
+  const loadConversation = async (convId: string) => {
     try {
-      const data = await fetchConversationById(conversation_id);
+      const data = await fetchConversationById(convId);
       setConversation(data);
     } catch (error) {
       console.error("Error loading conversation:", error);
     }
   };
 
-  const loadMessages = async () => {
-    if (!conversation_id) return;
-
+  const loadMessages = async (convId: string) => {
     try {
-      const data = await fetchConversationMessages(conversation_id);
+      const data = await fetchConversationMessages(convId);
       setMessages(data);
-      // Initialize ID set for dedupe
       messageIdsRef.current = new Set(data.map((m) => m.id));
       setTimeout(() => scrollToBottom(), 100);
     } catch (error) {
@@ -139,14 +144,40 @@ export default function ChatScreen() {
 
     setSending(true);
     try {
+      let convId = resolvedConversationId;
+
+      // First message in a new conversation — create the conversation now
+      if (!convId) {
+        if (!propertyId || !landlordId || !tenantId) {
+          Alert.alert("Error", "Missing conversation details");
+          return;
+        }
+        const newConv = await getOrCreateConversation(
+          propertyId,
+          landlordId,
+          tenantId,
+        );
+        if (!newConv) {
+          Alert.alert("Error", "Failed to start conversation");
+          return;
+        }
+        convId = newConv.id;
+        setResolvedConversationId(convId);
+        setConversation(newConv);
+        // Replace the "new" route with the real conversation ID so back-navigation works
+        router.replace(
+          `/messages/${convId}?propertyTitle=${encodeURIComponent(propertyTitle ?? "")}` as any,
+        );
+        subscribeToConversation(convId);
+      }
+
       const message = await sendMessage({
-        conversation_id: conversation_id,
+        conversation_id: convId,
         sender_id: profile.id,
         content: inputText.trim(),
       });
 
       if (message) {
-        // Optimistically append
         if (!messageIdsRef.current.has(message.id)) {
           setMessages((prev) => [...prev, message]);
           messageIdsRef.current.add(message.id);
@@ -168,8 +199,34 @@ export default function ChatScreen() {
       if (!image || !profile?.id) return;
 
       setSending(true);
+      let convId = resolvedConversationId;
+
+      // Same lazy-creation logic for attachments
+      if (!convId) {
+        if (!propertyId || !landlordId || !tenantId) {
+          Alert.alert("Error", "Missing conversation details");
+          return;
+        }
+        const newConv = await getOrCreateConversation(
+          propertyId,
+          landlordId,
+          tenantId,
+        );
+        if (!newConv) {
+          Alert.alert("Error", "Failed to start conversation");
+          return;
+        }
+        convId = newConv.id;
+        setResolvedConversationId(convId);
+        setConversation(newConv);
+        router.replace(
+          `/messages/${convId}?propertyTitle=${encodeURIComponent(propertyTitle ?? "")}` as any,
+        );
+        subscribeToConversation(convId);
+      }
+
       const message = await sendMessageWithAttachment(
-        conversation_id,
+        convId,
         profile.id,
         image,
         inputText.trim() || undefined,
@@ -229,7 +286,6 @@ export default function ChatScreen() {
             <Text style={styles.dateText}>{formatDate(item.created_at)}</Text>
           </View>
         )}
-
         <View
           style={[
             styles.messageContainer,
@@ -240,7 +296,6 @@ export default function ChatScreen() {
             <Pressable
               onPress={() => {
                 if (item.attachment_type === "image") {
-                  // You can implement a full-screen image viewer here
                   Alert.alert("Image", "Image viewer coming soon");
                 }
               }}
@@ -263,7 +318,6 @@ export default function ChatScreen() {
               )}
             </Pressable>
           )}
-
           {item.content && (
             <Text
               style={[
@@ -274,7 +328,6 @@ export default function ChatScreen() {
               {item.content}
             </Text>
           )}
-
           <Text
             style={[
               styles.messageTime,
@@ -290,20 +343,26 @@ export default function ChatScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <View style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colours.primary} />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={headerHeight}
+    >
       <Stack.Screen
         options={{
           headerTitle: () => (
-            <View style={styles.headerTitleContainer}>
+            <View
+              style={[styles.headerTitleContainer, { width: titleMaxWidth }]}
+            >
               <View style={styles.headerRow}>
                 {otherParticipant?.avatar_url ? (
                   <Image
@@ -320,11 +379,19 @@ export default function ChatScreen() {
                   </View>
                 )}
                 <View style={styles.headerTextContainer}>
-                  <Text style={styles.headerTitle}>
+                  <Text
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={styles.headerTitle}
+                  >
                     {propertyTitle || conversation?.property?.title || "Chat"}
                   </Text>
                   {otherParticipant && (
-                    <Text style={styles.headerSubtitle}>
+                    <Text
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      style={styles.headerSubtitle}
+                    >
                       {otherParticipant.first_name} {otherParticipant.last_name}
                     </Text>
                   )}
@@ -335,72 +402,67 @@ export default function ChatScreen() {
         }}
       />
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior="translate-with-padding"
-        keyboardVerticalOffset={keyboardOffset}
-      >
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.messagesList}
-          onContentSizeChange={scrollToBottom}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <MaterialIcons
-                name="chat-bubble-outline"
-                size={64}
-                color={colours.muted}
-              />
-              <Text style={styles.emptyText}>No messages yet</Text>
-              <Text style={styles.emptySubtext}>Start the conversation!</Text>
-            </View>
-          }
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        renderItem={renderMessage}
+        keyExtractor={(item) => item.id}
+        style={styles.flatList}
+        contentContainerStyle={styles.messagesList}
+        onContentSizeChange={scrollToBottom}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <MaterialIcons
+              name="chat-bubble-outline"
+              size={64}
+              color={colours.muted}
+            />
+            <Text style={styles.emptyText}>No messages yet</Text>
+            <Text style={styles.emptySubtext}>Start the conversation!</Text>
+          </View>
+        }
+      />
+
+      <View style={styles.inputContainer}>
+        <TouchableOpacity
+          style={styles.attachButton}
+          onPress={handleAttachment}
+          disabled={sending}
+        >
+          <MaterialIcons
+            name="attach-file"
+            size={24}
+            color={sending ? colours.muted : colours.primary}
+          />
+        </TouchableOpacity>
+
+        <TextInput
+          style={styles.input}
+          value={inputText}
+          onChangeText={setInputText}
+          placeholder="Type a message..."
+          placeholderTextColor={colours.textSecondary}
+          multiline
+          maxLength={1000}
+          editable={!sending}
         />
 
-        <View style={styles.inputContainer}>
-          <TouchableOpacity
-            style={styles.attachButton}
-            onPress={handleAttachment}
-            disabled={sending}
-          >
-            <MaterialIcons
-              name="attach-file"
-              size={24}
-              color={sending ? colours.muted : colours.primary}
-            />
-          </TouchableOpacity>
-
-          <TextInput
-            style={styles.input}
-            value={inputText}
-            onChangeText={setInputText}
-            placeholder="Type a message..."
-            placeholderTextColor={colours.textSecondary}
-            multiline
-            maxLength={1000}
-            editable={!sending}
-          />
-
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              (!inputText.trim() || sending) && styles.sendButtonDisabled,
-            ]}
-            onPress={handleSendMessage}
-            disabled={!inputText.trim() || sending}
-          >
-            {sending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <MaterialIcons name="send" size={24} color="#FFFFFF" />
-            )}
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-    </>
+        <TouchableOpacity
+          style={[
+            styles.sendButton,
+            (!inputText.trim() || sending) && styles.sendButtonDisabled,
+          ]}
+          onPress={handleSendMessage}
+          disabled={!inputText.trim() || sending}
+        >
+          {sending ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <MaterialIcons name="send" size={24} color="#FFFFFF" />
+          )}
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -409,9 +471,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colours.background,
   },
-  headerTitleContainer: {
-    alignItems: "center",
+  flatList: {
+    flex: 1,
   },
+  headerTitleContainer: {},
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -431,7 +494,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTextContainer: {
-    alignItems: "center",
+    flex: 1,
+    overflow: "hidden",
   },
   headerTitle: {
     fontSize: 16,
@@ -443,7 +507,6 @@ const styles = StyleSheet.create({
     color: colours.textSecondary,
     marginTop: 2,
   },
-  // Header styles removed (using native stack header now)
   loadingContainer: {
     flex: 1,
     justifyContent: "center",

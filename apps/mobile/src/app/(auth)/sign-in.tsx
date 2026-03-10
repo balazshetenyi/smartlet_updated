@@ -8,9 +8,8 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Text, TouchableOpacity, View } from "react-native";
-import { useHeaderHeight } from "@react-navigation/elements";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 
 /**
  * Auth component for user authentication.
@@ -19,9 +18,7 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
  */
 export default function SignIn() {
   const { loading, signIn } = useAuthStore();
-  const headerHeight = useHeaderHeight();
-  const insets = useSafeAreaInsets();
-  const keyboardOffset = headerHeight + insets.bottom;
+  const { keyboardOffset } = useKeyboardOffset();
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -33,9 +30,9 @@ export default function SignIn() {
   const router = useRouter();
 
   return (
-    <KeyboardAvoidingView
-      behavior="translate-with-padding"
-      keyboardVerticalOffset={keyboardOffset}
+    <KeyboardAwareScrollView
+      bottomOffset={keyboardOffset + 170}
+      keyboardShouldPersistTaps="handled"
       style={{ flex: 1, backgroundColor: colours.surface }}
     >
       <View className="p-4">
@@ -164,6 +161,6 @@ export default function SignIn() {
           />
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }

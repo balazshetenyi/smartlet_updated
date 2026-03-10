@@ -33,6 +33,8 @@ import {
 } from "react-native-safe-area-context";
 import { PropertyType } from "@/enums/property-enums";
 import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
+import { HeaderTitle } from "@/components/shared/HeaderTitle";
+import { findConversation } from "@/utils/message-utils";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -245,38 +247,36 @@ export default function PropertyDetailsScreen() {
       Alert.alert("Error", "Landlord information not available");
       return;
     }
-
     if (!profile) {
       Alert.alert("Error", "Please sign in to contact the landlord");
       return;
     }
-
     if (!property) {
       Alert.alert("Error", "Property information not available");
       return;
     }
-
     if (profile.id === landlord.id) {
       Alert.alert("Info", "This is your own property");
       return;
     }
 
     try {
-      // Import the utility function
-      const { getOrCreateConversation } = await import("@/utils/message-utils");
-
-      const conversation = await getOrCreateConversation(
+      const existing = await findConversation(
         property.id,
         landlord.id,
         profile.id,
       );
 
-      if (conversation) {
+      if (existing) {
+        // Existing conversation — go straight to it
         router.push(
-          `/messages/${conversation.id}?propertyTitle=${property.title}` as any,
+          `/messages/${existing.id}?propertyTitle=${encodeURIComponent(property.title)}` as any,
         );
       } else {
-        Alert.alert("Error", "Failed to start conversation");
+        // No conversation yet — open a blank chat; it will be created on first send
+        router.push(
+          `/messages/new?propertyId=${property.id}&landlordId=${landlord.id}&tenantId=${profile.id}&propertyTitle=${encodeURIComponent(property.title)}` as any,
+        );
       }
     } catch (error) {
       console.error("Error starting conversation:", error);
@@ -313,9 +313,12 @@ export default function PropertyDetailsScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: property.title,
+          title: "",
           headerShown: true,
           headerLeft: () => <HeaderBackButton />,
+          headerTitle: property
+            ? () => <HeaderTitle title={property.title} />
+            : () => null,
         }}
       />
       <ScrollView style={styles.scrollView}>
