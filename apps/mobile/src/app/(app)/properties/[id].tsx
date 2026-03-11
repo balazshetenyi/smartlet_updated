@@ -5,7 +5,10 @@ import { useAuthStore } from "@/store/auth-store";
 import { CreateBookingData } from "@kiado/shared/types/bookings";
 import { Amenity, Property } from "@kiado/shared/types/property";
 import { createBooking, fetchBlockedDates } from "@/utils/booking-utils";
-import { fetchPropertyPhotos } from "@/utils/property-utils";
+import {
+  fetchPropertyPhotos,
+  parsePropertyLocation,
+} from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   Stack,
@@ -29,6 +32,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
+  Platform,
 } from "react-native";
 import {
   SafeAreaView,
@@ -39,6 +44,11 @@ import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { HeaderTitle } from "@/components/shared/HeaderTitle";
 import { findConversation } from "@/utils/message-utils";
 import { StatusBar } from "expo-status-bar";
+import MapView, {
+  Marker,
+  PROVIDER_GOOGLE,
+  PROVIDER_DEFAULT,
+} from "react-native-maps";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -417,6 +427,54 @@ export default function PropertyDetailsScreen() {
             </Text>
           </View>
 
+          {(() => {
+            const coords = parsePropertyLocation(property.location);
+            console.log("property.location raw:", property.location);
+            console.log("parsed coords:", coords);
+            if (!coords) return null;
+            return (
+              <Pressable
+                style={styles.mapContainer}
+                onPress={() => {
+                  const url = `maps://?q=${coords.latitude},${coords.longitude}`;
+                  const fallback = `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`;
+                  Linking.canOpenURL(url).then((supported) =>
+                    Linking.openURL(supported ? url : fallback),
+                  );
+                }}
+              >
+                <MapView
+                  style={styles.map}
+                  provider={
+                    Platform.OS === "android"
+                      ? PROVIDER_GOOGLE
+                      : PROVIDER_DEFAULT
+                  }
+                  initialRegion={{
+                    ...coords,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}
+                  pitchEnabled={false}
+                  pointerEvents="none"
+                >
+                  <Marker coordinate={coords} />
+                </MapView>
+                <View style={styles.mapOverlay}>
+                  <MaterialIcons
+                    name="open-in-new"
+                    size={16}
+                    color={colours.primary}
+                  />
+                  <Text style={styles.mapOverlayText}>Open in Maps</Text>
+                </View>
+              </Pressable>
+            );
+          })()}
+
           <View style={styles.priceRow}>
             <Text style={styles.price}>{priceInfo.amount}</Text>
             <Text style={styles.priceLabel}>{priceInfo.period}</Text>
@@ -736,6 +794,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
     gap: 4,
+  },
+  mapContainer: {
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colours.border,
+  },
+  map: {
+    width: "100%",
+    height: 180,
+  },
+  mapOverlay: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    backgroundColor: colours.surface,
+    borderTopWidth: 1,
+    borderTopColor: colours.border,
+  },
+  mapOverlayText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colours.primary,
   },
   location: {
     fontSize: 16,
