@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "../../packages/shared/assets/images/kiado_splash_screen.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#1a2d45"
     },
     "experiments": {
@@ -64,8 +64,8 @@
         {
           "backgroundColor": "#1a2d45",
           "image": "../../packages/shared/assets/images/kiado_splash_screen.png",
-          "imageWidth": 200,
-          "resizeMode": "contain"
+          "imageWidth": 300,
+          "resizeMode": "cover"
         }
       ],
       "expo-router",
