@@ -461,3 +461,55 @@ export const setCoverImage = async (
     return false;
   }
 };
+
+/**
+ * Parse PostGIS point to lat long coordinates.
+ */
+export const parsePropertyLocation = (
+  location?: string,
+): { latitude: number; longitude: number } | null => {
+  if (!location) return null;
+
+  // WKT format: "SRID=4326;POINT(lng lat)"
+  const wktMatch = location.match(/POINT\(([^ ]+) ([^ )]+)\)/);
+  if (wktMatch) {
+    return {
+      latitude: parseFloat(wktMatch[2]),
+      longitude: parseFloat(wktMatch[1]),
+    };
+  }
+
+  // WKB hex format (PostGIS native): 0101000020E6100000{lng_hex}{lat_hex}
+  try {
+    const hex = location.trim();
+    // Must be a hex string of correct length (with SRID = 50 bytes = 100 hex chars)
+    if (!/^[0-9a-fA-F]+$/.test(hex) || hex.length < 42) return null;
+
+    const readDouble = (offset: number): number => {
+      // Read 8 bytes (16 hex chars) as little-endian IEEE 754 double
+      const bytes = new Uint8Array(8);
+      for (let i = 0; i < 8; i++) {
+        bytes[i] = parseInt(hex.slice(offset + i * 2, offset + i * 2 + 2), 16);
+      }
+      return new DataView(bytes.buffer).getFloat64(0, true); // true = little-endian
+    };
+
+    // Byte order flag at position 0 (1 byte = 2 hex chars)
+    // Geometry type at position 2 (4 bytes = 8 hex chars)
+    // SRID at position 10 (4 bytes = 8 hex chars) — if EWKB
+    // For EWKB with SRID: X starts at offset 18 (9 bytes in)
+    // For plain WKB without SRID: X starts at offset 10 (5 bytes in)
+    const hasEWKB = hex.length >= 50;
+    const xOffset = hasEWKB ? 18 : 10;
+
+    const lng = readDouble(xOffset); // X = longitude (xOffset is already a hex-char offset)
+    const lat = readDouble(xOffset + 16); // Y = latitude (8 bytes = 16 hex chars after X)
+
+    if (isNaN(lat) || isNaN(lng)) return null;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+
+    return { latitude: lat, longitude: lng };
+  } catch {
+    return null;
+  }
+};

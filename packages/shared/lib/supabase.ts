@@ -19,7 +19,7 @@ function createStorageAdapter() {
   }
 
   // Web browser
-  if (Platform.OS === "web") {
+  if (Platform.OS === "web" && typeof globalThis.localStorage !== "undefined") {
     return {
       getItem: (key: string) => globalThis.localStorage.getItem(key),
       setItem: (key: string, value: string) =>
