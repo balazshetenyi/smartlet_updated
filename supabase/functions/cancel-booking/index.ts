@@ -1,11 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 import Stripe from "https://esm.sh/stripe@14.16.0?target=deno";
 
 const HOUR = 60 * 60 * 1000;
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   try {
     const { bookingId } = await req.json();
     if (!bookingId) throw new Error("bookingId is required");
