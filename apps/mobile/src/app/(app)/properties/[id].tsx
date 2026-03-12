@@ -432,17 +432,15 @@ export default function PropertyDetailsScreen() {
             console.log("property.location raw:", property.location);
             console.log("parsed coords:", coords);
             if (!coords) return null;
+            const openInMaps = () => {
+              const url = `maps://?q=${coords.latitude},${coords.longitude}`;
+              const fallback = `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`;
+              Linking.canOpenURL(url).then((supported) =>
+                Linking.openURL(supported ? url : fallback),
+              );
+            };
             return (
-              <Pressable
-                style={styles.mapContainer}
-                onPress={() => {
-                  const url = `maps://?q=${coords.latitude},${coords.longitude}`;
-                  const fallback = `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`;
-                  Linking.canOpenURL(url).then((supported) =>
-                    Linking.openURL(supported ? url : fallback),
-                  );
-                }}
-              >
+              <View style={styles.mapContainer}>
                 <MapView
                   style={styles.map}
                   provider={
@@ -455,23 +453,26 @@ export default function PropertyDetailsScreen() {
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                   }}
-                  scrollEnabled={false}
-                  zoomEnabled={false}
+                  scrollEnabled={true}
+                  zoomEnabled={true}
                   rotateEnabled={false}
-                  pitchEnabled={false}
-                  pointerEvents="none"
+                  pitchEnabled={true}
                 >
                   <Marker coordinate={coords} />
                 </MapView>
-                <View style={styles.mapOverlay}>
+                <TouchableOpacity
+                  style={styles.mapOverlay}
+                  onPress={openInMaps}
+                  activeOpacity={0.7}
+                >
                   <MaterialIcons
                     name="open-in-new"
                     size={16}
                     color={colours.primary}
                   />
                   <Text style={styles.mapOverlayText}>Open in Maps</Text>
-                </View>
-              </Pressable>
+                </TouchableOpacity>
+              </View>
             );
           })()}
 

@@ -8,9 +8,9 @@ export default {
     scheme: "kiado",
     userInterfaceStyle: "automatic",
     splash: {
-      image: "../../packages/shared/assets/images/kiado_splash_screen.png",
-      resizeMode: "cover",
-      backgroundColor: "#1a2d45",
+      image: "../../packages/shared/assets/images/splash-icon.png",
+      resizeMode: "contain",
+      backgroundColor: "#0B233C",
     },
     experiments: {
       autolinkingModuleResolution: true,
@@ -39,11 +39,6 @@ export default {
     android: {
       package: "uk.co.kiado.app",
       versionCode: 1,
-      config: {
-        googleMaps: {
-          apiKey: process.env.GOOGLE_MAPS_ANDROID_API_KEY,
-        },
-      },
       adaptiveIcon: {
         backgroundColor: "#1F2A37",
         foregroundImage:
@@ -73,9 +68,9 @@ export default {
       [
         "expo-splash-screen",
         {
-          backgroundColor: "#1a2d45",
-          image: "../../packages/shared/assets/images/kiado_splash_screen.png",
-          imageWidth: 300,
+          backgroundColor: "#0B233C",
+          image: "../../packages/shared/assets/images/splash-icon.png",
+          imageWidth: 200,
           resizeMode: "contain",
         },
       ],
@@ -105,7 +100,12 @@ export default {
       "expo-image",
       "expo-secure-store",
       "expo-web-browser",
-      "react-native-maps",
+      [
+        "react-native-maps",
+        {
+          androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_ANDROID_API_KEY,
+        },
+      ],
     ],
     extra: {
       router: {},

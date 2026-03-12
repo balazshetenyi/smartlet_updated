@@ -4,10 +4,7 @@ import "@/styles/global.css";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { SearchProvider } from "@/context/SearchContext";
 import { StripeProvider } from "@/components/shared/StripeProviderWrapper";
 import "react-native-gesture-handler";
@@ -17,6 +14,7 @@ import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { ToastProvider } from "react-native-toast-notifications";
 import { useNotifications } from "@/hooks/useNotifications";
 import * as SplashScreen from "expo-splash-screen";
+import { View } from "react-native";
 
 SplashScreen.setOptions({
   duration: 3000,
@@ -62,7 +60,6 @@ function Providers({ children }: { children: React.ReactElement }) {
 }
 
 export default function RootLayout() {
-  const insets = useSafeAreaInsets();
   const { isLoggedIn, loading, setSession, loadProfile } = useAuthStore();
   useNotifications();
 
@@ -126,14 +123,7 @@ export default function RootLayout() {
 
   return (
     <Providers>
-      <SafeAreaView
-        edges={["top"]}
-        style={{
-          flex: 1,
-          backgroundColor: colours.cardBackground,
-          paddingBottom: Math.min(insets.bottom, 0),
-        }}
-      >
+      <View style={{ flex: 1, backgroundColor: colours.cardBackground }}>
         <Stack
           screenOptions={{
             headerStyle: {
@@ -153,7 +143,7 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           </Stack.Protected>
         </Stack>
-      </SafeAreaView>
+      </View>
     </Providers>
   );
 }

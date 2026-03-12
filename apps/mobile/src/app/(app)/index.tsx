@@ -47,7 +47,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <AppBar />
       <ScrollView
         refreshControl={
@@ -109,14 +109,14 @@ export default function HomeScreen() {
           {/*)}*/}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.background,
+    backgroundColor: colours.surface,
   },
   loadingContainer: {
     flex: 1,
