@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { validatePhone, normalisePhone } from "@/utils/phone-utils";
 
 export default function ProfileScreen() {
   const { profile, signOut, signingOut, refreshProfile } = useAuthStore();
@@ -31,6 +32,7 @@ export default function ProfileScreen() {
     email: profile?.email || "",
     phone: profile?.phone || "",
   });
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const isLandlord = profile?.user_role === "landlord";
 
   // Sync form data when profile changes (and not editing)
@@ -55,14 +57,22 @@ export default function ProfileScreen() {
   }, [profile, isEditing]);
 
   const handleSave = async () => {
+    const error = validatePhone(formData.phone);
+    if (error) {
+      setPhoneError(error);
+      return;
+    }
+
     setLoading(true);
+
     try {
       await handleProfileSave(
         formData.first_name,
         formData.last_name,
-        formData.phone,
+        normalisePhone(formData.phone) ?? formData.phone,
         profile!.id,
       );
+      setPhoneError(null);
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to save profile:", error);
@@ -80,6 +90,7 @@ export default function ProfileScreen() {
       email: profile?.email || "",
       phone: profile?.phone || "",
     });
+    setPhoneError(null);
     setIsEditing(false);
   };
 
@@ -187,6 +198,7 @@ export default function ProfileScreen() {
             editable={isEditing}
             style={[styles.input, !isEditing && styles.disabledInput]}
             keyboardType="phone-pad"
+            errorMessage={isEditing ? (phoneError ?? undefined) : undefined}
           />
         </View>
 

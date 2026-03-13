@@ -16,7 +16,7 @@ import {
   useNavigation,
   useRouter,
 } from "expo-router";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -34,6 +34,7 @@ import {
   View,
   Linking,
   Platform,
+  ActionSheetIOS,
 } from "react-native";
 import {
   SafeAreaView,
@@ -68,6 +69,8 @@ export default function PropertyDetailsScreen() {
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [lightboxVisible, setLightboxVisible] = useState(false);
+  const [mapOffCentre, setMapOffCentre] = useState(false);
+  const mapRef = useRef<MapView>(null);
 
   const handleBookProperty = () => {
     if (!profile) {
@@ -432,23 +435,58 @@ export default function PropertyDetailsScreen() {
             console.log("property.location raw:", property.location);
             console.log("parsed coords:", coords);
             if (!coords) return null;
-            const openInMaps = () => {
-              const url = `maps://?q=${coords.latitude},${coords.longitude}`;
-              const fallback = `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`;
-              Linking.canOpenURL(url).then((supported) =>
-                Linking.openURL(supported ? url : fallback),
+            const openInMaps = async () => {
+              const googleMapsUrl = `comgooglemaps://?q=${coords.latitude},${coords.longitude}`;
+              const appleMapsUrl = `maps://?q=${coords.latitude},${coords.longitude}`;
+
+              if (Platform.OS === "ios") {
+                const googleInstalled = await Linking.canOpenURL(googleMapsUrl);
+
+                const options = ["Cancel", "Apple Maps"];
+                if (googleInstalled) options.push("Google Maps");
+
+                ActionSheetIOS.showActionSheetWithOptions(
+                  {
+                    options,
+                    cancelButtonIndex: 0,
+                  },
+                  (index) => {
+                    if (index === 1) {
+                      Linking.openURL(appleMapsUrl);
+                    } else if (index === 2 && googleInstalled) {
+                      Linking.openURL(googleMapsUrl);
+                    }
+                  },
+                );
+              } else {
+                Linking.openURL(
+                  `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`,
+                );
+              }
+            };
+
+            const reCentre = () => {
+              mapRef.current?.animateToRegion(
+                {
+                  ...coords,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                },
+                300,
               );
+              setMapOffCentre(false);
             };
             return (
               <View style={styles.mapContainer}>
                 <MapView
+                  ref={mapRef}
                   style={styles.map}
                   provider={
                     Platform.OS === "android"
                       ? PROVIDER_GOOGLE
                       : PROVIDER_DEFAULT
                   }
-                  initialRegion={{
+                  region={{
                     ...coords,
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
@@ -457,9 +495,26 @@ export default function PropertyDetailsScreen() {
                   zoomEnabled={true}
                   rotateEnabled={false}
                   pitchEnabled={true}
+                  onRegionChange={(region) => {
+                    const latDiff = Math.abs(region.latitude - coords.latitude);
+                    const lngDiff = Math.abs(
+                      region.longitude - coords.longitude,
+                    );
+                    setMapOffCentre(latDiff > 0.003 || lngDiff > 0.003);
+                  }}
                 >
                   <Marker coordinate={coords} />
                 </MapView>
+                {mapOffCentre && (
+                  <TouchableOpacity
+                    style={styles.reCentreButton}
+                    onPress={reCentre}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialIcons name="my-location" size={18} color="#fff" />
+                    <Text style={styles.reCentreText}>Re-centre</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={styles.mapOverlay}
                   onPress={openInMaps}
@@ -796,12 +851,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 4,
   },
+  location: {
+    fontSize: 16,
+    color: colours.textSecondary,
+    flex: 1,
+  },
   mapContainer: {
     borderRadius: 12,
     overflow: "hidden",
     marginBottom: 24,
     borderWidth: 1,
     borderColor: colours.border,
+    position: "relative",
   },
   map: {
     width: "100%",
@@ -822,11 +883,29 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colours.primary,
   },
-  location: {
-    fontSize: 16,
-    color: colours.textSecondary,
-    flex: 1,
+  reCentreButton: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colours.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
   },
+  reCentreText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
   priceRow: {
     flexDirection: "row",
     alignItems: "baseline",

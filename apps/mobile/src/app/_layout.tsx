@@ -14,7 +14,7 @@ import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { ToastProvider } from "react-native-toast-notifications";
 import { useNotifications } from "@/hooks/useNotifications";
 import * as SplashScreen from "expo-splash-screen";
-import { View } from "react-native";
+import { useColorScheme, View } from "react-native";
 
 SplashScreen.setOptions({
   duration: 3000,
@@ -36,6 +36,7 @@ function withTimeout<T>(
 }
 
 function Providers({ children }: { children: React.ReactElement }) {
+  const colorScheme = useColorScheme();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ToastProvider>
@@ -49,7 +50,7 @@ function Providers({ children }: { children: React.ReactElement }) {
                 process.env.EXPO_PUBLIC_APPLE_MERCHANT_ID || ""
               }
             >
-              <StatusBar style="auto" />
+              <StatusBar style={colorScheme === "dark" ? "dark" : "dark"} />
               {children}
             </StripeProvider>
           </SearchProvider>

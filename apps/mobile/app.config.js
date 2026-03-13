@@ -33,6 +33,7 @@ export default {
           "Kiado needs access to your photo library to select property images.",
         NSLocationWhenInUseUsageDescription:
           "Kiado uses your location to show nearby properties and help you search in your area.",
+        LSApplicationQueriesSchemes: ["comgooglemaps", "googlechromes", "maps"],
       },
       appleTeamId: "KX78CU7UBV",
     },

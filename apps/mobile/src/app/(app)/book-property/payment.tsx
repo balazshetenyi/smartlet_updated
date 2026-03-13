@@ -14,6 +14,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useColorScheme,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +22,9 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { KeyboardToolbar } from "react-native-keyboard-controller";
 
 export default function PaymentScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const { profile } = useAuthStore();
   const router = useRouter();
@@ -240,7 +244,14 @@ export default function PaymentScreen() {
                 placeholders={{
                   number: "4242 4242 4242 4242",
                 }}
-                cardStyle={styles.card}
+                cardStyle={{
+                  backgroundColor: isDark
+                    ? colours.darkSlateBlue
+                    : colours.surface,
+                  textColor: isDark ? "#F9FAFB" : colours.text,
+                  borderWidth: 1,
+                  borderRadius: 8,
+                }}
                 style={styles.cardField}
                 onFocus={scrollToPayment}
               />
@@ -291,6 +302,8 @@ const styles = StyleSheet.create({
   summaryCard: {
     backgroundColor: colours.surface,
     padding: 20,
+    borderWidth: 1,
+    borderColor: colours.border,
     borderRadius: 16,
     marginBottom: 24,
   },
@@ -347,9 +360,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 50,
     marginBottom: 16,
-  },
-  card: {
-    backgroundColor: colours.surface,
+    color: colours.text,
   },
   payButton: {
     backgroundColor: colours.primary,
