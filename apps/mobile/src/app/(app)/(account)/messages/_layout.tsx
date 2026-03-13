@@ -2,7 +2,6 @@ import { colours } from "@kiado/shared";
 import { Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
-import { Platform } from "react-native";
 
 export default function MessagesLayout() {
   return (
