@@ -14,6 +14,8 @@ export type SearchParams = {
   rentalType: string | null;
   minPrice: number | null;
   maxPrice: number | null;
+  minBedrooms: number | null;
+  amenityIds: string[];
 };
 
 type SearchContextType = {
@@ -26,39 +28,33 @@ const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 export const DEFAULT_RADIUS_KM = 30;
 
+const DEFAULT_PARAMS: SearchParams = {
+  location: "",
+  lat: null,
+  lng: null,
+  radiusKm: DEFAULT_RADIUS_KM,
+  checkIn: null,
+  checkOut: null,
+  guests: 1,
+  rentalType: null,
+  minPrice: null,
+  maxPrice: null,
+  minBedrooms: null,
+  amenityIds: [],
+};
+
 export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [searchParams, setSearchParams] = useState<SearchParams>({
-    location: "",
-    lat: null,
-    lng: null,
-    radiusKm: DEFAULT_RADIUS_KM,
-    checkIn: null,
-    checkOut: null,
-    guests: 1,
-    rentalType: null,
-    minPrice: null,
-    maxPrice: null,
-  });
+  const [searchParams, setSearchParams] =
+    useState<SearchParams>(DEFAULT_PARAMS);
 
   const updateSearchParams = (params: Partial<SearchParams>) => {
     setSearchParams((prev) => ({ ...prev, ...params }));
   };
 
   const clearSearchParams = () => {
-    setSearchParams({
-      location: "",
-      lat: null,
-      lng: null,
-      radiusKm: DEFAULT_RADIUS_KM,
-      checkIn: null,
-      checkOut: null,
-      guests: 1,
-      rentalType: null,
-      minPrice: null,
-      maxPrice: null,
-    });
+    setSearchParams(DEFAULT_PARAMS);
   };
 
   return (
