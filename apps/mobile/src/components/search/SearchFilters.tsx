@@ -16,9 +16,19 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SearchParams } from "@/context/SearchContext";
+import RangeSlider from "react-native-fast-range-slider";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
+const SCREEN_WIDTH = Dimensions.get("window").width;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.85;
+
+// 40px total horizontal padding in the section (20px each side)
+const SLIDER_WIDTH = SCREEN_WIDTH - 40;
+
+/** Exported so ActiveSearchFilters can reference the same sentinels. */
+export const PRICE_MIN = 0;
+export const PRICE_MAX = 1000;
+export const PRICE_STEP = 10;
 
 type Props = {
   visible: boolean;
@@ -28,6 +38,15 @@ type Props = {
 };
 
 const BEDROOM_OPTIONS = [null, 1, 2, 3, 4, 5];
+
+function buildPriceLabel(lo: number, hi: number): string {
+  const atMin = lo <= PRICE_MIN;
+  const atMax = hi >= PRICE_MAX;
+  if (atMin && atMax) return "Any price";
+  if (atMin) return `Up to £${hi}`;
+  if (atMax) return `£${lo}+`;
+  return `£${lo} – £${hi}`;
+}
 
 export default function SearchFilters({
   visible,
@@ -43,8 +62,12 @@ export default function SearchFilters({
   const [minBedrooms, setMinBedrooms] = useState<number | null>(
     params.minBedrooms,
   );
-  const [minPrice, setMinPrice] = useState<number | null>(params.minPrice);
-  const [maxPrice, setMaxPrice] = useState<number | null>(params.maxPrice);
+  const [sliderMin, setSliderMin] = useState<number>(
+    params.minPrice ?? PRICE_MIN,
+  );
+  const [sliderMax, setSliderMax] = useState<number>(
+    params.maxPrice ?? PRICE_MAX,
+  );
 
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [loadingAmenities, setLoadingAmenities] = useState(true);
@@ -54,8 +77,8 @@ export default function SearchFilters({
     if (visible) {
       setAmenityIds(params.amenityIds);
       setMinBedrooms(params.minBedrooms);
-      setMinPrice(params.minPrice);
-      setMaxPrice(params.maxPrice);
+      setSliderMin(params.minPrice ?? PRICE_MIN);
+      setSliderMax(params.maxPrice ?? PRICE_MAX);
       Animated.spring(slideAnim, {
         toValue: 0,
         useNativeDriver: true,
@@ -88,22 +111,27 @@ export default function SearchFilters({
   };
 
   const handleApply = () => {
-    onApply({ amenityIds, minBedrooms, minPrice, maxPrice });
+    onApply({
+      amenityIds,
+      minBedrooms,
+      minPrice: sliderMin > PRICE_MIN ? sliderMin : null,
+      maxPrice: sliderMax < PRICE_MAX ? sliderMax : null,
+    });
     onClose();
   };
 
   const handleReset = () => {
     setAmenityIds([]);
     setMinBedrooms(null);
-    setMinPrice(null);
-    setMaxPrice(null);
+    setSliderMin(PRICE_MIN);
+    setSliderMax(PRICE_MAX);
   };
 
+  const priceFiltered = sliderMin > PRICE_MIN || sliderMax < PRICE_MAX;
   const activeCount =
     amenityIds.length +
     (minBedrooms !== null ? 1 : 0) +
-    (minPrice !== null ? 1 : 0) +
-    (maxPrice !== null ? 1 : 0);
+    (priceFiltered ? 1 : 0);
 
   return (
     <Modal
@@ -174,51 +202,51 @@ export default function SearchFilters({
 
           <View style={styles.divider} />
 
-          {/* Price Range */}
+          {/* Price range — single two-thumb slider */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Price Range (per night)</Text>
-            <View style={styles.priceRow}>
-              {[null, 50, 100, 150, 200].map((val) => {
-                const isSelected = minPrice === val;
-                return (
-                  <TouchableOpacity
-                    key={`min-${val}`}
-                    style={[styles.chip, isSelected && styles.chipSelected]}
-                    onPress={() => setMinPrice(val)}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        isSelected && styles.chipTextSelected,
-                      ]}
-                    >
-                      {val === null ? "Any" : `£${val}+`}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+            <View style={styles.priceHeader}>
+              <Text style={styles.sectionTitle}>Price per night</Text>
+              <Text
+                style={[
+                  styles.priceLabel,
+                  priceFiltered && styles.priceLabelActive,
+                ]}
+              >
+                {buildPriceLabel(sliderMin, sliderMax)}
+              </Text>
             </View>
-            <Text style={styles.subLabel}>Max price</Text>
-            <View style={styles.priceRow}>
-              {[null, 100, 200, 500, 1000].map((val) => {
-                const isSelected = maxPrice === val;
-                return (
-                  <TouchableOpacity
-                    key={`max-${val}`}
-                    style={[styles.chip, isSelected && styles.chipSelected]}
-                    onPress={() => setMaxPrice(val)}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        isSelected && styles.chipTextSelected,
-                      ]}
-                    >
-                      {val === null ? "Any" : `£${val}`}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+
+            <RangeSlider
+              min={PRICE_MIN}
+              max={PRICE_MAX}
+              step={PRICE_STEP}
+              initialMinValue={sliderMin}
+              initialMaxValue={sliderMax}
+              width={SLIDER_WIDTH}
+              thumbSize={28}
+              trackHeight={4}
+              selectedTrackColor={colours.primary}
+              selectedTrackStyle={{ backgroundColor: colours.primary }}
+              unselectedTrackStyle={{ backgroundColor: colours.border }}
+              thumbStyle={{
+                backgroundColor: colours.surface,
+                borderWidth: 2,
+                borderColor: colours.primary,
+              }}
+              pressedThumbStyle={{ transform: [{ scale: 1.15 }] }}
+              showThumbLines={false}
+              minimumDistance={PRICE_STEP}
+              onValuesChange={([lo, hi]) => {
+                setSliderMin(lo);
+                setSliderMax(hi);
+              }}
+              leftThumbAccessibilityLabel="Minimum price"
+              rightThumbAccessibilityLabel="Maximum price"
+            />
+
+            <View style={styles.sliderLegend}>
+              <Text style={styles.sliderLegendText}>£{PRICE_MIN}</Text>
+              <Text style={styles.sliderLegendText}>£{PRICE_MAX}+</Text>
             </View>
           </View>
 
@@ -340,6 +368,7 @@ const styles = StyleSheet.create({
     backgroundColor: colours.border,
     marginHorizontal: 20,
   },
+  // Bedroom badges
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -371,6 +400,32 @@ const styles = StyleSheet.create({
     color: colours.primary,
     fontWeight: "600",
   },
+  // Price sliders
+  priceHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  priceLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colours.textSecondary,
+  },
+  priceLabelActive: {
+    color: colours.primary,
+  },
+  sliderLegend: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 4,
+    paddingHorizontal: 4,
+  },
+  sliderLegendText: {
+    fontSize: 11,
+    color: colours.muted,
+  },
+  // Amenities
   amenitiesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
