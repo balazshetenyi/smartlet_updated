@@ -1,10 +1,5 @@
--- The welcome-email trigger uses supabase_functions.http_request which is
--- provisioned by Supabase after the database is created. It must be in its
--- own migration (not the initial schema dump) so it runs after the extension
--- is available.
---
--- The function URL is derived from app.settings.supabase_url which Supabase
--- sets automatically on every project — no hardcoded URLs.
+-- Run once manually in Supabase dashboard SQL editor after first db push.
+-- Supabase Dashboard → SQL Editor → paste and run.
 
 DO $$
 DECLARE
