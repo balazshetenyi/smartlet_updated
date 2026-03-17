@@ -100,6 +100,27 @@ export default function ProfileScreen() {
     setLoading(false);
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "This will permanently delete your account and all your data. This cannot be undone. Are you sure?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            const { deleteAccount } = useAuthStore.getState();
+            const result = await deleteAccount();
+            if (!result.success) {
+              Alert.alert("Error", result.error ?? "Failed to delete account.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <ScrollView
       style={styles.scrollView}
@@ -366,6 +387,21 @@ export default function ProfileScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Delete Account */}
+      <View style={[styles.section, styles.deleteSection]}>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleDeleteAccount}
+        >
+          <MaterialIcons
+            name="delete-forever"
+            size={20}
+            color={colours.danger}
+          />
+          <Text style={styles.deleteText}>Delete Account</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -556,6 +592,23 @@ const styles = StyleSheet.create({
   signOutText: {
     fontSize: 16,
     fontWeight: "600",
+    color: colours.danger,
+  },
+  deleteSection: {
+    marginBottom: 40,
+  },
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  deleteText: {
+    fontSize: 14,
+    fontWeight: "500",
     color: colours.danger,
   },
 });

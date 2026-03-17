@@ -23,6 +23,7 @@ type AuthActions = {
   signUpWithEmail: (
     data: SignUpData,
   ) => Promise<{ success: boolean; error?: string }>;
+  deleteAccount: () => Promise<{ success: boolean; error?: string }>;
   refreshProfile: () => Promise<void>;
   setSession: (session: Session | null) => void;
   loadProfile: (userId: string) => Promise<void>;
@@ -91,5 +92,37 @@ export const useAuthStore = create<AuthStore & AuthActions>((set, get) => ({
     if (!userId) return;
     const profile = await fetchUserProfile(userId);
     set({ profile: profile ?? null });
+  },
+
+  deleteAccount: async () => {
+    set({ loading: true });
+    try {
+      const session = get().session;
+      if (!session?.access_token) {
+        return { success: false, error: "Not authenticated" };
+      }
+
+      const functionsUrl = process.env.EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL;
+      const response = await fetch(`${functionsUrl}/delete-account`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const json = await response.json();
+      if (!response.ok)
+        throw new Error(json.error ?? "Failed to delete account");
+
+      // Sign out locally — auth state listener will clear the session
+      await signOutUser();
+      return { success: true };
+    } catch (e) {
+      console.error("[deleteAccount] error:", e);
+      return { success: false, error: (e as Error).message };
+    } finally {
+      set({ loading: false });
+    }
   },
 }));

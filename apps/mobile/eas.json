@@ -21,6 +21,7 @@
       }
     },
     "preview": {
+      "channel": "preview",
       "distribution": "internal",
       "ios": {
         "simulator": false
@@ -30,6 +31,25 @@
       },
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "staging"
+      }
+    },
+    "staging": {
+      "extends": "preview",
+      "channel": "staging",
+      "distribution": "store",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "staging",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://owaxxhwbamgzymdqbqhz.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_F1CpWQwp12n9EQtgxXFHwg_xcKr3Eeu",
+        "EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL": "https://owaxxhwbamgzymdqbqhz.supabase.co/functions/v1",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51SlCAo8lXfKqafsVMZwZBhVpqnyNmNSsdDjxmfWBy3kRXUJcKLIwDXllFmV3qzAWciyJ8AnQSW87CRDUwOLJNvXj00rQmEUq7Z"
       }
     },
     "production": {
@@ -48,6 +68,7 @@
     }
   },
   "submit": {
+    "staging": {},
     "production": {}
   }
 }
