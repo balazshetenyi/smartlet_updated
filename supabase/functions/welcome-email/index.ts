@@ -36,7 +36,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         from: "Kiado <info@kiado.mozaiksoftwaresolutions.com>",
         to: [email],
-        subject: "Welcome to Kiado!",
+        subject: "You're on the Kiado early access list",
         html: `
           <p>Hi there,</p>
           <p>Thank you for joining the Kiado early access list.</p>

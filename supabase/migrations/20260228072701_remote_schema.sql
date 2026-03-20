@@ -164,7 +164,7 @@ BEGIN
     SELECT title INTO property_title
     FROM properties
     WHERE id = NEW.property_id;
-    
+
     -- Set notification based on status
     IF NEW.status = 'confirmed' THEN
       notification_title := 'Booking Confirmed';
@@ -176,7 +176,7 @@ BEGIN
       notification_title := 'Booking Declined';
       notification_message := 'Your booking for ' || property_title || ' has been declined.';
     END IF;
-    
+
     -- Create notification for tenant
     INSERT INTO notifications (user_id, title, message, type, related_id)
     VALUES (
@@ -187,7 +187,7 @@ BEGIN
       NEW.id
     );
   END IF;
-  
+
   RETURN NEW;
 END;
 $$;
@@ -208,12 +208,12 @@ BEGIN
   SELECT p.landlord_id, p.title INTO prop_landlord_id, property_title
   FROM properties p
   WHERE p.id = NEW.property_id;
-  
+
   -- Get tenant name
   SELECT first_name || ' ' || last_name INTO tenant_name
   FROM profiles
   WHERE id = NEW.tenant_id;
-  
+
   -- Create notification for landlord
   INSERT INTO notifications (user_id, title, message, type, related_id)
   VALUES (
@@ -223,7 +223,7 @@ BEGIN
     'booking_request',
     NEW.id
   );
-  
+
   RETURN NEW;
 END;
 $$;
@@ -631,9 +631,6 @@ CREATE OR REPLACE TRIGGER "booking_status_changed_notify" AFTER UPDATE ON "publi
 
 CREATE OR REPLACE TRIGGER "bookings_updated_at" BEFORE UPDATE ON "public"."bookings" FOR EACH ROW EXECUTE FUNCTION "public"."update_updated_at"();
 
-
-
-CREATE OR REPLACE TRIGGER "send_welcome_email" AFTER INSERT ON "public"."waitlist" FOR EACH ROW EXECUTE FUNCTION "supabase_functions"."http_request"('https://zsgbjmttkdoptrpntglu.supabase.co/functions/v1/welcome-email', 'POST', '{"Content-type":"application/json","Authorization":"Bearer ...."}', '{}', '5000');
 
 
 
@@ -3658,5 +3655,3 @@ using ((bucket_id = 'property-photos'::text));
 -- CREATE TRIGGER protect_buckets_delete BEFORE DELETE ON storage.buckets FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete();
 
 -- CREATE TRIGGER protect_objects_delete BEFORE DELETE ON storage.objects FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete();
-
-
