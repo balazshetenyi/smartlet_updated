@@ -20,6 +20,7 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "uk.co.kiado.app",
       buildNumber: "1",
+      associatedDomains: ["applinks:kiado.co.uk"],
       config: {
         usesNonExemptEncryption: false,
         googleMapsApiKey: process.env.GOOGLE_MAPS_IOS_API_KEY,
@@ -40,6 +41,14 @@ export default {
     android: {
       package: "uk.co.kiado.app",
       versionCode: 1,
+      intentFilters: [
+        {
+          action: "VIEW",
+          autoVerify: true,
+          data: [{ scheme: "https", host: "kiado.co.uk", pathPrefix: "/" }],
+          category: ["BROWSABLE", "DEFAULT"],
+        },
+      ],
       adaptiveIcon: {
         backgroundColor: "#1F2A37",
         foregroundImage:
