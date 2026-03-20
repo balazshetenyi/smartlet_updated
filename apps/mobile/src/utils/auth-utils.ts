@@ -104,6 +104,7 @@ export const signUpWithEmail = async (
       email: signUpData.email,
       password: signUpData.password,
       options: {
+        emailRedirectTo: "https://kiado.co.uk/sign-in",
         data: {
           first_name: signUpData.first_name,
           last_name: signUpData.last_name,

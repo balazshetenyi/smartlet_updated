@@ -13,17 +13,19 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { validatePhone, normalisePhone } from "@/utils/phone-utils";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 
 export default function ProfileScreen() {
   const { profile, signOut, signingOut, refreshProfile } = useAuthStore();
   const router = useRouter();
+  const { keyboardOffset } = useKeyboardOffset();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -101,7 +103,8 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
+      bottomOffset={keyboardOffset}
       style={styles.scrollView}
       contentContainerStyle={styles.contentContainer}
       refreshControl={
@@ -366,7 +369,22 @@ export default function ProfileScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+
+      {/* Delete Account */}
+      <View style={[styles.section, styles.deleteSection]}>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleDeleteAccount}
+        >
+          <MaterialIcons
+            name="delete-forever"
+            size={20}
+            color={colours.danger}
+          />
+          <Text style={styles.deleteText}>Delete Account</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 

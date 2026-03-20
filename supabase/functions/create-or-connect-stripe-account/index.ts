@@ -100,8 +100,8 @@ Deno.serve(async (req: Request) => {
     // Note: Replace 'your-app-scheme://' with your actual Expo scheme or web URL
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `https://kiado.app/payout-setup?refresh=true`,
-      return_url: `https://kiado.app/payout-setup?success=true`,
+      refresh_url: `https://kiado.co.uk/payout-setup?refresh=true`,
+      return_url: `https://kiado.co.uk/payout-setup?success=true`,
       type: "account_onboarding",
     });
 

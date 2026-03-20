@@ -14,14 +14,14 @@ Use this checklist to track your progress towards production deployment.
 
 ### App Configuration
 
-- [ ] Update `app.json` with your Expo username
-- [ ] Set up EAS project ID
-- [ ] Configure app icon (1024x1024)
-- [ ] Create splash screen assets
+- [x] Update `app.json` with your Expo username
+- [x] Set up EAS project ID
+- [x] Configure app icon (1024x1024)
+- [x] Create splash screen assets
 - [ ] Add app screenshots for store listings (multiple sizes)
 - [ ] Write app description (short & long)
-- [ ] Choose app category
-- [ ] Set app keywords for SEO
+- [x] Choose app category
+- [x] Set app keywords for SEO
 
 ### Legal Documents
 
@@ -33,11 +33,11 @@ Use this checklist to track your progress towards production deployment.
 
 ### Certificates & Signing
 
-- [ ] iOS: Apple Developer Account ($99/year)
-- [ ] iOS: Create App Store Connect app
-- [ ] Android: Google Play Developer Account ($25 one-time)
-- [ ] Android: Create Google Play Console app
-- [ ] Generate signing certificates via EAS
+- [x] iOS: Apple Developer Account ($99/year)
+- [x] iOS: Create App Store Connect app
+- [x] Android: Google Play Developer Account ($25 one-time)
+- [x] Android: Create Google Play Console app
+- [x] Generate signing certificates via EAS
 
 ### Deep Linking & Universal Links
 - [ ] Upgrade from custom scheme (`kiado://`) to Universal Links (`https://kiado.app`)
@@ -49,14 +49,14 @@ Use this checklist to track your progress towards production deployment.
 
 ### Supabase Production Setup
 
-- [ ] Create production Supabase project
+- [x] Create production Supabase project
 - [ ] Set up Row Level Security (RLS) policies
 - [ ] Configure database indexes for performance
 - [ ] Set up database backups
 - [ ] Configure storage bucket policies
 - [ ] Set storage size limits
-- [ ] Deploy Edge Functions to production
-- [ ] Set production environment variables in Supabase
+- [x] Deploy Edge Functions to production
+- [x] Set production environment variables in Supabase
 - [ ] Configure email templates
 - [ ] Test all database queries with production data
 - [ ] Set up connection pooling
@@ -85,39 +85,38 @@ Use this checklist to track your progress towards production deployment.
 
 ### Other Services
 
-- [ ] Update OpenCage API key for production (if needed)
 - [ ] Set up any analytics (optional)
-- [ ] Configure push notifications (if implemented)
+- [x] Configure push notifications (if implemented)
 
 ## 🏗️ Phase 4: Build & Deploy
 
 ### Pre-Build
 
-- [ ] Install EAS CLI: `npm install -g eas-cli`
-- [ ] Login to Expo: `eas login`
-- [ ] Configure EAS: `eas build:configure`
-- [ ] Update `eas.json` with your settings
-- [ ] Create `.env.production` with all production keys
-- [ ] Run `npm audit` and fix vulnerabilities
-- [ ] Test app thoroughly in staging environment
+- [x] Install EAS CLI: `npm install -g eas-cli`
+- [x] Login to Expo: `eas login`
+- [x] Configure EAS: `eas build:configure`
+- [x] Update `eas.json` with your settings
+- [x] Create `.env.production` with all production keys
+- [x] Run `npm audit` and fix vulnerabilities
+- [x] Test app thoroughly in staging environment
 
 ### iOS Build
 
-- [ ] Create development build for testing
-- [ ] Create preview build for TestFlight
-- [ ] Test preview build thoroughly
-- [ ] Create production build: `eas build --platform ios --profile production`
-- [ ] Upload to App Store Connect
-- [ ] Fill in all App Store Connect information
+- [x] Create development build for testing
+- [x] Create preview build for TestFlight
+- [x] Test preview build thoroughly
+- [x] Create production build: `eas build --platform ios --profile production`
+- [x] Upload to App Store Connect
+- [x] Fill in all App Store Connect information
 - [ ] Add screenshots (iPhone, iPad if applicable)
 - [ ] Complete age rating questionnaire
 - [ ] Submit for review
 
 ### Android Build
 
-- [ ] Create development build for testing
-- [ ] Create preview build for internal testing
-- [ ] Test preview build thoroughly
+- [x] Create development build for testing
+- [x] Create preview build for internal testing
+- [x] Test preview build thoroughly
 - [ ] Create production build: `eas build --platform android --profile production`
 - [ ] Upload to Google Play Console
 - [ ] Fill in all Google Play Console information
@@ -191,7 +190,7 @@ Use this checklist to track your progress towards production deployment.
 - [ ] CCPA compliance (if California users)
 - [ ] Data retention policies documented
 - [ ] User data export functionality
-- [ ] Account deletion functionality
+- [x] Account deletion functionality
 
 ### Marketing (Optional)
 
