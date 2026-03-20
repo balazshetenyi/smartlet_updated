@@ -1,7 +1,6 @@
 import { useAuthStore } from "@/store/auth-store";
 import { useMessageStore } from "@/store/message-store";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
-import { Message } from "@kiado/shared";
+import { colours, Message } from "@kiado/shared";
 import {
   fetchTotalUnreadCount,
   subscribeToMessages,
@@ -28,7 +27,7 @@ export default function AppBar() {
     } catch (error) {
       console.error("Error fetching unread count:", error);
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, setUnreadCount]);
 
   useFocusEffect(
     useCallback(() => {

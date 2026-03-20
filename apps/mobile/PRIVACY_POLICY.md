@@ -1,6 +1,6 @@
 # Privacy Policy for Kiado
 
-**Last Updated: [DATE]**
+**Last Updated: 08 March 2026**
 
 ## Introduction
 
@@ -92,10 +92,9 @@ app.
 
 ## Contact Us
 
-If you have questions about this Privacy Policy, contact us at:
-
-- Email: [YOUR EMAIL]
-- Address: [YOUR ADDRESS]
+If you have questions about this Privacy Policy, contact us at: 
+- Email: info@mozaiksoftwaresolutions.com
+- Address: Suite RA01, 195-197 Wood Street, London, E17 3NU
 
 ## Third-Party Services
 

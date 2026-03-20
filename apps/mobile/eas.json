@@ -1,14 +1,12 @@
 {
   "cli": {
-    "version": ">= 13.2.1"
+    "version": ">= 18.0.6",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "ios": {
-        "simulator": true
-      },
       "android": {
         "buildType": "apk"
       },
@@ -16,7 +14,14 @@
         "EXPO_PUBLIC_ENVIRONMENT": "development"
       }
     },
+    "ios-simulator": {
+      "extends": "development",
+      "ios": {
+        "simulator": true
+      }
+    },
     "preview": {
+      "channel": "preview",
       "distribution": "internal",
       "ios": {
         "simulator": false
@@ -28,12 +33,34 @@
         "EXPO_PUBLIC_ENVIRONMENT": "staging"
       }
     },
-    "production": {
+    "staging": {
+      "extends": "preview",
+      "channel": "staging",
+      "distribution": "store",
+      "autoIncrement": true,
       "ios": {
         "simulator": false
       },
       "android": {
-        "buildType": "aab"
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "staging",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://owaxxhwbamgzymdqbqhz.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_F1CpWQwp12n9EQtgxXFHwg_xcKr3Eeu",
+        "EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL": "https://owaxxhwbamgzymdqbqhz.supabase.co/functions/v1",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51SlCAo8lXfKqafsVMZwZBhVpqnyNmNSsdDjxmfWBy3kRXUJcKLIwDXllFmV3qzAWciyJ8AnQSW87CRDUwOLJNvXj00rQmEUq7Z"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "distribution": "store",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "app-bundle"
       },
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "production"
@@ -41,16 +68,7 @@
     }
   },
   "submit": {
-    "production": {
-      "ios": {
-        "appleId": "your-apple-id@example.com",
-        "ascAppId": "your-asc-app-id",
-        "appleTeamId": "your-apple-team-id"
-      },
-      "android": {
-        "serviceAccountKeyPath": "./path/to/api-key.json",
-        "track": "internal"
-      }
-    }
+    "staging": {},
+    "production": {}
   }
 }

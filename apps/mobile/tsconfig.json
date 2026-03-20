@@ -4,8 +4,9 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@kiado/shared": ["../../packages/shared/*"]
-    }
+      "@kiado/shared": ["../../packages/shared"],
+      "@kiado/shared/*": ["../../packages/shared/*"],
+    },
   },
-  "include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", "nativewind-env.d.ts"],
 }

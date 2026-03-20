@@ -1,9 +1,9 @@
 import Button from "@/components/shared/Button";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
-import { Property } from "../../../../../packages/shared/types/property";
+import { colours } from "@kiado/shared";
+import { Property } from "@kiado/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Calendar, DateData } from "react-native-calendars";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   Alert,
   Modal,
@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSearch } from "@/context/SearchContext";
 
 interface BookingModalProps {
   visible: boolean;
@@ -29,8 +30,37 @@ export default function BookingModal({
   onClose,
   onConfirm,
 }: BookingModalProps) {
-  const [checkIn, setCheckIn] = useState<string | null>(null);
-  const [checkOut, setCheckOut] = useState<string | null>(null);
+  const { searchParams } = useSearch();
+  const [checkIn, setCheckIn] = useState<string | null>(
+    searchParams.checkIn ?? null,
+  );
+  const [checkOut, setCheckOut] = useState<string | null>(
+    searchParams.checkOut ?? null,
+  );
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (visible) {
+      setCheckIn(searchParams.checkIn ?? null);
+      setCheckOut(searchParams.checkOut ?? null);
+      // If dates are pre-populated from search, scroll to bottom after modal finishes animating
+      if (searchParams.checkIn && searchParams.checkOut) {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 400);
+      }
+    }
+  }, [visible]);
+
+  // Auto-scroll to the bottom when both dates are selected
+  useEffect(() => {
+    if (checkIn && checkOut) {
+      // Small timeout to allow the layout to calculate after the selection state change
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [checkIn, checkOut]);
 
   const markedDates = useMemo(() => {
     const marked: any = {};
@@ -112,13 +142,15 @@ export default function BookingModal({
     }
 
     if (!checkIn || (checkIn && checkOut)) {
-      // Start new selection
+      // No selection yet, or starting over after a full range was picked
       setCheckIn(selectedDate);
       setCheckOut(null);
     } else {
-      // Complete the range
+      // checkIn is set, no checkOut yet
       if (selectedDate <= checkIn) {
-        Alert.alert("Error", "Check-out date must be after check-in date");
+        // User tapped an earlier (or same) date — treat it as a new check-in
+        setCheckIn(selectedDate);
+        setCheckOut(null);
         return;
       }
 
@@ -169,6 +201,7 @@ export default function BookingModal({
           </View>
 
           <ScrollView
+            ref={scrollViewRef}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
@@ -281,7 +314,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   modalTitle: {
     fontSize: 20,

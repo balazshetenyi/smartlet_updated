@@ -1,24 +1,24 @@
-import { supabase } from "../../../../packages/shared/lib/supabase";
+import { supabase } from "@kiado/shared";
 import {
   Conversation,
   CreateMessageData,
   Message,
-} from "../../../../packages/shared/types/message";
+} from "@kiado/shared/types/message";
 import { uploadImageToStorage } from "@/utils/image-picker-utils";
 import { sendPushNotification } from "@/utils/push-notifications-utils";
 import * as ImagePicker from "expo-image-picker";
 
 /**
- * Get or create a conversation between landlord and tenant for a property
+ * Find an existing conversation between landlord and tenant for a property.
+ * Does NOT create one. Returns null if none exists.
  */
-export const getOrCreateConversation = async (
+export const findConversation = async (
   propertyId: string,
   landlordId: string,
   tenantId: string,
 ): Promise<Conversation | null> => {
   try {
-    // Try to find existing conversation
-    const { data: existing, error: findError } = await supabase
+    const { data, error } = await supabase
       .from("conversations")
       .select("*")
       .eq("property_id", propertyId)
@@ -26,31 +26,54 @@ export const getOrCreateConversation = async (
       .eq("tenant_id", tenantId)
       .single();
 
-    if (existing) {
-      return existing as Conversation;
-    }
-
-    // Create new conversation if not found
-    if (findError?.code === "PGRST116") {
-      const { data: newConversation, error: createError } = await supabase
-        .from("conversations")
-        .insert({
-          property_id: propertyId,
-          landlord_id: landlordId,
-          tenant_id: tenantId,
-        })
-        .select()
-        .single();
-
-      if (createError) throw createError;
-      return newConversation as Conversation;
-    }
-
-    throw findError;
+    if (error?.code === "PGRST116") return null; // no row found
+    if (error) throw error;
+    return data as Conversation;
   } catch (error) {
-    console.error("Error getting/creating conversation:", error);
+    console.error("Error finding conversation:", error);
     return null;
   }
+};
+
+/**
+ * Create a new conversation. Only call this when the user sends their first message.
+ */
+export const createConversation = async (
+  propertyId: string,
+  landlordId: string,
+  tenantId: string,
+): Promise<Conversation | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("conversations")
+      .insert({
+        property_id: propertyId,
+        landlord_id: landlordId,
+        tenant_id: tenantId,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as Conversation;
+  } catch (error) {
+    console.error("Error creating conversation:", error);
+    return null;
+  }
+};
+
+/**
+ * Get or create a conversation — used internally when sending the first message.
+ */
+export const getOrCreateConversation = async (
+  propertyId: string,
+  landlordId: string,
+  tenantId: string,
+): Promise<Conversation | null> => {
+  return (
+    (await findConversation(propertyId, landlordId, tenantId)) ??
+    (await createConversation(propertyId, landlordId, tenantId))
+  );
 };
 
 /**
@@ -218,7 +241,7 @@ export const fetchConversationMessages = async (
       `,
       )
       .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
     return (data || []) as Message[];

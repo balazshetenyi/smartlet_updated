@@ -1,12 +1,12 @@
 [functions.create-payment-intent]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/create-payment-intent/deno.json"
 entrypoint = "./functions/create-payment-intent/index.ts"
 
 [functions.send-booking-email]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/send-booking-email/deno.json"
 entrypoint = "./functions/send-booking-email/index.ts"
 
@@ -18,7 +18,7 @@ entrypoint = "./functions/confirm-booking/index.ts"
 
 [functions.create-setup-intent]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/create-setup-intent/deno.json"
 entrypoint = "./functions/create-setup-intent/index.ts"
 
@@ -36,13 +36,13 @@ entrypoint = "./functions/charge-due-bookings/index.ts"
 
 [functions.cancel-booking]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/cancel-booking/deno.json"
 entrypoint = "./functions/cancel-booking/index.ts"
 
 [functions.decline-booking]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/decline-booking/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -53,7 +53,7 @@ entrypoint = "./functions/decline-booking/index.ts"
 
 [functions.confirm-booking-manual]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/confirm-booking-manual/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -64,7 +64,7 @@ entrypoint = "./functions/confirm-booking-manual/index.ts"
 
 [functions.send-message-email]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/send-message-email/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -75,7 +75,7 @@ entrypoint = "./functions/send-message-email/index.ts"
 
 [functions.create-or-connect-stripe-account]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/create-or-connect-stripe-account/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -86,7 +86,7 @@ entrypoint = "./functions/create-or-connect-stripe-account/index.ts"
 
 [functions.welcome-email]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/welcome-email/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -94,3 +94,36 @@ entrypoint = "./functions/welcome-email/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/welcome-email/*.html" ]
+
+[functions.google-places]
+enabled = true
+verify_jwt = false
+import_map = "./functions/google-places/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/google-places/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/google-places/*.html" ]
+
+[functions.send-push-notification]
+enabled = true
+verify_jwt = false
+import_map = "./functions/send-push-notification/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/send-push-notification/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/send-push-notification/*.html" ]
+
+[functions.delete-account]
+enabled = true
+verify_jwt = false
+import_map = "./functions/delete-account/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/delete-account/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/delete-account/*.html" ]

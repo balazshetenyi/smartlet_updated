@@ -1,4 +1,4 @@
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 interface InputProps {

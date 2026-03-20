@@ -2,12 +2,14 @@ import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import { signInSchema } from "@/config/schemas";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Text, TouchableOpacity, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 
 /**
  * Auth component for user authentication.
@@ -16,6 +18,7 @@ import { Text, TouchableOpacity, View } from "react-native";
  */
 export default function SignIn() {
   const { loading, signIn } = useAuthStore();
+  const { keyboardOffset } = useKeyboardOffset();
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -27,11 +30,10 @@ export default function SignIn() {
   const router = useRouter();
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: colours.cardBackground,
-      }}
+    <KeyboardAwareScrollView
+      bottomOffset={keyboardOffset + 170}
+      keyboardShouldPersistTaps="handled"
+      style={{ flex: 1, backgroundColor: colours.surface }}
     >
       <View className="p-4">
         <Controller
@@ -159,6 +161,6 @@ export default function SignIn() {
           />
         </View>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }

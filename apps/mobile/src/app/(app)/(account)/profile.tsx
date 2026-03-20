@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import {
   getRoleColor,
   getRoleIcon,
@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { validatePhone, normalisePhone } from "@/utils/phone-utils";
 
 export default function ProfileScreen() {
   const { profile, signOut, signingOut, refreshProfile } = useAuthStore();
@@ -31,6 +32,7 @@ export default function ProfileScreen() {
     email: profile?.email || "",
     phone: profile?.phone || "",
   });
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const isLandlord = profile?.user_role === "landlord";
 
   // Sync form data when profile changes (and not editing)
@@ -55,14 +57,22 @@ export default function ProfileScreen() {
   }, [profile, isEditing]);
 
   const handleSave = async () => {
+    const error = validatePhone(formData.phone);
+    if (error) {
+      setPhoneError(error);
+      return;
+    }
+
     setLoading(true);
+
     try {
       await handleProfileSave(
         formData.first_name,
         formData.last_name,
-        formData.phone,
+        normalisePhone(formData.phone) ?? formData.phone,
         profile!.id,
       );
+      setPhoneError(null);
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to save profile:", error);
@@ -80,6 +90,7 @@ export default function ProfileScreen() {
       email: profile?.email || "",
       phone: profile?.phone || "",
     });
+    setPhoneError(null);
     setIsEditing(false);
   };
 
@@ -87,6 +98,27 @@ export default function ProfileScreen() {
     setLoading(true);
     await refreshProfile();
     setLoading(false);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "This will permanently delete your account and all your data. This cannot be undone. Are you sure?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            const { deleteAccount } = useAuthStore.getState();
+            const result = await deleteAccount();
+            if (!result.success) {
+              Alert.alert("Error", result.error ?? "Failed to delete account.");
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -187,6 +219,7 @@ export default function ProfileScreen() {
             editable={isEditing}
             style={[styles.input, !isEditing && styles.disabledInput]}
             keyboardType="phone-pad"
+            errorMessage={isEditing ? (phoneError ?? undefined) : undefined}
           />
         </View>
 
@@ -284,7 +317,10 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account Settings</Text>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/change-password")}
+        >
           <View style={styles.menuItemLeft}>
             <MaterialIcons name="lock" size={24} color={colours.text} />
             <Text style={styles.menuItemText}>Change Password</Text>
@@ -292,7 +328,10 @@ export default function ProfileScreen() {
           <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/notifications")}
+        >
           <View style={styles.menuItemLeft}>
             <MaterialIcons
               name="notifications"
@@ -300,6 +339,28 @@ export default function ProfileScreen() {
               color={colours.text}
             />
             <Text style={styles.menuItemText}>Notifications</Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/terms-of-service")}
+        >
+          <View style={styles.menuItemLeft}>
+            <MaterialIcons name="gavel" size={24} color={colours.text} />
+            <Text style={styles.menuItemText}>Terms of Service</Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/privacy-policy")}
+        >
+          <View style={styles.menuItemLeft}>
+            <MaterialIcons name="privacy-tip" size={24} color={colours.text} />
+            <Text style={styles.menuItemText}>Privacy Policy</Text>
           </View>
           <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
         </TouchableOpacity>
@@ -324,6 +385,21 @@ export default function ProfileScreen() {
           <Text style={styles.signOutText}>
             {signingOut ? "Signing Out..." : "Sign Out"}
           </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Delete Account */}
+      <View style={[styles.section, styles.deleteSection]}>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleDeleteAccount}
+        >
+          <MaterialIcons
+            name="delete-forever"
+            size={20}
+            color={colours.danger}
+          />
+          <Text style={styles.deleteText}>Delete Account</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -516,6 +592,23 @@ const styles = StyleSheet.create({
   signOutText: {
     fontSize: 16,
     fontWeight: "600",
+    color: colours.danger,
+  },
+  deleteSection: {
+    marginBottom: 40,
+  },
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  deleteText: {
+    fontSize: 14,
+    fontWeight: "500",
     color: colours.danger,
   },
 });

@@ -1,6 +1,6 @@
 import Button from "@/components/shared/Button";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
-import { PropertyUnavailableDate } from "../../../../../packages/shared/types/property";
+import { colours } from "@kiado/shared";
+import { PropertyUnavailableDate } from "@kiado/shared/types/property";
 import {
   addUnavailableDates,
   fetchUnavailableDateRanges,

@@ -1,11 +1,20 @@
-import {Stack} from "expo-router";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
+import { Stack } from "expo-router";
 
 export default function AppLayout() {
-    return (
-        <Stack>
-            <Stack.Screen name="index" options={{headerShown: false}}/>
-            <Stack.Screen name="(account)" options={{headerShown: false}}/>
-            <Stack.Screen name="properties" options={{headerShown: false}}/>
-        </Stack>
-    );
+  return (
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="(account)" options={{ headerShown: false }} />
+      <Stack.Screen name="properties" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="book-property/payment"
+        options={{
+          headerShown: true,
+          title: "Payment",
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+    </Stack>
+  );
 }

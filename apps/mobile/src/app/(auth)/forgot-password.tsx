@@ -1,7 +1,6 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase } from "../../../../../packages/shared/lib/supabase";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { supabase, colours } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -9,12 +8,15 @@ import { Controller, useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { Toast } from "react-native-toast-notifications";
 import * as zod from "zod";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 
 const forgotPasswordSchema = zod.object({
   email: zod.string().email({ message: "Invalid email address" }),
 });
 
 export default function ForgotPasswordScreen() {
+  const { keyboardOffset } = useKeyboardOffset();
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
@@ -31,7 +33,7 @@ export default function ForgotPasswordScreen() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: "community-noticeboard://reset-password",
+        redirectTo: "kiado://reset-password",
       });
 
       if (error) {
@@ -56,11 +58,15 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAwareScrollView
+      bottomOffset={keyboardOffset}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.container}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Reset Password</Text>
         <Text style={styles.subtitle}>
-          Enter your email address and we'll send you a link to reset your
+          Enter your email address and we&aposll send you a link to reset your
           password.
         </Text>
       </View>
@@ -118,7 +124,7 @@ export default function ForgotPasswordScreen() {
           />
         </View>
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }
 

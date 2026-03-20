@@ -1,4 +1,4 @@
-import { supabase } from "../../../../packages/shared/lib/supabase";
+import { supabase } from "@kiado/shared";
 import { Alert } from "react-native";
 
 /**

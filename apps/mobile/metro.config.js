@@ -3,20 +3,33 @@ const { withNativeWind } = require("nativewind/metro");
 const path = require("path");
 
 const projectRoot = __dirname;
-const workspaceRoot = path.resolve(projectRoot, "../..");
+const monorepoRoot = path.resolve(projectRoot, "../..");
 
 const config = getDefaultConfig(projectRoot);
 
-// 1. Watch all files within the monorepo
-config.watchFolders = [workspaceRoot];
+// Merge with Expo's default watchFolders instead of replacing them
+config.watchFolders = [...(config.watchFolders ?? []), monorepoRoot];
 
-// 2. Let Metro know where to find node_modules
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
-  path.resolve(workspaceRoot, "node_modules"),
+  path.resolve(monorepoRoot, "node_modules"),
 ];
 
-// 3. Disable the standard recursive lookup
-config.resolver.disableHierarchicalLookup = true;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  // Prevent @stripe/stripe-react-native from being bundled on web/SSR
+  // where it tries to import react-native internals that don't exist.
+  if (
+    (platform === "web" || platform == null) &&
+    moduleName === "@stripe/stripe-react-native"
+  ) {
+    return {
+      filePath: path.resolve(projectRoot, "src/shims/stripe.web.ts"),
+      type: "sourceFile",
+    };
+  }
+  return context.resolveRequest(context, moduleName, platform);
+};
 
-module.exports = withNativeWind(config, { input: "src/styles/global.css" });
+module.exports = withNativeWind(config, {
+  input: "./src/styles/global.css",
+});

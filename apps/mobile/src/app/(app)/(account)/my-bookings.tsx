@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { BookingWithProperty } from "../../../../../../packages/shared/types/bookings";
+import { colours } from "@kiado/shared";
+import { BookingWithProperty } from "@kiado/shared/types/bookings";
 import {
   cancelBooking,
   fetchMyBookings,
@@ -22,6 +22,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
+import { Card } from "@/components/shared/Card";
+import { PropertyImage } from "@/components/properties/PropertyImage";
 
 export default function MyBookingsScreen() {
   const router = useRouter();
@@ -128,7 +131,6 @@ export default function MyBookingsScreen() {
               status: "cancelled",
             });
             if (success) {
-              Alert.alert("Success", "Booking cancelled successfully");
               await loadBookings();
             } else {
               Alert.alert("Error", "Failed to cancel booking");
@@ -179,166 +181,146 @@ export default function MyBookingsScreen() {
 
     return (
       <TouchableOpacity
-        style={styles.bookingCard}
         onPress={() => router.push(`/properties/${item.property_id}` as any)}
       >
-        {item.property.cover_image_url && (
-          <Image
-            source={{ uri: item.property.cover_image_url }}
-            style={styles.propertyImage}
-          />
-        )}
+        <Card>
+          {item.property.cover_image_url && (
+            <PropertyImage uri={item.property.cover_image_url} />
+          )}
 
-        <View style={styles.bookingContent}>
-          <View style={styles.bookingHeader}>
-            <View style={styles.bookingTitleContainer}>
-              <Text style={styles.propertyTitle} numberOfLines={1}>
-                {item.property.title}
-              </Text>
-              <View style={styles.locationRow}>
-                <MaterialIcons
-                  name="location-on"
-                  size={14}
-                  color={colours.textSecondary}
-                />
-                <Text style={styles.locationText}>{item.property.city}</Text>
+          <View style={styles.bookingContent}>
+            <View style={styles.bookingHeader}>
+              <View style={styles.bookingTitleContainer}>
+                <Text style={styles.propertyTitle} numberOfLines={1}>
+                  {item.property.title}
+                </Text>
+                <View style={styles.locationRow}>
+                  <MaterialIcons
+                    name="location-on"
+                    size={14}
+                    color={colours.textSecondary}
+                  />
+                  <Text style={styles.locationText}>{item.property.city}</Text>
+                </View>
               </View>
-            </View>
 
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusColor(item.status) + "20" },
-              ]}
-            >
-              <MaterialIcons
-                name={getStatusIcon(item.status) as any}
-                size={14}
-                color={getStatusColor(item.status)}
-              />
-              <Text
+              <View
                 style={[
-                  styles.statusText,
-                  { color: getStatusColor(item.status) },
+                  styles.statusBadge,
+                  { backgroundColor: getStatusColor(item.status) + "20" },
                 ]}
               >
-                {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.datesContainer}>
-            <View style={styles.dateColumn}>
-              <Text style={styles.dateLabel}>Check-in</Text>
-              <Text style={styles.dateValue}>
-                {checkInDate.toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                })}
-              </Text>
-            </View>
-
-            <View style={styles.nightsIndicator}>
-              <MaterialIcons name="hotel" size={16} color={colours.muted} />
-              <Text style={styles.nightsText}>
-                {nights} {nights === 1 ? "night" : "nights"}
-              </Text>
-            </View>
-
-            <View style={styles.dateColumn}>
-              <Text style={styles.dateLabel}>Check-out</Text>
-              <Text style={styles.dateValue}>
-                {checkOutDate.toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                })}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.bookingFooter}>
-            <View style={styles.priceContainer}>
-              <Text style={styles.priceLabel}>Total</Text>
-              <Text style={styles.priceValue}>
-                £{item.total_price.toLocaleString()}
-              </Text>
-            </View>
-
-            {/* Payment due date */}
-            {item.payment_status && (
-              <View style={styles.paymentStatusContainer}>
-                <View style={styles.paymentStatusRow}>
-                  <MaterialIcons
-                    name={
-                      item.payment_status === "paid"
-                        ? "check-circle"
-                        : item.payment_status === "due"
-                          ? "schedule"
-                          : "pending"
-                    }
-                    size={16}
-                    color={
-                      item.payment_status === "paid"
-                        ? colours.success
-                        : item.payment_status === "due"
-                          ? colours.warning
-                          : colours.textSecondary
-                    }
-                  />
-                  <Text style={styles.paymentStatusLabel}>
-                    {item.payment_status === "paid"
-                      ? "Payment confirmed"
-                      : item.payment_status === "due"
-                        ? "Payment due"
-                        : "Payment pending"}
-                  </Text>
-                </View>
-                {item.payment_status === "due" && item.payment_due_at && (
-                  <Text style={styles.paymentDueText}>
-                    {new Date(item.payment_due_at).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </Text>
-                )}
+                <MaterialIcons
+                  name={getStatusIcon(item.status) as any}
+                  size={14}
+                  color={getStatusColor(item.status)}
+                />
+                <Text
+                  style={[
+                    styles.statusText,
+                    { color: getStatusColor(item.status) },
+                  ]}
+                >
+                  {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                </Text>
               </View>
-            )}
+            </View>
+
+            <View style={styles.datesContainer}>
+              <View style={styles.dateColumn}>
+                <Text style={styles.dateLabel}>Check-in</Text>
+                <Text style={styles.dateValue}>
+                  {checkInDate.toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </Text>
+              </View>
+
+              <View style={styles.nightsIndicator}>
+                <MaterialIcons name="hotel" size={16} color={colours.muted} />
+                <Text style={styles.nightsText}>
+                  {nights} {nights === 1 ? "night" : "nights"}
+                </Text>
+              </View>
+
+              <View style={styles.dateColumn}>
+                <Text style={styles.dateLabel}>Check-out</Text>
+                <Text style={styles.dateValue}>
+                  {checkOutDate.toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.bookingFooter}>
+              <View style={styles.priceContainer}>
+                <Text style={styles.priceLabel}>Total</Text>
+                <Text style={styles.priceValue}>
+                  £{item.total_price.toLocaleString()}
+                </Text>
+              </View>
+
+              {/* Payment due date */}
+              {item.payment_status && (
+                <View style={styles.paymentStatusContainer}>
+                  <View style={styles.paymentStatusRow}>
+                    <MaterialIcons
+                      name={
+                        item.payment_status === "paid"
+                          ? "check-circle"
+                          : item.payment_status === "due"
+                            ? "schedule"
+                            : "pending"
+                      }
+                      size={16}
+                      color={
+                        item.payment_status === "paid"
+                          ? colours.success
+                          : item.payment_status === "due"
+                            ? colours.warning
+                            : colours.textSecondary
+                      }
+                    />
+                    <Text style={styles.paymentStatusLabel}>
+                      {item.payment_status === "paid"
+                        ? "Payment confirmed"
+                        : item.payment_status === "due"
+                          ? "Payment due"
+                          : "Payment pending"}
+                    </Text>
+                  </View>
+                  {item.payment_status === "due" && item.payment_due_at && (
+                    <Text style={styles.paymentDueText}>
+                      {new Date(item.payment_due_at).toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        },
+                      )}
+                    </Text>
+                  )}
+                </View>
+              )}
+            </View>
+
+            {(item.status === "pending" || item.status === "confirmed") &&
+              !isPast && (
+                <View style={styles.actionsContainer}>
+                  <Button
+                    title="Cancel Request"
+                    onPress={() => handleCancelBooking(item)}
+                    type="outline"
+                    buttonStyle={styles.cancelButton}
+                  />
+                </View>
+              )}
           </View>
-
-          {item.status === "pending" && (
-            <View style={styles.actionsContainer}>
-              <Button
-                title="Cancel Request"
-                onPress={() => handleCancelBooking(item)}
-                type="outline"
-                buttonStyle={styles.cancelButton}
-              />
-            </View>
-          )}
-
-          {item.status === "pending" && !isPast && (
-            <View style={styles.actionsContainer}>
-              <Button
-                title="Cancel Request"
-                onPress={() => handleCancelBooking(item)}
-                type="outline"
-                buttonStyle={styles.cancelButton}
-              />
-            </View>
-          )}
-
-          {item.status === "confirmed" && !isPast && (
-            <View style={styles.actionsContainer}>
-              <Button
-                title="Cancel Booking"
-                onPress={() => handleCancelBooking(item)}
-                type="outline"
-                buttonStyle={styles.cancelButton}
-              />
-            </View>
-          )}
-        </View>
+        </Card>
       </TouchableOpacity>
     );
   };
@@ -357,6 +339,7 @@ export default function MyBookingsScreen() {
         options={{
           title: "My Bookings",
           headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
         }}
       />
       <SafeAreaView style={styles.container} edges={["bottom"]}>
@@ -456,24 +439,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-  },
-  bookingCard: {
-    backgroundColor: colours.surface,
-    borderRadius: 12,
-    borderColor: colours.border,
-    borderWidth: 1,
-    marginBottom: 16,
-    overflow: "hidden",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  propertyImage: {
-    width: "100%",
-    height: 180,
-    backgroundColor: colours.border,
   },
   bookingContent: {
     padding: 16,

@@ -1,33 +1,26 @@
 import { signUpSchema } from "@/config/schemas";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import {
   getPasswordStrength,
   getPasswordStrengthText,
 } from "@/utils/auth-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import { useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import Input from "@/components/shared/Input.tsx";
-import Button from "@/components/shared/Button.tsx";
-import { UserTypeSelector } from "@/components/auth/UserTypeSeclector.tsx";
+import { Alert, StyleSheet, Text, View } from "react-native";
+import Input from "@/components/shared/Input";
+import Button from "@/components/shared/Button";
+import { UserTypeSelector } from "@/components/auth/UserTypeSeclector";
 import { Toast } from "react-native-toast-notifications";
 import zod from "zod";
-import { useAuthStore } from "@/store/auth-store.ts";
+import { useAuthStore } from "@/store/auth-store";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 
 const SignUp = () => {
   const router = useRouter();
-  const scrollViewRef = useRef<ScrollView>(null);
   const { signUpWithEmail, loading, session } = useAuthStore();
+  const { keyboardOffset } = useKeyboardOffset();
 
   const { control, handleSubmit, formState, watch } = useForm({
     resolver: zodResolver(signUpSchema),
@@ -93,35 +86,12 @@ const SignUp = () => {
     }
   };
 
-  const scrollToInput = (inputRef: any) => {
-    if (inputRef && scrollViewRef.current) {
-      inputRef.measure(
-        (
-          x: number,
-          y: number,
-          width: number,
-          height: number,
-          pageX: number,
-          pageY: number,
-        ) => {
-          scrollViewRef.current?.scrollTo({
-            x: 0,
-            y: pageY - 200, // Offset to show validation messages
-            animated: true,
-          });
-        },
-      );
-    }
-  };
-
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <ScrollView
-        ref={scrollViewRef}
-        contentContainerStyle={styles.scrollContent}
+    <>
+      <KeyboardAwareScrollView
+        bottomOffset={keyboardOffset + 170}
+        keyboardShouldPersistTaps="handled"
+        style={styles.container}
       >
         <View style={styles.form}>
           <Controller
@@ -150,7 +120,6 @@ const SignUp = () => {
                   color: colours.muted,
                 }}
                 onChangeText={onChange}
-                onFocus={(e) => scrollToInput(e.target)}
                 onBlur={onBlur}
                 value={value}
                 placeholder="Your first name"
@@ -180,7 +149,6 @@ const SignUp = () => {
                   color: colours.muted,
                 }}
                 onChangeText={onChange}
-                onFocus={(e) => scrollToInput(e.target)}
                 onBlur={onBlur}
                 value={value}
                 placeholder="Your last name"
@@ -210,7 +178,6 @@ const SignUp = () => {
                   color: colours.muted,
                 }}
                 onChangeText={onChange}
-                onFocus={(e) => scrollToInput(e.target)}
                 onBlur={onBlur}
                 value={value}
                 placeholder="email@address.com"
@@ -243,7 +210,6 @@ const SignUp = () => {
                     color: colours.muted,
                   }}
                   onChangeText={onChange}
-                  onFocus={(e) => scrollToInput(e.target)}
                   onBlur={onBlur}
                   value={value}
                   secureTextEntry={true}
@@ -339,7 +305,6 @@ const SignUp = () => {
                     color: colours.muted,
                   }}
                   onChangeText={onChange}
-                  onFocus={(e) => scrollToInput(e.target)}
                   onBlur={onBlur}
                   value={value}
                   secureTextEntry={true}
@@ -375,32 +340,32 @@ const SignUp = () => {
             )}
           />
         </View>
-      </ScrollView>
-      <View style={{ paddingHorizontal: 10 }}>
-        <Button
-          title="Create Account"
-          disabled={loading}
-          loading={loading}
-          onPress={handleSubmit(handleSignUp)}
-          buttonStyle={[
-            styles.signUpButton,
-            (!isFormValid || loading) && styles.signUpButtonDisabled,
-          ]}
-          testID="sign-up-button"
-        />
-
-        <View style={styles.signInContainer}>
-          <Text style={styles.signInText}>Already have an account?</Text>
+        <View style={styles.bottomSection}>
           <Button
-            title="Sign In"
-            type="clear"
-            onPress={() => router.push("/(auth)")}
-            titleStyle={styles.signInButtonText}
-            testID="sign-in-link"
+            title="Create Account"
+            disabled={loading}
+            loading={loading}
+            onPress={handleSubmit(handleSignUp)}
+            buttonStyle={[
+              styles.signUpButton,
+              (!isFormValid || loading) && styles.signUpButtonDisabled,
+            ]}
+            testID="sign-up-button"
           />
+
+          <View style={styles.signInContainer}>
+            <Text style={styles.signInText}>Already have an account?</Text>
+            <Button
+              title="Sign In"
+              type="clear"
+              onPress={() => router.push("/(auth)")}
+              titleStyle={styles.signInButtonText}
+              testID="sign-in-link"
+            />
+          </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </>
   );
 };
 
@@ -410,10 +375,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colours.surface,
-  },
-  scrollContent: {
-    flexGrow: 1,
     paddingHorizontal: 10,
+    paddingBottom: 24,
   },
   form: {
     width: "100%",
@@ -503,5 +466,9 @@ const styles = StyleSheet.create({
     color: colours.primary,
     fontSize: 14,
     fontWeight: "bold",
+  },
+  bottomSection: {
+    paddingHorizontal: 10,
+    marginTop: 8,
   },
 });

@@ -108,7 +108,7 @@ See `.env.example` for all required environment variables:
 - `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` - Supabase public key
 - `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe public key
 - `STRIPE_SECRET_KEY` - Stripe secret key (server-side)
-- `EXPO_PUBLIC_OPENCAGE_API_KEY` - OpenCage geocoding API key
+- `OPENCAGE_API_KEY` - OpenCage geocoding API key
 - `EXPO_PUBLIC_ENVIRONMENT` - Environment (development/staging/production)
 - `EXPO_PUBLIC_SENTRY_DSN` - Sentry DSN for error tracking (optional)
 
@@ -184,6 +184,7 @@ eas build --platform android --profile production
 Submit to stores:
 
 ```bash
+eas build --platform ios --profile production --auto-submit
 eas submit --platform ios --profile production
 eas submit --platform android --profile production
 ```

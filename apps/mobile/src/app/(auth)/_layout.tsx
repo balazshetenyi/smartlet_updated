@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const AuthLayout = () => {
   return (
-    <SafeAreaView className="flex-1 bg-white p-4">
+    <SafeAreaView className="flex-1 bg-white p-4" edges={["top", "bottom"]}>
       <Stack screenOptions={{ headerShown: false }} />
     </SafeAreaView>
   );

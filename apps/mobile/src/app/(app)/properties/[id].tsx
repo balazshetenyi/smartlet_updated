@@ -1,15 +1,14 @@
 import BookingModal from "@/components/properties/BookingModal";
 import Button from "@/components/shared/Button";
-import { supabase } from "../../../../../../packages/shared/lib/supabase";
+import { colours, supabase } from "@kiado/shared";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { CreateBookingData } from "../../../../../../packages/shared/types/bookings";
-import {
-  Amenity,
-  Property,
-} from "../../../../../../packages/shared/types/property";
+import { CreateBookingData } from "@kiado/shared/types/bookings";
+import { Amenity, Property } from "@kiado/shared/types/property";
 import { createBooking, fetchBlockedDates } from "@/utils/booking-utils";
-import { fetchPropertyPhotos } from "@/utils/property-utils";
+import {
+  fetchPropertyPhotos,
+  parsePropertyLocation,
+} from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   Stack,
@@ -17,25 +16,40 @@ import {
   useNavigation,
   useRouter,
 } from "expo-router";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  FlatList,
   Image,
+  Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Linking,
+  Platform,
+  ActionSheetIOS,
 } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { PropertyType } from "@/enums/property-enums.ts";
+import { PropertyType } from "@/enums/property-enums";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
+import { HeaderTitle } from "@/components/shared/HeaderTitle";
+import { findConversation } from "@/utils/message-utils";
+import { StatusBar } from "expo-status-bar";
+import MapView, {
+  Marker,
+  PROVIDER_GOOGLE,
+  PROVIDER_DEFAULT,
+} from "react-native-maps";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -53,6 +67,10 @@ export default function PropertyDetailsScreen() {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [lightboxVisible, setLightboxVisible] = useState(false);
+  const [mapOffCentre, setMapOffCentre] = useState(false);
+  const mapRef = useRef<MapView>(null);
 
   const handleBookProperty = () => {
     if (!profile) {
@@ -132,6 +150,7 @@ export default function PropertyDetailsScreen() {
   }, [property, profile, navigation]);
 
   useEffect(() => {
+    console.log("Fetching property with ID:", id);
     fetchPropertyDetails();
   }, [id]);
 
@@ -224,9 +243,9 @@ export default function PropertyDetailsScreen() {
     const amount = `£${property.price.toLocaleString()}`;
 
     switch (property.rental_type) {
-      case "short_term":
+      case PropertyType.ShortTerm:
         return { amount, period: "/week" };
-      case "holiday":
+      case PropertyType.Holiday:
         return { amount, period: "/night" };
       default:
         return { amount, period: "/month" };
@@ -239,7 +258,7 @@ export default function PropertyDetailsScreen() {
       short_term: { text: "Short Term Rental", icon: "calendar-today" },
       holiday: { text: "Holiday Rental", icon: "beach-access" },
     };
-    return labels[property?.rental_type || "long_term"];
+    return labels[property?.rental_type || PropertyType.LongTerm];
   };
 
   const handleContactLandlord = async () => {
@@ -247,38 +266,36 @@ export default function PropertyDetailsScreen() {
       Alert.alert("Error", "Landlord information not available");
       return;
     }
-
     if (!profile) {
       Alert.alert("Error", "Please sign in to contact the landlord");
       return;
     }
-
     if (!property) {
       Alert.alert("Error", "Property information not available");
       return;
     }
-
     if (profile.id === landlord.id) {
       Alert.alert("Info", "This is your own property");
       return;
     }
 
     try {
-      // Import the utility function
-      const { getOrCreateConversation } = await import("@/utils/message-utils");
-
-      const conversation = await getOrCreateConversation(
+      const existing = await findConversation(
         property.id,
         landlord.id,
         profile.id,
       );
 
-      if (conversation) {
+      if (existing) {
+        // Existing conversation — go straight to it
         router.push(
-          `/messages/${conversation.id}?propertyTitle=${property.title}` as any,
+          `/messages/${existing.id}?propertyTitle=${encodeURIComponent(property.title)}` as any,
         );
       } else {
-        Alert.alert("Error", "Failed to start conversation");
+        // No conversation yet — open a blank chat; it will be created on first send
+        router.push(
+          `/messages/new?propertyId=${property.id}&landlordId=${landlord.id}&tenantId=${profile.id}&propertyTitle=${encodeURIComponent(property.title)}` as any,
+        );
       }
     } catch (error) {
       console.error("Error starting conversation:", error);
@@ -315,25 +332,12 @@ export default function PropertyDetailsScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: property.title,
+          title: "",
           headerShown: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginLeft: 8, padding: 4 }}
-              accessibilityLabel="Go back"
-            >
-              <MaterialIcons name="arrow-back" size={24} color={colours.text} />
-            </TouchableOpacity>
-          ),
-          headerStyle: {
-            backgroundColor: colours.surface,
-          },
-          headerTintColor: colours.text,
-          headerTitleStyle: {
-            fontWeight: "700",
-          },
-          headerShadowVisible: false,
+          headerLeft: () => <HeaderBackButton />,
+          headerTitle: property
+            ? () => <HeaderTitle title={property.title} />
+            : () => null,
         }}
       />
       <ScrollView style={styles.scrollView}>
@@ -354,11 +358,15 @@ export default function PropertyDetailsScreen() {
               }}
             >
               {photos.map((url, idx) => (
-                <Image
+                <Pressable
                   key={`${url}-${idx}`}
-                  source={{ uri: url }}
-                  style={styles.heroImage}
-                />
+                  onPress={() => {
+                    setLightboxIndex(idx);
+                    setLightboxVisible(true);
+                  }}
+                >
+                  <Image source={{ uri: url }} style={styles.heroImage} />
+                </Pressable>
               ))}
             </ScrollView>
           ) : (
@@ -422,6 +430,107 @@ export default function PropertyDetailsScreen() {
             </Text>
           </View>
 
+          {(() => {
+            const coords = parsePropertyLocation(property.location);
+            console.log("property.location raw:", property.location);
+            console.log("parsed coords:", coords);
+            if (!coords) return null;
+            const openInMaps = async () => {
+              const googleMapsUrl = `comgooglemaps://?q=${coords.latitude},${coords.longitude}`;
+              const appleMapsUrl = `maps://?q=${coords.latitude},${coords.longitude}`;
+
+              if (Platform.OS === "ios") {
+                const googleInstalled = await Linking.canOpenURL(googleMapsUrl);
+
+                const options = ["Cancel", "Apple Maps"];
+                if (googleInstalled) options.push("Google Maps");
+
+                ActionSheetIOS.showActionSheetWithOptions(
+                  {
+                    options,
+                    cancelButtonIndex: 0,
+                  },
+                  (index) => {
+                    if (index === 1) {
+                      Linking.openURL(appleMapsUrl);
+                    } else if (index === 2 && googleInstalled) {
+                      Linking.openURL(googleMapsUrl);
+                    }
+                  },
+                );
+              } else {
+                Linking.openURL(
+                  `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`,
+                );
+              }
+            };
+
+            const reCentre = () => {
+              mapRef.current?.animateToRegion(
+                {
+                  ...coords,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                },
+                300,
+              );
+              setMapOffCentre(false);
+            };
+            return (
+              <View style={styles.mapContainer}>
+                <MapView
+                  ref={mapRef}
+                  style={styles.map}
+                  provider={
+                    Platform.OS === "android"
+                      ? PROVIDER_GOOGLE
+                      : PROVIDER_DEFAULT
+                  }
+                  region={{
+                    ...coords,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  }}
+                  scrollEnabled={true}
+                  zoomEnabled={true}
+                  rotateEnabled={false}
+                  pitchEnabled={true}
+                  onRegionChange={(region) => {
+                    const latDiff = Math.abs(region.latitude - coords.latitude);
+                    const lngDiff = Math.abs(
+                      region.longitude - coords.longitude,
+                    );
+                    setMapOffCentre(latDiff > 0.003 || lngDiff > 0.003);
+                  }}
+                >
+                  <Marker coordinate={coords} />
+                </MapView>
+                {mapOffCentre && (
+                  <TouchableOpacity
+                    style={styles.reCentreButton}
+                    onPress={reCentre}
+                    activeOpacity={0.8}
+                  >
+                    <MaterialIcons name="my-location" size={18} color="#fff" />
+                    <Text style={styles.reCentreText}>Re-centre</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={styles.mapOverlay}
+                  onPress={openInMaps}
+                  activeOpacity={0.7}
+                >
+                  <MaterialIcons
+                    name="open-in-new"
+                    size={16}
+                    color={colours.primary}
+                  />
+                  <Text style={styles.mapOverlayText}>Open in Maps</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })()}
+
           <View style={styles.priceRow}>
             <Text style={styles.price}>{priceInfo.amount}</Text>
             <Text style={styles.priceLabel}>{priceInfo.period}</Text>
@@ -446,6 +555,15 @@ export default function PropertyDetailsScreen() {
                 />
                 <Text style={styles.featureText}>
                   {property.bathrooms} Bathrooms
+                </Text>
+              </View>
+            )}
+            {property.max_guests !== undefined && property.max_guests > 0 && (
+              <View style={styles.feature}>
+                <MaterialIcons name="group" size={24} color={colours.primary} />
+                <Text style={styles.featureText}>
+                  {property.max_guests}{" "}
+                  {`Guest${property.max_guests > 1 ? "s" : ""}`}
                 </Text>
               </View>
             )}
@@ -541,6 +659,65 @@ export default function PropertyDetailsScreen() {
           onConfirm={handleBookingConfirm}
         />
       )}
+
+      <Modal
+        visible={lightboxVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLightboxVisible(false)}
+        statusBarTranslucent
+      >
+        <StatusBar hidden />
+        <View style={styles.lightboxContainer}>
+          <Pressable
+            style={styles.lightboxClose}
+            onPress={() => setLightboxVisible(false)}
+          >
+            <MaterialIcons name="close" size={28} color="#fff" />
+          </Pressable>
+
+          <FlatList
+            data={photos}
+            horizontal
+            pagingEnabled
+            initialScrollIndex={lightboxIndex}
+            getItemLayout={(_, index) => ({
+              length: SCREEN_WIDTH,
+              offset: SCREEN_WIDTH * index,
+              index,
+            })}
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(e) => {
+              const idx = Math.round(
+                e.nativeEvent.contentOffset.x / SCREEN_WIDTH,
+              );
+              setLightboxIndex(idx);
+            }}
+            keyExtractor={(url, idx) => `${url}-${idx}`}
+            renderItem={({ item }) => (
+              <ScrollView
+                style={{ width: SCREEN_WIDTH }}
+                contentContainerStyle={styles.lightboxImageContainer}
+                maximumZoomScale={4}
+                minimumZoomScale={1}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                centerContent
+              >
+                <Image
+                  source={{ uri: item }}
+                  style={styles.lightboxImage}
+                  resizeMode="contain"
+                />
+              </ScrollView>
+            )}
+          />
+
+          <Text style={styles.lightboxCounter}>
+            {lightboxIndex + 1} / {photos.length}
+          </Text>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -679,6 +856,56 @@ const styles = StyleSheet.create({
     color: colours.textSecondary,
     flex: 1,
   },
+  mapContainer: {
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colours.border,
+    position: "relative",
+  },
+  map: {
+    width: "100%",
+    height: 180,
+  },
+  mapOverlay: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    backgroundColor: colours.surface,
+    borderTopWidth: 1,
+    borderTopColor: colours.border,
+  },
+  mapOverlayText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colours.primary,
+  },
+  reCentreButton: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colours.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  reCentreText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
   priceRow: {
     flexDirection: "row",
     alignItems: "baseline",
@@ -725,6 +952,7 @@ const styles = StyleSheet.create({
   },
   featuresContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 16,
     marginBottom: 24,
   },
@@ -922,5 +1150,33 @@ const styles = StyleSheet.create({
   bookButton: {
     flex: 1,
     backgroundColor: colours.primary,
+  },
+  // Slideshow
+  lightboxContainer: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  lightboxClose: {
+    position: "absolute",
+    top: 52,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
+  },
+  lightboxCounter: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+    paddingVertical: 16,
+  },
+  lightboxImageContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  lightboxImage: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_WIDTH * 1.2,
   },
 });

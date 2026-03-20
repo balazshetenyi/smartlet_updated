@@ -1,8 +1,23 @@
 import { signInSchema, signUpSchema } from "@/config/schemas";
-import { supabase } from "../../../../packages/shared/lib/supabase";
-import { SignInResponse } from "../../../../packages/shared/types/auth";
+import { supabase } from "@kiado/shared";
+import { SignInResponse } from "@kiado/shared/types/auth";
+import { UserProfile } from "@kiado/shared/types/user";
 import { Alert } from "react-native";
 import zod from "zod";
+
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  message: string,
+): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  });
+}
 
 export async function signInWithEmail(
   signInData: zod.infer<typeof signInSchema>,
@@ -36,26 +51,37 @@ export async function signOutUser(): Promise<void> {
 export const fetchUserProfile = async (
   userId: string,
 ): Promise<UserProfile | null> => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select(
-      `
-        *,
-        user_roles (
-          role
-        )
-      `,
-    )
-    .eq("id", userId)
-    .single();
+  try {
+    const { data, error } = await withTimeout(
+      Promise.resolve(
+        supabase
+          .from("profiles")
+          .select(
+            `
+                *,
+                user_roles (
+                  role
+                )
+              `,
+          )
+          .eq("id", userId)
+          .single(),
+      ),
+      10_000,
+      "fetchUserProfile timed out",
+    );
 
-  if (error) {
-    console.error("Error fetching user profile:", error);
+    if (error) {
+      console.error("[fetchUserProfile] error:", error);
+      return null;
+    }
+
+    const role = data.user_roles?.[0]?.role || "tenant";
+    return { ...data, user_role: role };
+  } catch (e) {
+    console.error("[fetchUserProfile] failed:", e);
     return null;
   }
-
-  const role = data.user_roles?.[0]?.role || "tenant";
-  return { ...data, user_role: role };
 };
 
 export const signUpWithEmail = async (
@@ -78,6 +104,7 @@ export const signUpWithEmail = async (
       email: signUpData.email,
       password: signUpData.password,
       options: {
+        emailRedirectTo: "kiado://sign-in",
         data: {
           first_name: signUpData.first_name,
           last_name: signUpData.last_name,
@@ -90,7 +117,6 @@ export const signUpWithEmail = async (
       return { success: false, error: signUpError.message };
     }
 
-    // If a user is immediately signed in, update the profile with a role
     if (session?.user?.id) {
       await supabase
         .from("profiles")
@@ -112,7 +138,6 @@ export const signUpWithEmail = async (
   }
 };
 
-// Password strength indicator
 export const getPasswordStrength = (password: string) => {
   let strength = 0;
   if (password.length >= 8) strength++;
@@ -141,12 +166,8 @@ export const getPasswordStrengthText = (strength: number) => {
   }
 };
 
-// UK Postcode formatter
 export const formatPostcode = (value: string) => {
-  // Remove all spaces and convert to uppercase
   const cleanValue = value.replace(/\s+/g, "").toUpperCase();
-
-  // Add space before the last 3 characters if length > 3
   if (cleanValue.length > 3) {
     return cleanValue.slice(0, -3) + " " + cleanValue.slice(-3);
   }

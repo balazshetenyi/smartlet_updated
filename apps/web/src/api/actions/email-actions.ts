@@ -28,7 +28,7 @@ export async function subscribeToWaitlist(formData: FormData) {
 
   const { email } = validatedFields.data;
 
-  const { error } = await supabase.from("waitlist").insert([{ email }]);
+  const { error } = await supabase.from("waitlist").insert({ email });
 
   if (error) {
     if (error.code === "23505")

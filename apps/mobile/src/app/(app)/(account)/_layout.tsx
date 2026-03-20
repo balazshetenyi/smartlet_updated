@@ -1,135 +1,87 @@
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 export default function AccountLayout() {
   const router = useRouter();
 
   return (
-    <>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          headerStyle: {
-            backgroundColor: colours.surface,
-          },
-          headerTintColor: colours.text,
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
         }}
-      >
-        <Stack.Screen
-          name="profile"
-          options={{
-            title: "Profile",
-            headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-        />
-        <Stack.Screen
-          name="my-bookings"
-          options={{
-            title: "My Bookings",
-            headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-        />
-        <Stack.Screen
-          name="my-properties"
-          options={{
-            title: "My Properties",
-            headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
-            headerRight: () => (
-              <TouchableOpacity
-                onPress={() => router.push("/properties/create-property")}
-                style={{ marginRight: 8, padding: 4 }}
-                accessibilityLabel="Create Property"
-              >
-                <MaterialIcons
-                  name="add-home"
-                  size={24}
-                  color={colours.primary}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-        />
-        <Stack.Screen
-          name="payout-setup"
-          options={{
-            title: "Payout Settings",
-            headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-        />
-        <Stack.Screen
-          name="booking-requests"
-          options={{
-            title: "Booking Requests",
-            headerShown: true,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{ marginLeft: 8, padding: 4 }}
-                accessibilityLabel="Go back"
-              >
-                <MaterialIcons
-                  name="arrow-back"
-                  size={24}
-                  color={colours.text}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-        />
-      </Stack>
-    </>
+      />
+      <Stack.Screen
+        name="change-password"
+        options={{
+          title: "Change Password",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
+        name="notifications"
+        options={{
+          title: "Notifications",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
+        name="my-bookings"
+        options={{
+          title: "My Bookings",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
+        name="my-properties"
+        options={{
+          title: "My Properties",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => router.push("/properties/create-property")}
+              style={{ marginRight: 8, padding: 4 }}
+              accessibilityLabel="Create Property"
+            >
+              <MaterialIcons
+                name="add-home"
+                size={24}
+                color={colours.primary}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="payout-setup"
+        options={{
+          title: "Payout Settings",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
+        name="booking-requests"
+        options={{
+          title: "Booking Requests",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+    </Stack>
   );
 }

@@ -1,5 +1,4 @@
-import { supabase } from "../../../../packages/shared/lib/supabase";
-import { colours } from "../../../../packages/shared/styles/colours.ts";
+import { colours, supabase } from "@kiado/shared";
 import { Alert } from "react-native";
 
 export const getRoleColor = (role?: string) => {

@@ -1,10 +1,10 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "../../../../../../packages/shared/styles/colours.ts";
-import { supabase } from "../../../../../../packages/shared/lib/supabase";
-import { BookingWithTenant, fetchBookingRequests } from "@/utils/booking-utils";
+import { colours, supabase } from "@kiado/shared";
+import { BookingWithTenant } from "@kiado/shared/types/bookings";
+import { fetchBookingRequests } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,9 +17,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Card } from "@/components/shared/Card";
+import { PropertyImage } from "@/components/properties/PropertyImage";
 
 export default function BookingRequestsScreen() {
-  const router = useRouter();
   const { profile } = useAuthStore();
   const [bookings, setBookings] = useState<BookingWithTenant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,7 +139,7 @@ export default function BookingRequestsScreen() {
     }
   };
 
-  const renderBookingCard = ({ item }: { item: Booking }) => {
+  const renderBookingCard = ({ item }: { item: BookingWithTenant }) => {
     const checkInDate = new Date(item.check_in);
     const checkOutDate = new Date(item.check_out);
     const nights = Math.ceil(
@@ -166,12 +167,9 @@ export default function BookingRequestsScreen() {
     const paymentStatus = getPaymentStatus();
 
     return (
-      <View style={styles.bookingCard}>
+      <Card>
         {item.property?.cover_image_url && (
-          <Image
-            source={{ uri: item.property.cover_image_url }}
-            style={styles.propertyImage}
-          />
+          <PropertyImage uri={item.property.cover_image_url} />
         )}
 
         <View style={styles.bookingContent}>
@@ -275,7 +273,6 @@ export default function BookingRequestsScreen() {
               <Button
                 title="Decline"
                 onPress={() => handleDeclineBooking(item.id)}
-                variant="outline"
                 buttonStyle={[styles.actionButton, styles.declineButton]}
               />
               <Button
@@ -286,7 +283,7 @@ export default function BookingRequestsScreen() {
             </View>
           )}
         </View>
-      </View>
+      </Card>
     );
   };
 
@@ -349,22 +346,6 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 16,
   },
-  bookingCard: {
-    backgroundColor: colours.surface,
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: "hidden",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  propertyImage: {
-    width: "100%",
-    height: 150,
-    backgroundColor: colours.border,
-  },
   bookingContent: {
     padding: 16,
   },
@@ -396,7 +377,6 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: colours.backgroundDark,
     borderRadius: 6,
     alignSelf: "flex-start",
   },
@@ -410,7 +390,6 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
     padding: 12,
-    backgroundColor: colours.backgroundDark,
     borderRadius: 8,
   },
   guestAvatar: {
@@ -445,7 +424,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     padding: 12,
-    backgroundColor: colours.backgroundDark,
     borderRadius: 8,
   },
   dateLabel: {

@@ -1,6 +1,14 @@
 {
   "name": "@kiado/shared",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "private": true,
   "main": "./index.ts",
-  "types": "./index.ts"
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./lib/*": "./lib/*",
+    "./styles/*": "./styles/*",
+    "./types/*": "./types/*",
+    "./assets/*": "./assets/*"
+  }
 }

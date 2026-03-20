@@ -4,9 +4,8 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export function OfflineIndicator() {

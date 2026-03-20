@@ -3,8 +3,7 @@ import AppBar from "@/components/shared/AppBar";
 import SearchBar from "@/components/shared/SearchBar";
 import { useAuthStore } from "@/store/auth-store";
 import { usePropertyStore } from "@/store/property-store";
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { colours } from "@kiado/shared";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -36,14 +35,6 @@ export default function HomeScreen() {
     loadProperties();
   }, [loadProperties, profile?.id]);
 
-  const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <MaterialIcons name="home" size={64} color={colours.muted} />
-      <Text style={styles.emptyText}>No properties available</Text>
-      <Text style={styles.emptySubtext}>Check back later for new listings</Text>
-    </View>
-  );
-
   if (loading) {
     return (
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
@@ -56,7 +47,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <AppBar />
       <ScrollView
         refreshControl={
@@ -118,14 +109,14 @@ export default function HomeScreen() {
           {/*)}*/}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.background,
+    backgroundColor: colours.surface,
   },
   loadingContainer: {
     flex: 1,
@@ -141,7 +132,7 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: colours.text,
+    color: colours.darkSlateBlue,
     marginBottom: 4,
   },
   welcomeSubtitle: {

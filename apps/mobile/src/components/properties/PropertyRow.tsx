@@ -1,9 +1,9 @@
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
-import { Property } from "../../../../../packages/shared/types/property";
+import { colours } from "@kiado/shared";
+import { Property } from "@kiado/shared/types/property";
 import { Link, useRouter } from "expo-router";
 import React from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
-import PropertyCard from "./PropertyCard";
+import PropertyCard from "@/components/properties/PropertyCard";
 
 interface PropertyRowProps {
   title: string;

@@ -4,6 +4,7 @@ export type Property = {
   id: string;
   landlord_id: string;
   title: string;
+  max_guests: number;
   description?: string;
   address?: string;
   city?: string;

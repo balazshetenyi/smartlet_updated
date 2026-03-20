@@ -1,4 +1,4 @@
-import { colours } from "../../../../../packages/shared/styles/colours.ts";
+import { colours } from "@kiado/shared";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
