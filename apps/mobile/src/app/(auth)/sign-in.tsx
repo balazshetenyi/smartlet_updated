@@ -4,12 +4,13 @@ import { signInSchema } from "@/config/schemas";
 import { useAuthStore } from "@/store/auth-store";
 import { colours } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "expo-router";
-import React from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
+import { Toast } from "react-native-toast-notifications";
 
 /**
  * Auth component for user authentication.
@@ -17,6 +18,7 @@ import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
  * If the user does not have an account, they can navigate to the sign-up page.
  */
 export default function SignIn() {
+  const params = useLocalSearchParams();
   const { loading, signIn } = useAuthStore();
   const { keyboardOffset } = useKeyboardOffset();
   const { control, handleSubmit, formState } = useForm({
@@ -28,6 +30,15 @@ export default function SignIn() {
   });
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (params?.justSignedUp === "true") {
+      // show banner / toast that instructs user to check email
+      Toast.show("Please check your email to verify your account.", {
+        type: "info",
+      });
+    }
+  }, []);
 
   return (
     <KeyboardAwareScrollView

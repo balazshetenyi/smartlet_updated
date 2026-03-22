@@ -51,12 +51,6 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <AppBar />
-      <Button
-        title="Try!"
-        onPress={() => {
-          Sentry.captureException(new Error("First error"));
-        }}
-      />
       <ScrollView
         refreshControl={
           <RefreshControl
