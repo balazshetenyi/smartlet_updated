@@ -6,7 +6,6 @@ export default function AuthCallback() {
   useEffect(() => {
     try {
       const hash = typeof window !== "undefined" ? window.location.hash : "";
-      console.debug("[auth-callback] hash:", hash);
 
       if (!hash) {
         // No tokens, go to sign-in
@@ -20,7 +19,6 @@ export default function AuthCallback() {
       const absolute = window.location.origin + target;
       window.location.replace(absolute);
     } catch (e) {
-      console.error("[auth-callback] error:", e);
       window.location.replace("/sign-in");
     }
   }, []);
