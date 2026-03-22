@@ -15,25 +15,15 @@ import { ToastProvider } from "react-native-toast-notifications";
 import { useNotifications } from "@/hooks/useNotifications";
 import * as SplashScreen from "expo-splash-screen";
 import { useColorScheme, View } from "react-native";
+import * as Sentry from "@sentry/react-native";
+import { initSentry } from "@/config/sentry";
+import { withTimeout } from "@/utils/generic-utils";
+initSentry();
 
 SplashScreen.setOptions({
   duration: 3000,
   fade: true,
 });
-
-function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  message: string,
-): Promise<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  const timeoutPromise = new Promise<T>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutId) clearTimeout(timeoutId);
-  });
-}
 
 function Providers({ children }: { children: React.ReactElement }) {
   const colorScheme = useColorScheme();
@@ -60,7 +50,7 @@ function Providers({ children }: { children: React.ReactElement }) {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const { isLoggedIn, loading, setSession, loadProfile } = useAuthStore();
   useNotifications();
 
@@ -148,3 +138,5 @@ export default function RootLayout() {
     </Providers>
   );
 }
+
+export default Sentry.wrap(RootLayout);

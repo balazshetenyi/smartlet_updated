@@ -96,9 +96,12 @@ export default {
         },
       ],
       [
-        "@sentry/react-native",
+        "@sentry/react-native/expo",
         {
-          uploadSourceMaps: false,
+          url: "https://sentry.io/",
+          note: "Use SENTRY_AUTH_TOKEN env to authenticate with Sentry.",
+          project: "kiado",
+          organization: "mozaik-software-solutions-ltd",
         },
       ],
       [
