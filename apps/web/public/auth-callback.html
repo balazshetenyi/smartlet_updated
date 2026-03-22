@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Signing you in…</title>
+  </head>
+  <body>
+    <p>Signing you in…</p>
+    <script>
+      (function () {
+        try {
+          var hash = window.location.hash || "";
+          if (!hash) {
+            // No tokens — go to sign-in page
+            window.location.replace("/sign-in");
+            return;
+          }
+
+          // If Supabase returned an error fragment, surface a readable message
+          var params = new URLSearchParams(hash.replace(/^#/, ""));
+          if (params.has("error")) {
+            var description =
+              params.get("error_description") || params.get("error");
+            // redirect to sign-in and include the error so the page can show it
+            var errTarget = "/sign-in?" + params.toString();
+            window.location.replace(errTarget);
+            return;
+          }
+
+          // Convert "#access_token=...&refresh_token=..." -> "?access_token=...&refresh_token=..."
+          var query = "?" + hash.replace(/^#/, "");
+          var target = "/sign-in" + query;
+          // Use absolute URL to be safe
+          window.location.replace(window.location.origin + target);
+        } catch (e) {
+          // fallback
+          window.location.replace("/sign-in");
+        }
+      })();
+    </script>
+  </body>
+</html>
