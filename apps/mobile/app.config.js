@@ -20,7 +20,7 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "uk.co.kiado.app",
       buildNumber: "1",
-      associatedDomains: ["applinks:kiado.co.uk"],
+      associatedDomains: ["applinks:kiado.co.uk", "applinks:www.kiado.co.uk"],
       config: {
         usesNonExemptEncryption: false,
         googleMapsApiKey: process.env.GOOGLE_MAPS_IOS_API_KEY,
@@ -45,7 +45,10 @@ export default {
         {
           action: "VIEW",
           autoVerify: true,
-          data: [{ scheme: "https", host: "kiado.co.uk", pathPrefix: "/" }],
+          data: [
+            { scheme: "https", host: "kiado.co.uk", pathPrefix: "/" },
+            { scheme: "https", host: "www.kiado.co.uk", pathPrefix: "/" },
+          ],
           category: ["BROWSABLE", "DEFAULT"],
         },
       ],
