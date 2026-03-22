@@ -7,6 +7,7 @@ import { colours } from "@kiado/shared";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Button,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -14,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Sentry from "@sentry/react-native";
 
 export default function HomeScreen() {
   const {
@@ -49,6 +51,12 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <AppBar />
+      <Button
+        title="Try!"
+        onPress={() => {
+          Sentry.captureException(new Error("First error"));
+        }}
+      />
       <ScrollView
         refreshControl={
           <RefreshControl
