@@ -61,26 +61,20 @@ const SignUp = () => {
     });
 
     if (result.success) {
-      if (session) {
-        Toast.show("Account created successfully!", {
+      Toast.show(
+        session
+          ? "Account created successfully!"
+          : "Account created! Please check your email to verify your account.",
+        {
           type: "success",
           placement: "top",
-          duration: 2000,
+          duration: 3000,
           animationType: "slide-in",
-        });
-        router.replace("/");
-      } else {
-        Toast.show(
-          "Account created! Please check your email to verify your account.",
-          {
-            type: "success",
-            placement: "top",
-            duration: 3000,
-            animationType: "slide-in",
-          },
-        );
-        router.push("/(auth)");
-      }
+        },
+      );
+      // Send the user to the sign-in page where incoming tokens will be processed.
+      // Use replace so back button doesn't lead to the sign-up form again.
+      router.replace("/sign-in?justSignedUp=true");
     } else {
       Alert.alert("Sign Up Error", result.error);
     }

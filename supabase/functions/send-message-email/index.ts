@@ -74,7 +74,7 @@ Deno.serve(async (req: Request) => {
           ${messagePreview}
         </blockquote>
         <p>
-          <a href="kiado://messages/${conversationId}"
+          <a href="https://www.kiado.co.uk/messages/${conversationId}"
              style="background: #007AFF; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 10px;">
             View Message
           </a>

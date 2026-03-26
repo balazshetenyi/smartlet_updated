@@ -33,7 +33,7 @@ export default function ForgotPasswordScreen() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: "kiado://reset-password",
+        redirectTo: "https://www.kiado.co.uk/reset-password",
       });
 
       if (error) {

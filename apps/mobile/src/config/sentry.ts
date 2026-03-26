@@ -8,8 +8,8 @@
  * 4. Update the environment in the init() call based on your deployment
  */
 
-import * as Sentry from '@sentry/react-native';
-import { isProduction, isDevelopment, env } from './env';
+import * as Sentry from "@sentry/react-native";
+import { isProduction, isDevelopment, env } from "./env";
 
 export function initSentry() {
   // Only initialize Sentry if DSN is provided
@@ -17,7 +17,7 @@ export function initSentry() {
 
   if (!sentryDsn) {
     if (isProduction) {
-      console.warn('Sentry DSN not configured for production environment');
+      console.warn("Sentry DSN not configured for production environment");
     }
     return;
   }
@@ -27,13 +27,31 @@ export function initSentry() {
     environment: env.ENVIRONMENT,
 
     // Enable or disable Sentry based on environment
-    enabled: isProduction || process.env.EXPO_PUBLIC_ENABLE_SENTRY === 'true',
+    enabled: isProduction || process.env.EXPO_PUBLIC_ENABLE_SENTRY === "true",
 
     // Debug mode for development
     debug: isDevelopment,
 
     // Sample rate for traces (adjust based on your needs)
     tracesSampleRate: isProduction ? 0.2 : 1.0,
+
+    // Adds more context data to events (IP address, cookies, user, etc.)
+    // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
+    sendDefaultPii: true,
+
+    // Enable Logs
+    enableLogs: true,
+
+    // Configure Session Replay
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1,
+    integrations: [
+      Sentry.mobileReplayIntegration(),
+      Sentry.feedbackIntegration(),
+    ],
+
+    // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+    // spotlight: __DEV__,
 
     // Filter out sensitive information
     beforeSend(event, hint) {
@@ -45,32 +63,24 @@ export function initSentry() {
 
       // Filter out specific errors
       const error = hint.originalException;
-      if (error && typeof error === 'object' && 'message' in error) {
+      if (error && typeof error === "object" && "message" in error) {
         const message = String(error.message).toLowerCase();
 
         // Don't send network errors in development
-        if (isDevelopment && message.includes('network')) {
+        if (isDevelopment && message.includes("network")) {
           return null;
         }
       }
 
       return event;
     },
-
-    // Integrate with React Native
-    integrations: [
-      new Sentry.ReactNativeTracing({
-        tracingOrigins: ['localhost', /^\//],
-        routingInstrumentation: Sentry.reactNavigationIntegration(),
-      }),
-    ],
   });
 }
 
 // Helper function to capture errors
 export function captureError(error: Error, context?: Record<string, any>) {
   if (isDevelopment) {
-    console.error('Error captured:', error, context);
+    console.error("Error captured:", error, context);
   }
 
   Sentry.captureException(error, {
@@ -79,7 +89,11 @@ export function captureError(error: Error, context?: Record<string, any>) {
 }
 
 // Helper function to set user context
-export function setUserContext(user: { id: string; email?: string; username?: string }) {
+export function setUserContext(user: {
+  id: string;
+  email?: string;
+  username?: string;
+}) {
   Sentry.setUser({
     id: user.id,
     email: user.email,
@@ -93,11 +107,15 @@ export function clearUserContext() {
 }
 
 // Helper function to add breadcrumb
-export function addBreadcrumb(message: string, category: string, data?: Record<string, any>) {
+export function addBreadcrumb(
+  message: string,
+  category: string,
+  data?: Record<string, any>,
+) {
   Sentry.addBreadcrumb({
     message,
     category,
     data,
-    level: 'info',
+    level: "info",
   });
 }

@@ -7,6 +7,7 @@ import { colours } from "@kiado/shared";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Button,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -14,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Sentry from "@sentry/react-native";
 
 export default function HomeScreen() {
   const {

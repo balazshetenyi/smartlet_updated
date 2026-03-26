@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     title: "Intelligence for Your Property | Kiado",
     description:
       "Kiado is the ultimate platform for managing your lets, simplifying everything from maintenance to payments. Join our waitlist and be the first to know when we launch.",
-    url: "https://kiado.co.uk",
+    url: "https://www.kiado.co.uk",
     siteName: "Kiado",
     locale: "en_GB",
   },
@@ -48,7 +48,7 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Kiado",
-    url: "https://kiado.co.uk",
+    url: "https://www.kiado.co.uk",
     description:
       "The ultimate platform for managing your lets, simplifying maintenance and payments.",
     contactPoint: {
