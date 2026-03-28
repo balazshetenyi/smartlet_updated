@@ -1,3 +1,4 @@
+export const TERMS_OF_SERVICE = `
 # Terms of Service for Kiado
 
 **Last Updated:** 8 March 2026
@@ -153,3 +154,4 @@ If you have questions, concerns, or a request under data protection law, contact
 
 - Nothing in these Terms seeks to exclude or limit rights that you may have as a consumer under applicable UK consumer protection laws.
 - If you are a consumer, certain provisions may not apply to the extent they conflict with mandatory consumer rights.
+`;
