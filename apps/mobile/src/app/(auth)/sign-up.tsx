@@ -7,7 +7,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Input from "@/components/shared/Input";
 import Button from "@/components/shared/Button";
 import { UserTypeSelector } from "@/components/auth/UserTypeSeclector";
@@ -16,9 +16,13 @@ import zod from "zod";
 import { useAuthStore } from "@/store/auth-store";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
+import { useState } from "react";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const SignUp = () => {
   const router = useRouter();
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const { signUpWithEmail, loading, session } = useAuthStore();
   const { keyboardOffset } = useKeyboardOffset();
 
@@ -48,7 +52,9 @@ const SignUp = () => {
     password.trim() !== "" &&
     confirmPassword.trim() !== "" &&
     firstName.trim() !== "" &&
-    lastName.trim() !== "";
+    lastName.trim() !== "" &&
+    consentGiven &&
+    ageConfirmed;
 
   const handleSignUp = async (data: zod.infer<typeof signUpSchema>) => {
     if (!isFormValid) {
@@ -334,6 +340,48 @@ const SignUp = () => {
             )}
           />
         </View>
+        <View style={styles.consentContainer}>
+          <TouchableOpacity
+            onPress={() => setConsentGiven(!consentGiven)}
+            style={styles.consentRow}
+            testID="consent-checkbox"
+          >
+            <MaterialIcons
+              name={consentGiven ? "check-box" : "check-box-outline-blank"}
+              size={22}
+              color={consentGiven ? colours.primary : colours.muted}
+            />
+            <Text style={styles.consentText}>
+              I agree to the{" "}
+              <Text
+                style={styles.consentLink}
+                onPress={() => router.push("/terms-of-service")}
+              >
+                Terms of Service
+              </Text>{" "}
+              and{" "}
+              <Text
+                style={styles.consentLink}
+                onPress={() => router.push("/privacy-policy")}
+              >
+                Privacy Policy
+              </Text>
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setAgeConfirmed(!ageConfirmed)}
+            style={styles.consentRow}
+          >
+            <MaterialIcons
+              name={ageConfirmed ? "check-box" : "check-box-outline-blank"}
+              size={22}
+              color={ageConfirmed ? colours.primary : colours.muted}
+            />
+            <Text style={styles.consentText}>
+              I confirm that I am 18 years of age or older
+            </Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.bottomSection}>
           <Button
             title="Create Account"
@@ -464,5 +512,27 @@ const styles = StyleSheet.create({
   bottomSection: {
     paddingHorizontal: 10,
     marginTop: 8,
+  },
+  consentContainer: {
+    paddingHorizontal: 10,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  consentRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  consentText: {
+    flex: 1,
+    fontSize: 13,
+    color: colours.muted,
+    lineHeight: 20,
+  },
+  consentLink: {
+    fontSize: 13,
+    color: colours.primary,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });

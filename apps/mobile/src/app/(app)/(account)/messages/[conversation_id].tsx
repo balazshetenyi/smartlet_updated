@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@kiado/shared";
+import { colours, supabase } from "@kiado/shared";
 import { Conversation, Message } from "@kiado/shared/types/message";
 import { pickImage } from "@/utils/image-picker-utils";
 import { ImageSourceType } from "@/enums/image-source-type";
@@ -36,6 +36,7 @@ import {
 import { useHeaderHeight } from "@react-navigation/elements";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { StatusBar } from "expo-status-bar";
+import { Toast } from "react-native-toast-notifications";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -263,6 +264,44 @@ export default function ChatScreen() {
     );
   };
 
+  const handleReport = async () => {
+    Alert.alert(
+      "Report Conversation",
+      "Are you sure you want to report this conversation? Our team will review it within 24 hours.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Report",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { error } = await supabase.from("reports").insert({
+                reporter_id: profile?.id,
+                conversation_id: resolvedConversationId,
+                reason: "Reported by user via app",
+              });
+              if (error) throw error;
+              Toast.show(
+                "Report submitted. Thank you — our team will review it.",
+                {
+                  type: "success",
+                  placement: "top",
+                  duration: 4000,
+                  animationType: "slide-in",
+                },
+              );
+            } catch (e) {
+              Alert.alert(
+                "Error",
+                "Failed to submit report. Please try again.",
+              );
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString("en-US", {
       hour: "numeric",
@@ -411,6 +450,19 @@ export default function ChatScreen() {
                 </View>
               </View>
             </View>
+          ),
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={handleReport}
+              style={{
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                marginRight: 8,
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <MaterialIcons name="flag" size={22} color={colours.muted} />
+            </TouchableOpacity>
           ),
         }}
       />

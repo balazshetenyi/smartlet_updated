@@ -9,6 +9,7 @@
     "./lib/*": "./lib/*",
     "./styles/*": "./styles/*",
     "./types/*": "./types/*",
-    "./assets/*": "./assets/*"
+    "./assets/*": "./assets/*",
+    "./content/*": "./content/*"
   }
 }
