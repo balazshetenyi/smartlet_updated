@@ -19,9 +19,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Card } from "@/components/shared/Card";
 import { PropertyImage } from "@/components/properties/PropertyImage";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 
 export default function BookingRequestsScreen() {
   const { profile } = useAuthStore();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [bookings, setBookings] = useState<BookingWithTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -51,75 +53,55 @@ export default function BookingRequestsScreen() {
   }, [profile?.id]);
 
   const handleConfirmBooking = (bookingId: string) => {
-    Alert.alert(
-      "Confirm Booking",
-      "Are you sure you want to confirm this booking? This will charge the tenant's payment method.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Confirm",
-          onPress: async () => {
-            try {
-              const { data, error } = await supabase.functions.invoke(
-                "confirm-booking-manual",
-                {
-                  body: { bookingId },
-                },
-              );
-
-              if (error) throw error;
-
-              Alert.alert("Success", "Booking confirmed and payment processed");
-              loadBookingRequests();
-            } catch (error) {
-              console.error("Error confirming booking:", error);
-              Alert.alert(
-                "Error",
-                error instanceof Error
-                  ? error.message
-                  : "Failed to confirm booking",
-              );
-            }
-          },
-        },
-      ],
+    showActionSheetWithOptions(
+      {
+        title: "Confirm Booking",
+        message:
+          "Are you sure you want to confirm this booking? This will charge the tenant's payment method.",
+        options: ["Cancel", "Confirm"],
+        cancelButtonIndex: 0,
+      },
+      async (buttonIndex) => {
+        if (buttonIndex !== 1) return;
+        try {
+          const { error } = await supabase.functions.invoke(
+            "confirm-booking-manual",
+            { body: { bookingId } },
+          );
+          if (error) throw error;
+          Alert.alert("Success", "Booking confirmed and payment processed");
+          loadBookingRequests();
+        } catch (error) {
+          console.error("Error confirming booking:", error);
+          Alert.alert("Failed to confirm booking");
+        }
+      },
     );
   };
 
   const handleDeclineBooking = (bookingId: string) => {
-    Alert.alert(
-      "Decline Booking",
-      "Are you sure you want to decline this booking request?",
-      [
-        { text: "No", style: "cancel" },
-        {
-          text: "Yes, Decline",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const { data, error } = await supabase.functions.invoke(
-                "decline-booking",
-                {
-                  body: { bookingId },
-                },
-              );
-
-              if (error) throw error;
-
-              Alert.alert("Success", "Booking declined");
-              loadBookingRequests();
-            } catch (error) {
-              console.error("Error declining booking:", error);
-              Alert.alert(
-                "Error",
-                error instanceof Error
-                  ? error.message
-                  : "Failed to decline booking",
-              );
-            }
-          },
-        },
-      ],
+    showActionSheetWithOptions(
+      {
+        title: "Decline Booking",
+        message: "Are you sure you want to decline this booking request?",
+        options: ["Keep Request", "Decline"],
+        cancelButtonIndex: 0,
+        destructiveButtonIndex: 1,
+      },
+      async (buttonIndex) => {
+        if (buttonIndex !== 1) return;
+        try {
+          const { error } = await supabase.functions.invoke("decline-booking", {
+            body: { bookingId },
+          });
+          if (error) throw error;
+          Alert.alert("Success", "Booking declined");
+          loadBookingRequests();
+        } catch (error) {
+          console.error("Error declining booking:", error);
+          Alert.alert("Failed to decline booking");
+        }
+      },
     );
   };
 
@@ -241,37 +223,54 @@ export default function BookingRequestsScreen() {
             </View>
           </View>
 
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>
-              {nights} {nights === 1 ? "night" : "nights"}
-            </Text>
-            {/* Payment Status Indicator */}
-            {paymentStatus && (
-              <View style={styles.paymentStatusContainer}>
-                <MaterialIcons
-                  name={paymentStatus.icon}
-                  size={16}
-                  color={paymentStatus.color}
-                />
-                <Text
-                  style={[
-                    styles.paymentStatusText,
-                    { color: paymentStatus.color },
-                  ]}
-                >
-                  {paymentStatus.text}
-                </Text>
-              </View>
-            )}
-            <Text style={styles.totalPrice}>
-              £{item.total_price.toLocaleString()}
-            </Text>
+          <View style={styles.pricingSection}>
+            <View style={styles.nightsRow}>
+              <Text style={styles.summaryLabel}>
+                {nights} {nights === 1 ? "night" : "nights"}
+              </Text>
+              {paymentStatus && (
+                <View style={styles.paymentStatusContainer}>
+                  <MaterialIcons
+                    name={paymentStatus.icon}
+                    size={16}
+                    color={paymentStatus.color}
+                  />
+                  <Text
+                    style={[
+                      styles.paymentStatusText,
+                      { color: paymentStatus.color },
+                    ]}
+                  >
+                    {paymentStatus.text}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Booking total</Text>
+              <Text style={styles.breakdownValue}>
+                £{item.total_price.toFixed(2)}
+              </Text>
+            </View>
+            <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Kiado fee (6%)</Text>
+              <Text style={styles.breakdownFee}>
+                −£{(item.total_price * 0.06).toFixed(2)}
+              </Text>
+            </View>
+            <View style={styles.payoutRow}>
+              <Text style={styles.payoutLabel}>Your payout</Text>
+              <Text style={styles.payoutValue}>
+                £{(item.total_price * 0.94).toFixed(2)}
+              </Text>
+            </View>
           </View>
 
           {item.status === "pending" && (
             <View style={styles.actionsContainer}>
               <Button
                 title="Decline"
+                type="outline"
                 onPress={() => handleDeclineBooking(item.id)}
                 buttonStyle={[styles.actionButton, styles.declineButton]}
               />
@@ -279,6 +278,7 @@ export default function BookingRequestsScreen() {
                 title="Confirm Booking"
                 onPress={() => handleConfirmBooking(item.id)}
                 buttonStyle={styles.actionButton}
+                titleStyle={{ textAlign: "center" }}
               />
             </View>
           )}
@@ -436,24 +436,59 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colours.text,
   },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  summaryLabel: {
+    fontSize: 14,
+    color: colours.textSecondary,
+  },
+  pricingSection: {
     paddingTop: 16,
     marginTop: 16,
     borderTopWidth: 1,
     borderTopColor: colours.border,
     marginBottom: 16,
+    gap: 8,
   },
-  summaryLabel: {
+  nightsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  breakdownRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  breakdownLabel: {
     fontSize: 14,
     color: colours.textSecondary,
   },
-  totalPrice: {
-    fontSize: 24,
+  breakdownValue: {
+    fontSize: 14,
+    color: colours.text,
+  },
+  breakdownFee: {
+    fontSize: 14,
+    color: colours.danger,
+  },
+  payoutRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 8,
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: colours.border,
+  },
+  payoutLabel: {
+    fontSize: 16,
     fontWeight: "700",
-    color: colours.primary,
+    color: colours.text,
+  },
+  payoutValue: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colours.success,
   },
   actionsContainer: {
     flexDirection: "row",

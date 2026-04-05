@@ -65,37 +65,30 @@ export default function PaymentScreen() {
 
       setBooking(data);
 
-      console.log("Calling create-setup-intent with:", { bookingId: data.id });
-
       const response = await supabase.functions.invoke("create-setup-intent", {
         body: { bookingId: data.id },
       });
-
-      console.log("Raw response:", JSON.stringify(response, null, 2));
 
       if (response.error) {
         let errorMessage = "Setup intent failed";
         if (response.response) {
           try {
             const responseText = await response.response.text();
-            console.log("Error response body:", responseText);
             const errorData = JSON.parse(responseText);
             errorMessage = errorData.error || errorMessage;
           } catch (e) {
-            console.error("Could not parse error response:", e);
+            console.error("Could not parse error response.");
           }
         }
         throw new Error(errorMessage);
       }
 
       if (!response.data?.clientSecret) {
-        console.error("Invalid response data:", response.data);
         throw new Error("No client secret received");
       }
 
       setClientSecret(response.data.clientSecret);
     } catch (error) {
-      console.error("Error fetching booking:", error);
       Alert.alert(
         "Error",
         error instanceof Error
@@ -141,7 +134,6 @@ export default function PaymentScreen() {
         );
       }
     } catch (error) {
-      console.error("Payment setup error:", error);
       Alert.alert("Error", "Card setup failed");
     } finally {
       setProcessing(false);

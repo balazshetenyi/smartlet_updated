@@ -58,7 +58,7 @@ async function registerForPushNotifications(): Promise<string | null> {
       .data;
     return token;
   } catch (e) {
-    console.warn("[Notifications] Failed to get push token:", e);
+    console.warn("[Notifications] Failed to get push token.");
     return null;
   }
 }
@@ -70,7 +70,7 @@ async function savePushToken(userId: string, token: string): Promise<void> {
     .eq("id", userId);
 
   if (error) {
-    console.error("[Notifications] Failed to save push token:", error);
+    console.error("[Notifications] Failed to save push token.");
   }
 }
 
@@ -81,14 +81,13 @@ async function clearPushToken(userId: string): Promise<void> {
     .eq("id", userId);
 
   if (error) {
-    console.error("[Notifications] Failed to clear push token:", error);
+    console.error("[Notifications] Failed to clear push token.");
   }
 }
 
 export function useNotifications() {
   const { session } = useAuthStore();
   const router = useRouter();
-  const notificationListener = useRef<Notifications.EventSubscription>(null);
   const responseListener = useRef<Notifications.EventSubscription>(null);
 
   useEffect(() => {
@@ -99,12 +98,6 @@ export function useNotifications() {
     registerForPushNotifications().then((token) => {
       if (token) savePushToken(userId, token);
     });
-
-    // Foreground notification received — just display it (handler above covers this)
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        console.log("[Notifications] received:", notification.request.content);
-      });
 
     // User tapped a notification — navigate based on data payload
     responseListener.current =
@@ -124,7 +117,6 @@ export function useNotifications() {
       });
 
     return () => {
-      notificationListener.current?.remove();
       responseListener.current?.remove();
     };
   }, [session?.user?.id]);

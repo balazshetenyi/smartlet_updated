@@ -297,11 +297,11 @@ eas update --branch production --message "Bug fixes"
 
 ### 5. Compliance
 
-- [ ] GDPR compliance (if EU users)
+- [x] GDPR compliance (if EU users)
 - [ ] CCPA compliance (if California users)
-- [ ] Data retention policies
+- [x] Data retention policies
 - [ ] User data export functionality
-- [ ] Account deletion functionality
+- [x] Account deletion functionality
 
 ---
 
@@ -370,6 +370,4 @@ Common reasons:
 
 For issues or questions:
 
-- Email: [YOUR SUPPORT EMAIL]
-- GitHub Issues: [YOUR REPO URL]
-- Documentation: [YOUR DOCS URL]
+- Email: info@kiado.mozaiksoftwaresolutions.com

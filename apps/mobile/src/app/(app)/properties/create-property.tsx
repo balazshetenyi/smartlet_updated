@@ -124,7 +124,6 @@ export default function CreatePropertyScreen() {
 
   const onSubmit = async (data: AddNewProperty) => {
     try {
-      console.log("Property data:", data);
       const created = await createProperty({
         ...data,
         landlord_id: profile?.id,
@@ -158,7 +157,6 @@ export default function CreatePropertyScreen() {
         },
       ]);
     } catch (error) {
-      console.error("Error creating property:", error);
       Alert.alert("Error", "Failed to create property.");
     }
   };

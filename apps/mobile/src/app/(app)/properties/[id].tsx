@@ -119,7 +119,6 @@ export default function PropertyDetailsScreen() {
       // Navigate to payment screen
       router.push(`/book-property/payment?bookingId=${booking.id}` as any);
     } catch (error) {
-      console.error("Error creating booking:", error);
       Alert.alert("Error", "Failed to create booking");
     }
   };
@@ -150,7 +149,6 @@ export default function PropertyDetailsScreen() {
   }, [property, profile, navigation]);
 
   useEffect(() => {
-    console.log("Fetching property with ID:", id);
     fetchPropertyDetails();
   }, [id]);
 
@@ -230,7 +228,6 @@ export default function PropertyDetailsScreen() {
         }
       }
     } catch (error) {
-      console.error("Error fetching property:", error);
       Alert.alert("Error", "Failed to load property details");
     } finally {
       setLoading(false);
@@ -298,7 +295,6 @@ export default function PropertyDetailsScreen() {
         );
       }
     } catch (error) {
-      console.error("Error starting conversation:", error);
       Alert.alert("Error", "Failed to start conversation");
     }
   };
