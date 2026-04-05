@@ -7,6 +7,7 @@ import {
   fetchConversationById,
   fetchConversationMessages,
   getOrCreateConversation,
+  hideConversation,
   markMessagesAsRead,
   sendMessage,
   sendMessageWithAttachment,
@@ -302,6 +303,44 @@ export default function ChatScreen() {
     );
   };
 
+  const handleHideConversation = () => {
+    if (!resolvedConversationId || !profile) return;
+
+    const doHide = async () => {
+      try {
+        await hideConversation(resolvedConversationId, profile.id);
+        router.back();
+      } catch (e) {
+        Alert.alert(
+          "Error",
+          "Could not delete conversation. Please try again.",
+        );
+      }
+    };
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Cancel", "Delete Conversation"],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+        },
+        (index) => {
+          if (index === 1) doHide();
+        },
+      );
+    } else {
+      Alert.alert(
+        "Delete Conversation",
+        "This conversation will be hidden from your inbox. It will reappear if either party sends a new message.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: doHide },
+        ],
+      );
+    }
+  };
+
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString("en-US", {
       hour: "numeric",
@@ -452,17 +491,32 @@ export default function ChatScreen() {
             </View>
           ),
           headerRight: () => (
-            <TouchableOpacity
-              onPress={handleReport}
+            <View
               style={{
-                paddingHorizontal: 8,
-                paddingVertical: 4,
+                flexDirection: "row",
+                alignItems: "center",
                 marginRight: 8,
               }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <MaterialIcons name="flag" size={22} color={colours.muted} />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleReport}
+                style={{ paddingHorizontal: 8, paddingVertical: 4 }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <MaterialIcons name="flag" size={22} color={colours.warning} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleHideConversation}
+                style={{ paddingHorizontal: 8, paddingVertical: 4 }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <MaterialIcons
+                  name="delete-outline"
+                  size={22}
+                  color={colours.danger}
+                />
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />

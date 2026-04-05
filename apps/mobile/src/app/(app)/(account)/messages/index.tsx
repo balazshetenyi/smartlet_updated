@@ -1,7 +1,10 @@
 import { colours, supabase } from "@kiado/shared";
 import { useAuthStore } from "@/store/auth-store";
 import { Conversation } from "@kiado/shared/types/message";
-import { fetchUserConversations } from "@/utils/message-utils";
+import {
+  fetchUserConversations,
+  hideConversation,
+} from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -14,6 +17,9 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActionSheetIOS,
+  Platform,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -99,6 +105,44 @@ export default function MessagesScreen() {
     }
   };
 
+  const handleHideConversation = (conversation: Conversation) => {
+    const doHide = async () => {
+      try {
+        await hideConversation(conversation.id, session!.user.id);
+        setConversations((prev) =>
+          prev.filter((c) => c.id !== conversation.id),
+        );
+      } catch (e) {
+        Alert.alert(
+          "Error",
+          "Could not delete conversation. Please try again.",
+        );
+      }
+    };
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Cancel", "Delete Conversation"],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+        },
+        (index) => {
+          if (index === 1) doHide();
+        },
+      );
+    } else {
+      Alert.alert(
+        "Delete Conversation",
+        "This conversation will be hidden from your inbox. It will reappear if either party sends a new message.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: doHide },
+        ],
+      );
+    }
+  };
+
   const renderConversation = ({ item }: { item: Conversation }) => {
     const otherUser = getOtherUser(item);
     const hasUnread = (item.unread_count || 0) > 0;
@@ -113,6 +157,8 @@ export default function MessagesScreen() {
             }` as any,
           )
         }
+        onLongPress={() => handleHideConversation(item)}
+        delayLongPress={400}
       >
         <View style={styles.avatarContainer}>
           {otherUser?.avatar_url ? (
