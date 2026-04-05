@@ -108,6 +108,7 @@ export const fetchUserConversations = async (
       `,
       )
       .or(`landlord_id.eq.${userId},tenant_id.eq.${userId}`)
+      .or(`hidden_by.is.null,hidden_by.neq.${userId}`)
       .order("last_message_at", { ascending: false });
 
     if (error) throw error;
@@ -200,7 +201,8 @@ export const fetchTotalUnreadCount = async (
     const { data: conversations } = await supabase
       .from("conversations")
       .select("id")
-      .or(`landlord_id.eq.${userId},tenant_id.eq.${userId}`);
+      .or(`landlord_id.eq.${userId},tenant_id.eq.${userId}`)
+      .or(`hidden_by.is.null,hidden_by.neq.${userId}`);
 
     if (!conversations || conversations.length === 0) return 0;
 
@@ -495,4 +497,43 @@ export const subscribeToMessages = (
       },
     )
     .subscribe();
+};
+
+/**
+ * Hide a conversation for the current user.
+ *
+ * - If no one has hidden it yet  → record this user's ID in hidden_by.
+ * - If the other party already hid it → both want it gone; delete it entirely
+ *   (messages are removed automatically via ON DELETE CASCADE).
+ *
+ * The conversation reappears for both parties as soon as either one sends
+ * a new message (handled by the unhide_conversation_on_new_message DB trigger).
+ */
+export const hideConversation = async (
+  conversationId: string,
+  userId: string,
+): Promise<void> => {
+  const { data: conv, error: fetchError } = await supabase
+    .from("conversations")
+    .select("hidden_by")
+    .eq("id", conversationId)
+    .single();
+
+  if (fetchError) throw fetchError;
+
+  if (conv.hidden_by === null || conv.hidden_by === undefined) {
+    // First party to hide — store their ID
+    const { error } = await supabase
+      .from("conversations")
+      .update({ hidden_by: userId })
+      .eq("id", conversationId);
+    if (error) throw error;
+  } else {
+    // Other party already hid it — both are done, delete the whole conversation
+    const { error } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", conversationId);
+    if (error) throw error;
+  }
 };
