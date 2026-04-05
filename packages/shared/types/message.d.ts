@@ -4,6 +4,7 @@ export type Conversation = {
   landlord_id: string;
   tenant_id: string;
   last_message_at: string;
+  hidden_by?: string | null;
   created_at: string;
   // Extended fields from joins
   property?: {
