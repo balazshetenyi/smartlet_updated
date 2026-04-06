@@ -17,9 +17,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActionSheetIOS,
   ActivityIndicator,
-  Alert,
   Dimensions,
   FlatList,
   Image,
@@ -37,7 +35,8 @@ import {
 import { useHeaderHeight } from "@react-navigation/elements";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { StatusBar } from "expo-status-bar";
-import { Toast } from "react-native-toast-notifications";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import { showToastMessage } from "@/components/shared/ToastMessage";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -56,6 +55,7 @@ export default function ChatScreen() {
 
   const { profile } = useAuthStore();
   const router = useRouter();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [resolvedConversationId, setResolvedConversationId] = useState<
     string | null
@@ -154,7 +154,10 @@ export default function ChatScreen() {
       // First message in a new conversation — create the conversation now
       if (!convId) {
         if (!propertyId || !landlordId || !tenantId) {
-          Alert.alert("Error", "Missing conversation details");
+          showToastMessage({
+            message: "Missing conversation details",
+            type: "danger",
+          });
           return;
         }
         const newConv = await getOrCreateConversation(
@@ -163,7 +166,10 @@ export default function ChatScreen() {
           tenantId,
         );
         if (!newConv) {
-          Alert.alert("Error", "Failed to start conversation");
+          showToastMessage({
+            message: "Failed to start conversation",
+            type: "danger",
+          });
           return;
         }
         convId = newConv.id;
@@ -190,21 +196,25 @@ export default function ChatScreen() {
         setInputText("");
       }
     } catch (error) {
-      console.error("Error sending message:", error);
-      Alert.alert("Error", "Failed to send message");
+      console.error("Error sending message.");
+      showToastMessage({
+        message: "Failed to send message",
+        type: "danger",
+      });
     } finally {
       setSending(false);
     }
   };
 
   const handleAttachment = () => {
-    ActionSheetIOS.showActionSheetWithOptions(
+    showActionSheetWithOptions(
       {
+        title: "Add Attachment",
         options: ["Cancel", "Take Photo", "Choose from Library"],
         cancelButtonIndex: 0,
       },
       async (buttonIndex) => {
-        if (buttonIndex === 0) return;
+        if (buttonIndex === 0 || buttonIndex == null) return;
 
         const sourceType =
           buttonIndex === 1 ? ImageSourceType.Camera : ImageSourceType.Library;
@@ -218,7 +228,10 @@ export default function ChatScreen() {
 
           if (!convId) {
             if (!propertyId || !landlordId || !tenantId) {
-              Alert.alert("Error", "Missing conversation details");
+              showToastMessage({
+                message: "Missing conversation details",
+                type: "danger",
+              });
               return;
             }
             const newConv = await getOrCreateConversation(
@@ -227,7 +240,10 @@ export default function ChatScreen() {
               tenantId,
             );
             if (!newConv) {
-              Alert.alert("Error", "Failed to start conversation");
+              showToastMessage({
+                message: "Failed to start conversation",
+                type: "danger",
+              });
               return;
             }
             convId = newConv.id;
@@ -253,11 +269,17 @@ export default function ChatScreen() {
             }
             setInputText("");
           } else {
-            Alert.alert("Error", "Failed to send attachment");
+            showToastMessage({
+              message: "Failed to send attachment",
+              type: "danger",
+            });
           }
         } catch (error) {
-          console.error("Error sending attachment:", error);
-          Alert.alert("Error", "Failed to send attachment");
+          console.error("Error sending attachment.");
+          showToastMessage({
+            message: "Failed to send attachment",
+            type: "danger",
+          });
         } finally {
           setSending(false);
         }
@@ -266,40 +288,36 @@ export default function ChatScreen() {
   };
 
   const handleReport = async () => {
-    Alert.alert(
-      "Report Conversation",
-      "Are you sure you want to report this conversation? Our team will review it within 24 hours.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Report",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const { error } = await supabase.from("reports").insert({
-                reporter_id: profile?.id,
-                conversation_id: resolvedConversationId,
-                reason: "Reported by user via app",
-              });
-              if (error) throw error;
-              Toast.show(
-                "Report submitted. Thank you — our team will review it.",
-                {
-                  type: "success",
-                  placement: "top",
-                  duration: 4000,
-                  animationType: "slide-in",
-                },
-              );
-            } catch (e) {
-              Alert.alert(
-                "Error",
-                "Failed to submit report. Please try again.",
-              );
-            }
-          },
-        },
-      ],
+    showActionSheetWithOptions(
+      {
+        title: "Report Conversation",
+        message:
+          "Are you sure you want to report this conversation? Our team will review it within 24 hours.",
+        options: ["Cancel", "Report"],
+        cancelButtonIndex: 0,
+        destructiveButtonIndex: 1,
+      },
+      async (buttonIndex) => {
+        if (buttonIndex !== 1) return;
+
+        try {
+          const { error } = await supabase.from("reports").insert({
+            reporter_id: profile?.id,
+            conversation_id: resolvedConversationId,
+            reason: "Reported by user via app",
+          });
+          if (error) throw error;
+          showToastMessage({
+            message: "Report submitted. Thank you — our team will review it.",
+            type: "success",
+          });
+        } catch (e) {
+          showToastMessage({
+            message: "Failed to submit report. Please try again.",
+            type: "danger",
+          });
+        }
+      },
     );
   };
 
@@ -311,34 +329,28 @@ export default function ChatScreen() {
         await hideConversation(resolvedConversationId, profile.id);
         router.back();
       } catch (e) {
-        Alert.alert(
-          "Error",
-          "Could not delete conversation. Please try again.",
-        );
+        showToastMessage({
+          message: "Could not delete conversation. Please try again.",
+          type: "danger",
+        });
       }
     };
 
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ["Cancel", "Delete Conversation"],
-          destructiveButtonIndex: 1,
-          cancelButtonIndex: 0,
-        },
-        (index) => {
-          if (index === 1) doHide();
-        },
-      );
-    } else {
-      Alert.alert(
-        "Delete Conversation",
-        "This conversation will be hidden from your inbox. It will reappear if either party sends a new message.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: doHide },
-        ],
-      );
-    }
+    showActionSheetWithOptions(
+      {
+        title: "Delete Conversation",
+        message:
+          "This conversation will be hidden from your inbox. It will reappear if either party sends a new message.",
+        options: ["Cancel", "Delete Conversation"],
+        cancelButtonIndex: 0,
+        destructiveButtonIndex: 1,
+      },
+      (buttonIndex) => {
+        if (buttonIndex === 1) {
+          void doHide();
+        }
+      },
+    );
   };
 
   const formatTime = (dateString: string) => {

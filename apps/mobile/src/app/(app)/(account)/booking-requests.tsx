@@ -8,7 +8,6 @@ import { Stack } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   RefreshControl,
@@ -20,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Card } from "@/components/shared/Card";
 import { PropertyImage } from "@/components/properties/PropertyImage";
 import { useActionSheet } from "@expo/react-native-action-sheet";
+import { showToastMessage } from "@/components/shared/ToastMessage";
 
 export default function BookingRequestsScreen() {
   const { profile } = useAuthStore();
@@ -69,11 +69,17 @@ export default function BookingRequestsScreen() {
             { body: { bookingId } },
           );
           if (error) throw error;
-          Alert.alert("Success", "Booking confirmed and payment processed");
+          showToastMessage({
+            message: "Booking confirmed and payment processed",
+            type: "success",
+          });
           loadBookingRequests();
         } catch (error) {
           console.error("Error confirming booking:", error);
-          Alert.alert("Failed to confirm booking");
+          showToastMessage({
+            message: "Failed to confirm booking",
+            type: "danger",
+          });
         }
       },
     );
@@ -95,11 +101,14 @@ export default function BookingRequestsScreen() {
             body: { bookingId },
           });
           if (error) throw error;
-          Alert.alert("Success", "Booking declined");
+          showToastMessage({ message: "Booking declined", type: "success" });
           loadBookingRequests();
         } catch (error) {
-          console.error("Error declining booking:", error);
-          Alert.alert("Failed to decline booking");
+          console.error("Error declining booking.");
+          showToastMessage({
+            message: "Failed to decline booking",
+            type: "danger",
+          });
         }
       },
     );

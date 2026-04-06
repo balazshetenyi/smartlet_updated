@@ -19,7 +19,6 @@ import {
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Dimensions,
   FlatList,
   Image,
@@ -34,7 +33,6 @@ import {
   View,
   Linking,
   Platform,
-  ActionSheetIOS,
 } from "react-native";
 import {
   SafeAreaView,
@@ -50,6 +48,8 @@ import MapView, {
   PROVIDER_GOOGLE,
   PROVIDER_DEFAULT,
 } from "react-native-maps";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import { showToastMessage } from "@/components/shared/ToastMessage";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -59,6 +59,7 @@ export default function PropertyDetailsScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { profile } = useAuthStore();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [property, setProperty] = useState<Property | null>(null);
   const [landlord, setLandlord] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,16 +75,19 @@ export default function PropertyDetailsScreen() {
 
   const handleBookProperty = () => {
     if (!profile) {
-      Alert.alert("Error", "Please sign in to book a property");
+      showToastMessage({
+        message: "Please sign in to book a property",
+        type: "danger",
+      });
       return;
     }
     if (property?.rental_type === "holiday") {
       setShowBookingModal(true);
     } else {
-      Alert.alert(
-        "Booking",
-        "Booking feature coming soon for this rental type!",
-      );
+      showToastMessage({
+        message: "Booking feature coming soon for this rental type!",
+        type: "info",
+      });
     }
   };
 
@@ -94,7 +98,10 @@ export default function PropertyDetailsScreen() {
   ) => {
     try {
       if (!property || !profile) {
-        Alert.alert("Error", "Missing booking information");
+        showToastMessage({
+          message: "Missing booking information",
+          type: "danger",
+        });
         return;
       }
 
@@ -112,14 +119,20 @@ export default function PropertyDetailsScreen() {
       const booking = await createBooking(bookingData);
 
       if (!booking) {
-        Alert.alert("Error", "Failed to create booking");
+        showToastMessage({
+          message: "Failed to create booking",
+          type: "danger",
+        });
         return;
       }
 
       // Navigate to payment screen
       router.push(`/book-property/payment?bookingId=${booking.id}` as any);
     } catch (error) {
-      Alert.alert("Error", "Failed to create booking");
+      showToastMessage({
+        message: "Failed to create booking",
+        type: "danger",
+      });
     }
   };
 
@@ -228,7 +241,10 @@ export default function PropertyDetailsScreen() {
         }
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to load property details");
+      showToastMessage({
+        message: "Failed to load property details",
+        type: "danger",
+      });
     } finally {
       setLoading(false);
     }
@@ -260,19 +276,31 @@ export default function PropertyDetailsScreen() {
 
   const handleContactLandlord = async () => {
     if (!landlord) {
-      Alert.alert("Error", "Landlord information not available");
+      showToastMessage({
+        message: "Landlord information not available",
+        type: "danger",
+      });
       return;
     }
     if (!profile) {
-      Alert.alert("Error", "Please sign in to contact the landlord");
+      showToastMessage({
+        message: "Please sign in to contact the landlord",
+        type: "danger",
+      });
       return;
     }
     if (!property) {
-      Alert.alert("Error", "Property information not available");
+      showToastMessage({
+        message: "Property information not available",
+        type: "danger",
+      });
       return;
     }
     if (profile.id === landlord.id) {
-      Alert.alert("Info", "This is your own property");
+      showToastMessage({
+        message: "This is your own property",
+        type: "info",
+      });
       return;
     }
 
@@ -295,7 +323,10 @@ export default function PropertyDetailsScreen() {
         );
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to start conversation");
+      showToastMessage({
+        message: "Failed to start conversation",
+        type: "danger",
+      });
     }
   };
 
@@ -441,16 +472,17 @@ export default function PropertyDetailsScreen() {
                 const options = ["Cancel", "Apple Maps"];
                 if (googleInstalled) options.push("Google Maps");
 
-                ActionSheetIOS.showActionSheetWithOptions(
+                showActionSheetWithOptions(
                   {
+                    title: "Open in Maps",
                     options,
                     cancelButtonIndex: 0,
                   },
-                  (index) => {
-                    if (index === 1) {
-                      Linking.openURL(appleMapsUrl);
-                    } else if (index === 2 && googleInstalled) {
-                      Linking.openURL(googleMapsUrl);
+                  (buttonIndex) => {
+                    if (buttonIndex === 1) {
+                      void Linking.openURL(appleMapsUrl);
+                    } else if (buttonIndex === 2 && googleInstalled) {
+                      void Linking.openURL(googleMapsUrl);
                     }
                   },
                 );
