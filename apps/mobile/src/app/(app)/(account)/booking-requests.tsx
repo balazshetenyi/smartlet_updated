@@ -4,8 +4,8 @@ import { colours, supabase } from "@kiado/shared";
 import { BookingWithTenant } from "@kiado/shared/types/bookings";
 import { fetchBookingRequests } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Stack } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { Stack, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -22,15 +22,46 @@ import { useActionSheet } from "@expo/react-native-action-sheet";
 import { showToastMessage } from "@/components/shared/ToastMessage";
 
 export default function BookingRequestsScreen() {
+  const listRef = useRef<FlatList<BookingWithTenant>>(null);
   const { profile } = useAuthStore();
   const { showActionSheetWithOptions } = useActionSheet();
   const [bookings, setBookings] = useState<BookingWithTenant[]>([]);
+  const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
+  const [highlightedBookingId, setHighlightedBookingId] = useState<
+    string | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadBookingRequests();
   }, [profile?.id]);
+
+  useEffect(() => {
+    if (!bookingId || bookings.length === 0) return;
+
+    const index = bookings.findIndex((booking) => booking.id === bookingId);
+    if (index === -1) return;
+
+    setHighlightedBookingId(bookingId);
+
+    const timeout = setTimeout(() => {
+      listRef.current?.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.2,
+      });
+    }, 300);
+
+    const clearHighlight = setTimeout(() => {
+      setHighlightedBookingId(null);
+    }, 2500);
+
+    return () => {
+      clearTimeout(timeout);
+      clearTimeout(clearHighlight);
+    };
+  }, [bookingId, bookings]);
 
   const loadBookingRequests = async () => {
     if (!profile?.id) return;
@@ -158,7 +189,11 @@ export default function BookingRequestsScreen() {
     const paymentStatus = getPaymentStatus();
 
     return (
-      <Card>
+      <Card
+        style={
+          item.id === highlightedBookingId && styles.highlightedBookingContent
+        }
+      >
         {item.property?.cover_image_url && (
           <PropertyImage uri={item.property.cover_image_url} />
         )}
@@ -323,10 +358,20 @@ export default function BookingRequestsScreen() {
           </View>
         ) : (
           <FlatList
+            ref={listRef}
             data={bookings}
             renderItem={renderBookingCard}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
+            onScrollToIndexFailed={(info) => {
+              setTimeout(() => {
+                listRef.current?.scrollToIndex({
+                  index: info.index,
+                  animated: true,
+                  viewPosition: 0.2,
+                });
+              }, 300);
+            }}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -354,6 +399,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+  },
+  highlightedBookingContent: {
+    borderWidth: 1,
+    borderColor: colours.primary,
+    borderRadius: 12,
+    backgroundColor: colours.primaryLight,
   },
   bookingContent: {
     padding: 16,

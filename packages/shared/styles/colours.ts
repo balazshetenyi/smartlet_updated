@@ -1,7 +1,7 @@
 export const colours = {
   // primary: "#6366F1", // Soft indigo
   primary: "#2C3E50", // Dark slate blue
-  primaryLight: "#E0E7FF",
+  primaryLight: "#e1eaf2",
   primaryDark: "#4F46E5",
   secondary: "#10B981",
   accent: "#F59E0B",

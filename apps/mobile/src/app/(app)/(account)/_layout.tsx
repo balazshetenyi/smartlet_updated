@@ -67,6 +67,14 @@ export default function AccountLayout() {
         }}
       />
       <Stack.Screen
+        name="earnings"
+        options={{
+          title: "Earnings",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
+      <Stack.Screen
         name="payout-setup"
         options={{
           title: "Payout Settings",

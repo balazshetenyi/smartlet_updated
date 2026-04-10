@@ -3,10 +3,11 @@ import { StyleSheet, View } from "react-native";
 
 interface ICard {
   children: React.ReactNode;
+  style?: any;
 }
 
-export const Card = ({ children }: ICard) => {
-  return <View style={styles.card}>{children}</View>;
+export const Card = ({ children, style }: ICard) => {
+  return <View style={[styles.card, style]}>{children}</View>;
 };
 
 const styles = StyleSheet.create({

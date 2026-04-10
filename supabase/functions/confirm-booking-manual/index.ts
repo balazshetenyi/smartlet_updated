@@ -11,7 +11,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: booking, error: bookingError } = await supabaseAdmin
       .from("bookings")
-      .select("id, check_in, status")
+      .select("id, tenant_id, check_in, status")
       .eq("id", bookingId)
       .single();
 
@@ -34,6 +34,25 @@ Deno.serve(async (req: Request) => {
       .eq("status", "pending");
 
     if (updateError) throw updateError;
+
+    const checkInDate = new Date(booking.check_in).toLocaleDateString("en-GB");
+
+    fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+      body: JSON.stringify({
+        userId: booking.tenant_id,
+        title: "Booking confirmed",
+        body: `Your booking request for check-in on ${checkInDate} has been accepted.`,
+        data: {
+          screen: "my-bookings",
+          prefKey: "booking_confirmed",
+        },
+      }),
+    }).catch((e) => console.error("push notification error:", e));
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { "Content-Type": "application/json" },
