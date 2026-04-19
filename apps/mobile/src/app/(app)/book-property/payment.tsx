@@ -124,6 +124,12 @@ export default function PaymentScreen() {
           })
           .eq("id", bookingId);
 
+        // Card is saved — now notify the landlord. Fire-and-forget:
+        // a failed notification must never block the tenant's confirmation.
+        supabase.functions
+          .invoke("send-booking-email", { body: { bookingId } })
+          .catch((e) => console.error("Failed to send booking email:", e));
+
         showToastMessage({
           message: "Card saved. Payment will be taken 48h before check-in.",
           type: "success",
@@ -229,7 +235,7 @@ export default function PaymentScreen() {
             <View ref={paymentSectionRef} style={styles.paymentSection}>
               <Text style={styles.sectionTitle}>Payment Details</Text>
               <CardField
-                postalCodeEnabled={true}
+                postalCodeEnabled={false}
                 placeholders={{
                   number: "4242 4242 4242 4242",
                 }}
