@@ -205,7 +205,11 @@ export default function SearchFilters({
           {/* Price range — single two-thumb slider */}
           <View style={styles.section}>
             <View style={styles.priceHeader}>
-              <Text style={styles.sectionTitle}>Price per night</Text>
+              <Text style={styles.sectionTitle}>
+                {params.rentalType === "short_term"
+                  ? "Price per week"
+                  : "Price per night"}
+              </Text>
               <Text
                 style={[
                   styles.priceLabel,

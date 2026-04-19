@@ -62,7 +62,7 @@ const DEFAULT_PARAMS: SearchParams = {
   checkIn: null,
   checkOut: null,
   guests: 1,
-  rentalType: null,
+  rentalType: "holiday",
   minPrice: null,
   maxPrice: null,
   minBedrooms: null,

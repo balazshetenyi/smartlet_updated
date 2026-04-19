@@ -1,13 +1,11 @@
 import { useSearch } from "@/context/SearchContext";
 import LocationAutocomplete from "@/components/search/LocationAutocomplete";
-import { PropertyType, RentalType } from "@/enums/property-enums";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { colours } from "@kiado/shared";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Modal,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -17,12 +15,6 @@ import {
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Calendar } from "react-native-calendars";
 
-const RENTAL_TYPES = [
-  PropertyType.Any,
-  PropertyType.ShortTerm,
-  PropertyType.Holiday,
-];
-
 const RADIUS_OPTIONS = [5, 15, 30, 50, 100] as const;
 
 export default function SearchBar() {
@@ -31,7 +23,6 @@ export default function SearchBar() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showGuestPicker, setShowGuestPicker] = useState(false);
   const [showPricePicker, setShowPricePicker] = useState(false);
-  const [showTypePicker, setShowTypePicker] = useState(false);
   const [showRadiusPicker, setShowRadiusPicker] = useState(false);
   const [tempDates, setTempDates] = useState<{
     checkIn: string | null;
@@ -47,27 +38,43 @@ export default function SearchBar() {
   const [tempMaxPrice, setTempMaxPrice] = useState<string>(
     searchParams.maxPrice ? String(searchParams.maxPrice) : "",
   );
-  const [tempRentalType, setTempRentalType] = useState<string>(
-    searchParams.rentalType ?? "Any",
-  );
 
   const handleSearch = (event: any) => {
     event.preventDefault();
     router.push("/properties/search");
   };
 
+  const handleModeChange = (mode: string) => {
+    updateSearchParams({
+      rentalType: mode,
+      checkIn: null,
+      checkOut: null,
+    });
+    setTempDates({ checkIn: null, checkOut: null });
+  };
+
   const handleDatePress = (day: any) => {
     const dateString = day.dateString;
+    const isShortTerm = searchParams.rentalType === "short_term";
 
-    if (!tempDates.checkIn || (tempDates.checkIn && tempDates.checkOut)) {
-      // No selection yet, or starting fresh after a full range was picked
-      setTempDates({ checkIn: dateString, checkOut: null });
+    if (isShortTerm) {
+      // Auto-snap: check-out is always check-in + 7 days
+      const checkOut = new Date(dateString);
+      checkOut.setDate(checkOut.getDate() + 7);
+      setTempDates({
+        checkIn: dateString,
+        checkOut: checkOut.toISOString().split("T")[0],
+      });
     } else {
-      if (dateString <= tempDates.checkIn) {
-        // Earlier or same date tapped — reset check-in, clear check-out
+      // Holiday: free range selection
+      if (!tempDates.checkIn || (tempDates.checkIn && tempDates.checkOut)) {
         setTempDates({ checkIn: dateString, checkOut: null });
       } else {
-        setTempDates({ ...tempDates, checkOut: dateString });
+        if (dateString <= tempDates.checkIn) {
+          setTempDates({ checkIn: dateString, checkOut: null });
+        } else {
+          setTempDates({ ...tempDates, checkOut: dateString });
+        }
       }
     }
   };
@@ -142,13 +149,6 @@ export default function SearchBar() {
     setShowPricePicker(false);
   };
 
-  const saveRentalType = () => {
-    updateSearchParams({
-      rentalType: tempRentalType === "Any" ? undefined : tempRentalType,
-    });
-    setShowTypePicker(false);
-  };
-
   const saveDates = () => {
     if (tempDates.checkIn && tempDates.checkOut) {
       updateSearchParams({
@@ -167,6 +167,89 @@ export default function SearchBar() {
   return (
     <View style={styles.container}>
       <View style={styles.searchCard}>
+        {/* Mode Toggle */}
+        <View style={styles.modeToggleContainer}>
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              searchParams.rentalType !== "short_term" &&
+                styles.modeButtonActive,
+            ]}
+            onPress={() => handleModeChange("holiday")}
+          >
+            <MaterialIcons
+              name="beach-access"
+              size={18}
+              color={
+                searchParams.rentalType !== "short_term"
+                  ? "white"
+                  : colours.textSecondary
+              }
+            />
+            <View>
+              <Text
+                style={[
+                  styles.modeButtonText,
+                  searchParams.rentalType !== "short_term" &&
+                    styles.modeButtonTextActive,
+                ]}
+              >
+                Holiday
+              </Text>
+              <Text
+                style={[
+                  styles.modeButtonSubText,
+                  searchParams.rentalType !== "short_term" &&
+                    styles.modeButtonSubTextActive,
+                ]}
+              >
+                per night
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.modeButton,
+              searchParams.rentalType === "short_term" &&
+                styles.modeButtonActive,
+            ]}
+            onPress={() => handleModeChange("short_term")}
+          >
+            <MaterialIcons
+              name="calendar-today"
+              size={18}
+              color={
+                searchParams.rentalType === "short_term"
+                  ? "white"
+                  : colours.textSecondary
+              }
+            />
+            <View>
+              <Text
+                style={[
+                  styles.modeButtonText,
+                  searchParams.rentalType === "short_term" &&
+                    styles.modeButtonTextActive,
+                ]}
+              >
+                Short-Term
+              </Text>
+              <Text
+                style={[
+                  styles.modeButtonSubText,
+                  searchParams.rentalType === "short_term" &&
+                    styles.modeButtonSubTextActive,
+                ]}
+              >
+                per week
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.divider} />
+
         {/* Location Input with Autocomplete */}
         <LocationAutocomplete
           initialValue={searchParams.location}
@@ -179,7 +262,6 @@ export default function SearchBar() {
               lat,
               lng,
             });
-            // Optional: Automatically trigger search or move focus
           }}
         />
 
@@ -269,27 +351,6 @@ export default function SearchBar() {
             </Text>
           </View>
         </TouchableOpacity>
-
-        <View style={styles.divider} />
-
-        {/* Rental Type Selector */}
-        <TouchableOpacity
-          style={styles.searchRow}
-          onPress={() => setShowTypePicker(true)}
-        >
-          <MaterialIcons name="home" size={24} color={colours.darkSlateBlue} />
-          <View style={styles.searchContent}>
-            <Text style={styles.searchLabel}>Type</Text>
-            <Text
-              style={[
-                styles.searchValue,
-                !searchParams.rentalType && styles.searchPlaceholder,
-              ]}
-            >
-              {RentalType.get(searchParams.rentalType ?? "any")}
-            </Text>
-          </View>
-        </TouchableOpacity>
       </View>
 
       {/* Search Button */}
@@ -376,15 +437,25 @@ export default function SearchBar() {
             </View>
 
             <Text style={styles.modalHint}>
-              {!tempDates.checkIn
-                ? "Select check-in date"
-                : !tempDates.checkOut
-                  ? "Select check-out date"
-                  : `${Math.ceil(
-                      (new Date(tempDates.checkOut).getTime() -
-                        new Date(tempDates.checkIn).getTime()) /
-                        (1000 * 60 * 60 * 24),
-                    )} nights selected`}
+              {(() => {
+                const isShortTerm = searchParams.rentalType === "short_term";
+                if (!tempDates.checkIn) {
+                  return isShortTerm
+                    ? "Select week start date"
+                    : "Select check-in date";
+                }
+                if (!tempDates.checkOut) {
+                  return "Select check-out date";
+                }
+                if (isShortTerm) {
+                  return `Week of ${new Date(tempDates.checkIn).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+                }
+                return `${Math.ceil(
+                  (new Date(tempDates.checkOut).getTime() -
+                    new Date(tempDates.checkIn).getTime()) /
+                    (1000 * 60 * 60 * 24),
+                )} nights selected`;
+              })()}
             </Text>
 
             <Calendar
@@ -545,61 +616,6 @@ export default function SearchBar() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-
-      {/* Rental Type Modal */}
-      <Modal
-        visible={showTypePicker}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowTypePicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, styles.typeModalContent]}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Property Type</Text>
-              <TouchableOpacity onPress={() => setShowTypePicker(false)}>
-                <MaterialIcons name="close" size={24} color={colours.text} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView>
-              {RENTAL_TYPES.map((type) => (
-                <TouchableOpacity
-                  key={type}
-                  style={[
-                    styles.typeOption,
-                    tempRentalType === type && styles.typeOptionSelected,
-                  ]}
-                  onPress={() => setTempRentalType(type as string)}
-                >
-                  <Text
-                    style={[
-                      styles.typeOptionText,
-                      tempRentalType === type && styles.typeOptionTextSelected,
-                    ]}
-                  >
-                    {RentalType.get(type)}
-                  </Text>
-                  {tempRentalType === type && (
-                    <MaterialIcons
-                      name="check"
-                      size={20}
-                      color={colours.primary}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <TouchableOpacity
-              style={[styles.saveButton, { marginTop: 16 }]}
-              onPress={saveRentalType}
-            >
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -619,6 +635,43 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     borderWidth: 1,
     borderColor: colours.border,
+  },
+  modeToggleContainer: {
+    flexDirection: "row",
+    gap: 8,
+    paddingTop: 4,
+    paddingBottom: 4,
+  },
+  modeButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colours.border,
+    backgroundColor: colours.surface,
+  },
+  modeButtonActive: {
+    borderColor: colours.primary,
+    backgroundColor: colours.primary,
+  },
+  modeButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colours.textSecondary,
+  },
+  modeButtonTextActive: {
+    color: "white",
+  },
+  modeButtonSubText: {
+    fontSize: 11,
+    color: colours.muted,
+  },
+  modeButtonSubTextActive: {
+    color: "rgba(255,255,255,0.75)",
   },
   searchRow: {
     flexDirection: "row",
@@ -687,9 +740,6 @@ const styles = StyleSheet.create({
   },
   priceModalContent: {
     maxHeight: 320,
-  },
-  typeModalContent: {
-    maxHeight: 400,
   },
   radiusModalContent: {
     maxHeight: 280,
@@ -796,28 +846,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colours.textSecondary,
     marginTop: 20,
-  },
-  typeOption: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: colours.border,
-  },
-  typeOptionSelected: {
-    backgroundColor: colours.primaryLight,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-  },
-  typeOptionText: {
-    fontSize: 15,
-    color: colours.text,
-  },
-  typeOptionTextSelected: {
-    fontWeight: "700",
-    color: colours.primary,
   },
   radiusOptions: {
     flexDirection: "row",
