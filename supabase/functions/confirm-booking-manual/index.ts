@@ -11,13 +11,30 @@ Deno.serve(async (req: Request) => {
 
     const { data: booking, error: bookingError } = await supabaseAdmin
       .from("bookings")
-      .select("id, tenant_id, check_in, status")
+      .select("id, tenant_id, check_in, created_at, status")
       .eq("id", bookingId)
       .single();
 
     if (bookingError || !booking) throw new Error("Booking not found");
     if (booking.status !== "pending")
       throw new Error("Booking is no longer pending");
+
+    const now = new Date();
+
+    if (now >= new Date(booking.check_in)) {
+      throw new Error(
+        "Cannot confirm a booking whose check-in date has already passed",
+      );
+    }
+
+    const expiresAt = new Date(
+      new Date(booking.created_at).getTime() + 48 * 60 * 60 * 1000,
+    );
+    if (now >= expiresAt) {
+      throw new Error(
+        "This booking request has expired — no response was given within 48 hours",
+      );
+    }
 
     const paymentDueAt = new Date(
       new Date(booking.check_in).getTime() - 48 * 60 * 60 * 1000,
