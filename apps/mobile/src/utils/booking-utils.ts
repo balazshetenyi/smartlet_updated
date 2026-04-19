@@ -79,23 +79,6 @@ export const createBooking = async (
       .single();
 
     if (error) throw error;
-
-    try {
-      const { data: response, error: responseError } =
-        await supabase.functions.invoke("send-booking-email", {
-          body: { bookingId: data.id },
-        });
-
-      if (responseError) {
-        const errorContext = await responseError.context?.json?.();
-        console.error("Email function error:", errorContext ?? responseError);
-      } else {
-        console.log("Email function response:", response);
-      }
-    } catch (notifyError) {
-      console.error("Error sending booking email:", notifyError);
-    }
-
     return data as Booking;
   } catch (error) {
     console.error("Error creating booking:", error);
