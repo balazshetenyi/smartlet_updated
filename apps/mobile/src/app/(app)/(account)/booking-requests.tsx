@@ -83,6 +83,15 @@ export default function BookingRequestsScreen() {
     setRefreshing(false);
   }, [profile?.id]);
 
+  const isBookingExpired = (booking: BookingWithTenant): boolean => {
+    const now = new Date();
+    if (now >= new Date(booking.check_in)) return true;
+    const expiresAt = new Date(
+      new Date(booking.created_at!).getTime() + 48 * 60 * 60 * 1000,
+    );
+    return now >= expiresAt;
+  };
+
   const handleConfirmBooking = (bookingId: string) => {
     showActionSheetWithOptions(
       {
@@ -310,22 +319,36 @@ export default function BookingRequestsScreen() {
             </View>
           </View>
 
-          {item.status === "pending" && (
-            <View style={styles.actionsContainer}>
-              <Button
-                title="Decline"
-                type="outline"
-                onPress={() => handleDeclineBooking(item.id)}
-                buttonStyle={[styles.actionButton, styles.declineButton]}
-              />
-              <Button
-                title="Confirm Booking"
-                onPress={() => handleConfirmBooking(item.id)}
-                buttonStyle={styles.actionButton}
-                titleStyle={{ textAlign: "center" }}
-              />
-            </View>
-          )}
+          {item.status === "pending" &&
+            (isBookingExpired(item) ? (
+              <View style={styles.expiredContainer}>
+                <MaterialIcons
+                  name="schedule"
+                  size={16}
+                  color={colours.muted}
+                />
+                <Text style={styles.expiredText}>
+                  {new Date() >= new Date(item.check_in)
+                    ? "Check-in date has passed"
+                    : "Request expired — no response within 48 hours"}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.actionsContainer}>
+                <Button
+                  title="Decline"
+                  type="outline"
+                  onPress={() => handleDeclineBooking(item.id)}
+                  buttonStyle={[styles.actionButton, styles.declineButton]}
+                />
+                <Button
+                  title="Confirm Booking"
+                  onPress={() => handleConfirmBooking(item.id)}
+                  buttonStyle={styles.actionButton}
+                  titleStyle={{ textAlign: "center" }}
+                />
+              </View>
+            ))}
         </View>
       </Card>
     );
@@ -549,6 +572,19 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: colours.success,
+  },
+  expiredContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  expiredText: {
+    fontSize: 13,
+    color: colours.muted,
+    fontStyle: "italic",
+    flex: 1,
   },
   actionsContainer: {
     flexDirection: "row",
