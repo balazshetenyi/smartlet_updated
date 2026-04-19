@@ -81,7 +81,10 @@ export default function PropertyDetailsScreen() {
       });
       return;
     }
-    if (property?.rental_type === "holiday") {
+    if (
+      property?.rental_type === "holiday" ||
+      property?.rental_type === "short_term"
+    ) {
       setShowBookingModal(true);
     } else {
       showToastMessage({
@@ -166,7 +169,11 @@ export default function PropertyDetailsScreen() {
   }, [id]);
 
   useEffect(() => {
-    if (property?.id && property?.rental_type === "holiday") {
+    if (
+      property?.id &&
+      (property?.rental_type === "holiday" ||
+        property?.rental_type === "short_term")
+    ) {
       fetchBlockedDates(property.id).then(setBlockedDates);
     }
   }, [property?.id]);
@@ -661,12 +668,18 @@ export default function PropertyDetailsScreen() {
         >
           <View style={styles.bottomBar}>
             <Button
-              title={`${property.rental_type === PropertyType.Holiday ? "Ask a question" : "Contact Landlord"}`}
+              title={
+                property.rental_type === PropertyType.Holiday ||
+                property.rental_type === PropertyType.ShortTerm
+                  ? "Ask a question"
+                  : "Contact Landlord"
+              }
               onPress={handleContactLandlord}
               type="outline"
               buttonStyle={styles.contactButton}
             />
-            {property.rental_type === PropertyType.Holiday && (
+            {(property.rental_type === PropertyType.Holiday ||
+              property.rental_type === PropertyType.ShortTerm) && (
               <Button
                 title="Book Now"
                 onPress={handleBookProperty}

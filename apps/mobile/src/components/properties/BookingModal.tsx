@@ -31,6 +31,8 @@ export default function BookingModal({
   onConfirm,
 }: BookingModalProps) {
   const { searchParams } = useSearch();
+  const isShortTerm = property.rental_type === "short_term";
+
   const [checkIn, setCheckIn] = useState<string | null>(
     searchParams.checkIn ?? null,
   );
@@ -43,7 +45,6 @@ export default function BookingModal({
     if (visible) {
       setCheckIn(searchParams.checkIn ?? null);
       setCheckOut(searchParams.checkOut ?? null);
-      // If dates are pre-populated from search, scroll to bottom after modal finishes animating
       if (searchParams.checkIn && searchParams.checkOut) {
         setTimeout(() => {
           scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -52,10 +53,8 @@ export default function BookingModal({
     }
   }, [visible]);
 
-  // Auto-scroll to the bottom when both dates are selected
   useEffect(() => {
     if (checkIn && checkOut) {
-      // Small timeout to allow the layout to calculate after the selection state change
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
@@ -65,7 +64,6 @@ export default function BookingModal({
   const markedDates = useMemo(() => {
     const marked: any = {};
 
-    // Mark blocked dates
     blockedDates.forEach((date) => {
       marked[date] = {
         disabled: true,
@@ -77,7 +75,6 @@ export default function BookingModal({
       };
     });
 
-    // Mark selected range
     if (checkIn) {
       marked[checkIn] = {
         ...marked[checkIn],
@@ -122,55 +119,77 @@ export default function BookingModal({
     if (!checkIn || !checkOut) return 0;
     const start = new Date(checkIn);
     const end = new Date(checkOut);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   };
 
+  const calculateWeeks = () => Math.round(calculateNights() / 7);
+
   const calculateTotalPrice = () => {
-    const nights = calculateNights();
-    return (property.price || 0) * nights;
+    if (isShortTerm) {
+      return (property.price || 0) * calculateWeeks();
+    }
+    return (property.price || 0) * calculateNights();
   };
 
   const handleDayPress = (day: DateData) => {
     const selectedDate = day.dateString;
 
-    // Don't allow selection of blocked dates
     if (blockedDates.includes(selectedDate)) {
       Alert.alert("Unavailable", "This date is not available for booking.");
       return;
     }
 
-    if (!checkIn || (checkIn && checkOut)) {
-      // No selection yet, or starting over after a full range was picked
-      setCheckIn(selectedDate);
-      setCheckOut(null);
-    } else {
-      // checkIn is set, no checkOut yet
-      if (selectedDate <= checkIn) {
-        // User tapped an earlier (or same) date — treat it as a new check-in
-        setCheckIn(selectedDate);
-        setCheckOut(null);
-        return;
-      }
+    if (isShortTerm) {
+      // Auto-snap: check-out is always exactly 7 days after check-in
+      const checkOutDate = new Date(selectedDate);
+      checkOutDate.setDate(checkOutDate.getDate() + 7);
+      const checkOutStr = checkOutDate.toISOString().split("T")[0];
 
-      // Check if any dates in range are blocked
-      const start = new Date(checkIn);
-      const end = new Date(selectedDate);
+      // Validate no blocked dates fall within the 7-day range
+      const start = new Date(selectedDate);
+      const end = new Date(checkOutStr);
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         const dateStr = d.toISOString().split("T")[0];
         if (blockedDates.includes(dateStr)) {
           Alert.alert(
             "Unavailable",
-            "Selected range includes unavailable dates. Please choose different dates.",
+            "This week contains unavailable dates. Please choose a different week.",
           );
-          setCheckIn(null);
-          setCheckOut(null);
           return;
         }
       }
 
-      setCheckOut(selectedDate);
+      setCheckIn(selectedDate);
+      setCheckOut(checkOutStr);
+    } else {
+      // Holiday: free range selection
+      if (!checkIn || (checkIn && checkOut)) {
+        setCheckIn(selectedDate);
+        setCheckOut(null);
+      } else {
+        if (selectedDate <= checkIn) {
+          setCheckIn(selectedDate);
+          setCheckOut(null);
+          return;
+        }
+
+        const start = new Date(checkIn);
+        const end = new Date(selectedDate);
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split("T")[0];
+          if (blockedDates.includes(dateStr)) {
+            Alert.alert(
+              "Unavailable",
+              "Selected range includes unavailable dates. Please choose different dates.",
+            );
+            setCheckIn(null);
+            setCheckOut(null);
+            return;
+          }
+        }
+
+        setCheckOut(selectedDate);
+      }
     }
   };
 
@@ -183,6 +202,9 @@ export default function BookingModal({
     const totalPrice = calculateTotalPrice();
     onConfirm(new Date(checkIn), new Date(checkOut), totalPrice);
   };
+
+  const weeks = calculateWeeks();
+  const nights = calculateNights();
 
   return (
     <Modal
@@ -212,10 +234,19 @@ export default function BookingModal({
 
             {/* Date Selection */}
             <View style={styles.dateSection}>
-              <Text style={styles.label}>Select Your Dates</Text>
+              <Text style={styles.label}>
+                {isShortTerm ? "Select Your Week" : "Select Your Dates"}
+              </Text>
+              {isShortTerm && (
+                <Text style={styles.weekHint}>
+                  Tap any date to book that full week (7 nights)
+                </Text>
+              )}
               <View style={styles.selectedDatesInfo}>
                 <View style={styles.dateInfo}>
-                  <Text style={styles.dateInfoLabel}>Check-in</Text>
+                  <Text style={styles.dateInfoLabel}>
+                    {isShortTerm ? "Week start" : "Check-in"}
+                  </Text>
                   <Text style={styles.dateInfoValue}>
                     {checkIn
                       ? new Date(checkIn).toLocaleDateString()
@@ -228,7 +259,9 @@ export default function BookingModal({
                   color={colours.textSecondary}
                 />
                 <View style={styles.dateInfo}>
-                  <Text style={styles.dateInfoLabel}>Check-out</Text>
+                  <Text style={styles.dateInfoLabel}>
+                    {isShortTerm ? "Week end" : "Check-out"}
+                  </Text>
                   <Text style={styles.dateInfoValue}>
                     {checkOut
                       ? new Date(checkOut).toLocaleDateString()
@@ -264,23 +297,27 @@ export default function BookingModal({
             </View>
 
             {/* Price Summary */}
-            <View style={styles.summarySection}>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>
-                  £{property.price} x {calculateNights()} nights
-                </Text>
-                <Text style={styles.summaryValue}>
-                  £{calculateTotalPrice().toLocaleString()}
-                </Text>
+            {checkIn && checkOut && (
+              <View style={styles.summarySection}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>
+                    {isShortTerm
+                      ? `£${property.price}/week × ${weeks} week${weeks !== 1 ? "s" : ""}`
+                      : `£${property.price} × ${nights} night${nights !== 1 ? "s" : ""}`}
+                  </Text>
+                  <Text style={styles.summaryValue}>
+                    £{calculateTotalPrice().toLocaleString()}
+                  </Text>
+                </View>
+                <View style={styles.divider} />
+                <View style={styles.summaryRow}>
+                  <Text style={styles.totalLabel}>Total</Text>
+                  <Text style={styles.totalValue}>
+                    £{calculateTotalPrice().toLocaleString()}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.divider} />
-              <View style={styles.summaryRow}>
-                <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalValue}>
-                  £{calculateTotalPrice().toLocaleString()}
-                </Text>
-              </View>
-            </View>
+            )}
 
             <Button
               title="Continue to Payment"
@@ -339,7 +376,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: colours.text,
+    marginBottom: 8,
+  },
+  weekHint: {
+    fontSize: 12,
+    color: colours.textSecondary,
     marginBottom: 12,
+    fontStyle: "italic",
   },
   selectedDatesInfo: {
     flexDirection: "row",
