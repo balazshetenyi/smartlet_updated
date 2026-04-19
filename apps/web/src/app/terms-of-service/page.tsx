@@ -2,8 +2,8 @@ import ReactMarkdown from "react-markdown";
 import { TERMS_OF_SERVICE } from "@kiado/shared/content/terms-of-service";
 
 export const metadata = {
-  title: "Privacy Policy | Kiado",
-  description: "Kiado Privacy Policy",
+  title: "Terms of Service | Kiado",
+  description: "Kiado Terms of Service",
 };
 
 export default function PrivacyPolicyPage() {

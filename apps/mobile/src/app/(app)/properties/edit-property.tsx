@@ -130,7 +130,6 @@ export default function EditPropertyScreen() {
         setValue("amenities", amenityIds);
       }
     } catch (error) {
-      console.error("Error fetching property:", error);
       Alert.alert("Error", "Failed to load property details");
       router.back();
     } finally {
@@ -248,21 +247,19 @@ export default function EditPropertyScreen() {
           .remove([filePath]);
 
         if (error) {
-          console.error("Error deleting photo:", error);
+          console.error("Error deleting photo.");
         }
 
         // Delete from property_photos table
         await supabase.from("property_photos").delete().eq("id", photo.id);
       } catch (error) {
-        console.error("Error in deletePhotosFromStorage:", error);
+        console.error("Error in deletePhotosFromStorage.");
       }
     }
   };
 
   const onSubmit = async (data: AddNewProperty) => {
     try {
-      console.log("Updating property data:", data);
-
       // Update property basic info
       const { error: updateError } = await supabase
         .from("properties")
@@ -318,7 +315,7 @@ export default function EditPropertyScreen() {
             .insert(amenityRecords);
 
           if (amenitiesError) {
-            console.error("Error updating amenities:", amenitiesError);
+            console.error("Error updating amenities.");
           }
         }
       }
@@ -332,7 +329,7 @@ export default function EditPropertyScreen() {
         },
       ]);
     } catch (error) {
-      console.error("Error updating property:", error);
+      console.error("Error updating property.");
       Alert.alert("Error", "Failed to update property.");
     }
   };

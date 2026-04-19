@@ -80,11 +80,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // 6. Calculate amounts (Matches 5% UI service fee)
+    // 6. Calculate amounts — 6% commission deducted from landlord payout
+    const KIADO_COMMISSION_RATE = 0.06;
     const totalAmountInPence = Math.round(booking.total_price * 100);
-    // Formula to extract the 5% that was added: (Total / 1.05) * 0.05
     const applicationFeeInPence = Math.round(
-      (booking.total_price / 1.05) * 0.05 * 100,
+      totalAmountInPence * KIADO_COMMISSION_RATE,
     );
 
     // 7. Create Stripe Payment Intent

@@ -10,6 +10,7 @@ import * as zod from "zod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { router } from "expo-router";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
+import { showToastMessage } from "@/components/shared/ToastMessage";
 
 const changePasswordSchema = zod
   .object({
@@ -55,22 +56,26 @@ export default function ChangePasswordScreen() {
 
       if (error) {
         // Supabase returns "same password" errors or auth errors here
-        Alert.alert("Error", error.message);
+        showToastMessage({
+          message: error.message,
+          type: "danger",
+        });
         return;
       }
 
-      Toast.show("Password changed successfully!", {
+      showToastMessage({
+        message: "Password changed successfully!",
         type: "success",
-        placement: "top",
-        duration: 2500,
-        animationType: "slide-in",
       });
 
       reset();
       router.back();
     } catch (err) {
-      console.error("[ChangePassword] error:", err);
-      Alert.alert("Error", "Failed to change password. Please try again.");
+      console.error("[ChangePassword] error.");
+      showToastMessage({
+        message: "Failed to change password. Please try again.",
+        type: "danger",
+      });
     } finally {
       setLoading(false);
     }

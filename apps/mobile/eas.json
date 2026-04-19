@@ -46,6 +46,7 @@
       },
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "staging",
+        "EXPO_PUBLIC_APPLE_MERCHANT_ID": "merchant.uk.co.kiado.app",
         "EXPO_PUBLIC_SUPABASE_URL": "https://owaxxhwbamgzymdqbqhz.supabase.co",
         "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_F1CpWQwp12n9EQtgxXFHwg_xcKr3Eeu",
         "EXPO_PUBLIC_SUPABASE_FUNCTIONS_URL": "https://owaxxhwbamgzymdqbqhz.supabase.co/functions/v1",
@@ -63,7 +64,8 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_ENVIRONMENT": "production"
+        "EXPO_PUBLIC_ENVIRONMENT": "production",
+        "EXPO_PUBLIC_APPLE_MERCHANT_ID": "merchant.uk.co.kiado.app"
       }
     }
   },

@@ -1,9 +1,9 @@
 export const TERMS_OF_SERVICE = `
 # Terms of Service for Kiado
 
-**Last Updated:** 8 March 2026
+**Last Updated: 5 April 2026**
 
-These Terms of Service ("**Terms**") set out the terms on which you may use Kiado (the "**App**") and any related services made available by Kiado ("**we**", "**us**", or "**our**"). Please read them carefully. By accessing or using the App you agree to these Terms. If you do not agree, do not use the App.
+These Terms of Service ("**Terms**") set out the terms on which you may use Kiado (the "**App**") and any related services made available by **Mozaik Software Solutions Ltd**, a company registered in England and Wales (registered office: Suite RA01, 195–197 Wood Street, London, E17 3NU) ("**we**", "**us**", or "**our**"). Please read them carefully. By accessing or using the App you agree to these Terms. If you do not agree, do not use the App.
 
 ---
 
@@ -42,17 +42,18 @@ These Terms of Service ("**Terms**") set out the terms on which you may use Kiad
 ## 6. Tenant obligations and bookings
 
 - Tenants must provide accurate booking information (name, contact details, payment details).
-- Bookings may be subject to the host’s approval or verification and to any property-specific rules.
+- Bookings may be subject to the host's approval or verification and to any property-specific rules.
 - Tenants must comply with the Property rules and respect the property and neighbours during their stay.
 
-## 7. Payments, fees and refunds
+## 7. Payments, fees, and refunds
 
-- Payments for Bookings are processed through third-party payment providers (for example, Stripe). When you make a Booking you agree to pay the amounts shown at checkout.
+- Payments for Bookings are processed through **Stripe**, our third-party payment provider. When you make a Booking you agree to pay the amounts shown at checkout and you agree to Stripe's terms of service.
+- Landlords who wish to receive payouts must connect a Stripe account via **Stripe Connect**. This requires completing Stripe's identity verification process. We are not responsible for delays or rejections in Stripe's verification process.
 - We may charge service fees; any fees will be disclosed at the time of payment.
-- Refunds, cancellations and rescheduling are governed by the Property’s cancellation policy and any local laws. Where applicable, we will facilitate refunds through our payment provider in accordance with the policy displayed at booking.
+- Refunds, cancellations, and rescheduling are governed by the Property's cancellation policy and any local laws. Where applicable, we will facilitate refunds through Stripe in accordance with the policy displayed at booking.
 - We are not responsible for payment provider fees, currency conversion fees, or banking charges applied by third parties.
 
-## 8. Security and refunds for fraudulent activity
+## 8. Security and fraudulent activity
 
 - You should notify us immediately if you become aware of any unauthorised use of your account.
 - If a transaction is disputed (for example, because of fraud), we will cooperate with the payment provider and relevant authorities.
@@ -70,51 +71,58 @@ You must not:
 - Violate applicable laws or regulations.
 - Post or transmit content that is unlawful, defamatory, abusive, obscene, or discriminatory.
 - Use the App to harass, stalk, threaten, or abuse other people.
-- Attempt to access or interfere with another user’s account.
+- Attempt to access or interfere with another user's account.
 - Circumvent fees or payment processes, or attempt to hide or falsify your identity or contact details.
 
 ## 11. Intellectual property
 
-- All rights, title and interest in the App and its content (other than user content) are owned by or licensed to Kiado.
-- You may not copy, reproduce, modify, distribute or create derivative works without our prior written consent.
+- All rights, title, and interest in the App and its content (other than user content) are owned by or licensed to Kiado.
+- You may not copy, reproduce, modify, distribute, or create derivative works without our prior written consent.
 
-## 12. Third-party services and links
+## 12. Third-party services
 
-- The App may include links to third-party services (for example, payment providers). We do not control these third-party services and are not responsible for their terms or practices.
-- You should review the privacy and terms of each third party before using them.
+The App relies on the following third-party services to function. We do not control these services and are not responsible for their terms or practices. You should review their respective privacy policies and terms before using the App.
+
+- **Supabase** (supabase.com) — Database, authentication, file storage, and serverless functions.
+- **Stripe** (stripe.com) — Payment processing and landlord payout accounts via Stripe Connect.
+- **Google Places API** (developers.google.com/maps/documentation/places) — Address autocomplete and geocoding.
+- **Google Maps** (maps.google.com) — In-app property map display.
+- **Sentry** (sentry.io) — Error monitoring and crash reporting. Sentry may collect technical data including IP addresses as described in our Privacy Policy.
+- **Resend** (resend.com) — Transactional email delivery (booking confirmations, payment reminders, etc.).
+- **Expo** (expo.dev) — App build infrastructure and push notification delivery.
 
 ## 13. Privacy and data protection
 
-- Our handling of personal data is set out in our Privacy Policy. By using the App you agree to the collection, use and disclosure of personal data in accordance with the Privacy Policy.
-- If you are in the UK, we will process personal data in accordance with applicable UK data protection law (including UK GDPR and the Data Protection Act 2018).
-- If you believe your data rights have been breached, contact us using the contact details below.
+- Our handling of personal data is set out in our Privacy Policy. By using the App you agree to the collection, use, and disclosure of personal data in accordance with the Privacy Policy.
+- We process personal data as a data controller under the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018. Our lawful bases for processing are set out in the Privacy Policy.
+- If you believe your data rights have been breached, you have the right to lodge a complaint with the **Information Commissioner's Office (ICO)** at ico.org.uk or on 0303 123 1113. We would welcome the opportunity to resolve any concerns before you contact the ICO.
 
 ## 14. Disclaimers and no warranty
 
-- The App is provided “as is” and “as available” without warranties of any kind.
+- The App is provided "as is" and "as available" without warranties of any kind.
 - To the fullest extent permitted by law, we disclaim all warranties, whether express or implied, including but not limited to fitness for a particular purpose, accuracy, availability, or non-infringement.
 - We do not warrant that the App will be uninterrupted, secure, or error-free.
 
 ## 15. Limitation of liability
 
-- To the maximum extent permitted by law, Kiado’s total aggregate liability to you arising out of or in connection with the App or these Terms shall not exceed the total amount paid by you to Kiado in the 12 months preceding the claim (or £100, if greater protection is required by applicable law).
-- We are not liable for indirect, incidental, special, consequential or punitive damages, loss of profits, loss of data, or loss of goodwill.
+- To the maximum extent permitted by law, Kiado's total aggregate liability to you arising out of or in connection with the App or these Terms shall not exceed the total amount paid by you to Kiado in the 12 months preceding the claim (or £100, if greater protection is required by applicable law).
+- We are not liable for indirect, incidental, special, consequential, or punitive damages, loss of profits, loss of data, or loss of goodwill.
 - Nothing in these Terms limits liability for: (i) death or personal injury caused by our negligence, (ii) fraud or fraudulent misrepresentation, or (iii) any other liability that cannot be limited under applicable law.
 
 ## 16. Indemnity
 
-- You agree to indemnify, defend and hold harmless Kiado and its officers, directors, employees, agents, and affiliates from and against any claims, damages, losses, liabilities and expenses (including reasonable legal fees) arising out of your use of the App, your breach of these Terms, or your violation of any law or the rights of a third party.
+- You agree to indemnify, defend, and hold harmless Kiado and its officers, directors, employees, agents, and affiliates from and against any claims, damages, losses, liabilities, and expenses (including reasonable legal fees) arising out of your use of the App, your breach of these Terms, or your violation of any law or the rights of a third party.
 
 ## 17. Termination and suspension
 
 - We may suspend or terminate your access to the App at any time for breach of these Terms, illegal activity, or where required by law.
 - You may close your account at any time. Termination does not affect rights or obligations accrued before termination.
 
-## 18. Refunds and disputes
+## 18. Complaints and disputes
 
 - If you have a complaint about a Booking, please contact us promptly so we can try to resolve it.
 - In many cases disputes between Landlords and Tenants should be resolved between those parties; we may assist where appropriate.
-- For consumer Users in the UK, statutory consumer rights are not affected by these Terms.
+- For consumer Users in the UK, statutory consumer rights under the Consumer Rights Act 2015 and other applicable legislation are not affected by these Terms.
 
 ## 19. Governing law and jurisdiction
 
@@ -143,15 +151,15 @@ You must not:
 If you have questions, concerns, or a request under data protection law, contact us at:
 
 - **Email:** info@mozaiksoftwaresolutions.com
-- **Address:** Suite RA01, 195-197 Wood Street, London, E17 3NU
+- **Post:** Mozaik Software Solutions Ltd, Suite RA01, 195–197 Wood Street, London, E17 3NU
 
 ## 25. Additional notes for Landlords and Tenants
 
-- Local laws relating to rental, housing, taxes and safety (for example licensing or registration) may apply to Landlords. Compliance is the responsibility of the Landlord.
+- Local laws relating to rental, housing, taxes, and safety (for example licensing or registration) may apply to Landlords. Compliance is the responsibility of the Landlord.
 - Tenants should check property details and house rules carefully before booking.
 
 ## 26. Consumer information (UK)
 
-- Nothing in these Terms seeks to exclude or limit rights that you may have as a consumer under applicable UK consumer protection laws.
+- Nothing in these Terms seeks to exclude or limit rights that you may have as a consumer under applicable UK consumer protection laws, including the Consumer Rights Act 2015.
 - If you are a consumer, certain provisions may not apply to the extent they conflict with mandatory consumer rights.
 `;

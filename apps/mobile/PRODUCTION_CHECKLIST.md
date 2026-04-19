@@ -19,7 +19,7 @@ Use this checklist to track your progress towards production deployment.
 - [x] Configure app icon (1024x1024)
 - [x] Create splash screen assets
 - [ ] Add app screenshots for store listings (multiple sizes)
-- [ ] Write app description (short & long)
+- [x] Write app description (short & long)
 - [x] Choose app category
 - [x] Set app keywords for SEO
 
@@ -27,9 +27,9 @@ Use this checklist to track your progress towards production deployment.
 
 - [x] Privacy Policy created (update with your contact info)
 - [x] Terms of Service created (update with your contact info)
-- [ ] Host Privacy Policy & Terms on web (required by stores)
-- [ ] Add links to Privacy Policy in app settings
-- [ ] Add links to Terms in signup flow
+- [x] Host Privacy Policy & Terms on web (required by stores)
+- [x] Add links to Privacy Policy in app settings
+- [x] Add links to Terms in signup flow
 
 ### Certificates & Signing
 
@@ -40,20 +40,20 @@ Use this checklist to track your progress towards production deployment.
 - [x] Generate signing certificates via EAS
 
 ### Deep Linking & Universal Links
-- [ ] Upgrade from custom scheme (`kiado://`) to Universal Links (`https://kiado.app`)
-- [ ] Configure `apple-app-site-association` (iOS) and `assetlinks.json` (Android)
-- [ ] Update `app.json` with `associatedDomains` and `intentFilters`
-- [ ] Update Stripe Edge Function `refresh_url` and `return_url` to use HTTPS links
+- [x] Upgrade from custom scheme (`kiado://`) to Universal Links (`https://kiado.app`)
+- [x] Configure `apple-app-site-association` (iOS) and `assetlinks.json` (Android)
+- [x] Update `app.json` with `associatedDomains` and `intentFilters`
+- [x] Update Stripe Edge Function `refresh_url` and `return_url` to use HTTPS links
 
 ## 🔧 Phase 3: Backend & Services
 
 ### Supabase Production Setup
 
 - [x] Create production Supabase project
-- [ ] Set up Row Level Security (RLS) policies
+- [x] Set up Row Level Security (RLS) policies
 - [ ] Configure database indexes for performance
 - [ ] Set up database backups
-- [ ] Configure storage bucket policies
+- [x] Configure storage bucket policies
 - [ ] Set storage size limits
 - [x] Deploy Edge Functions to production
 - [x] Set production environment variables in Supabase
@@ -64,8 +64,8 @@ Use this checklist to track your progress towards production deployment.
 ### Stripe Production Setup
 
 - [ ] Create production Stripe account
-- [ ] Get production API keys
-- [ ] Update `.env.production` with production keys
+- [x] Get production API keys
+- [x] Update `.env.production` with production keys
 - [ ] Set up webhooks in Stripe dashboard
 - [ ] Test payment flow with production keys
 - [ ] Configure webhook endpoints
@@ -74,14 +74,14 @@ Use this checklist to track your progress towards production deployment.
 
 ### Error Tracking (Sentry)
 
-- [ ] Create Sentry account
-- [ ] Create React Native project in Sentry
-- [ ] Get Sentry DSN
-- [ ] Add DSN to `.env.production`
-- [ ] Test error tracking in staging
-- [ ] Set up error alerts
-- [ ] Configure release tracking
-- [ ] Set up user context tracking
+- [x] Create Sentry account
+- [x] Create React Native project in Sentry
+- [x] Get Sentry DSN
+- [x] Add DSN to `.env.production`
+- [x] Test error tracking in staging
+- [x] Set up error alerts
+- [x] Configure release tracking
+- [x] Set up user context tracking
 
 ### Other Services
 

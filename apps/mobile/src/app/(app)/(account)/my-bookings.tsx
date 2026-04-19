@@ -12,9 +12,7 @@ import { Stack, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
-  Image,
   RefreshControl,
   StyleSheet,
   Text,
@@ -25,10 +23,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { Card } from "@/components/shared/Card";
 import { PropertyImage } from "@/components/properties/PropertyImage";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import { showToastMessage } from "@/components/shared/ToastMessage";
 
 export default function MyBookingsScreen() {
   const router = useRouter();
   const { profile } = useAuthStore();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [bookings, setBookings] = useState<BookingWithProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,10 +86,10 @@ export default function MyBookingsScreen() {
     const now = new Date();
 
     if (now >= checkInDate) {
-      Alert.alert(
-        "Cancellation Closed",
-        "This booking can’t be cancelled after check-in.",
-      );
+      showToastMessage({
+        message: "This booking can’t be cancelled after check-in.",
+        type: "info",
+      });
       return;
     }
 
@@ -102,43 +103,72 @@ export default function MyBookingsScreen() {
       ? "Are you sure you want to cancel? Refunds follow the cancellation policy."
       : "Are you sure you want to cancel this booking request?";
 
-    Alert.alert(title, message, [
-      {
-        text: "View Policy",
-        onPress: () =>
-          Alert.alert("Cancellation Policy", getCancellationPolicyText()),
-      },
-      { text: "No", style: "cancel" },
-      {
-        text: "Yes, Cancel",
-        style: "destructive",
-        onPress: async () => {
-          if (isPaidOrConfirmed) {
-            const result = await cancelBooking(booking.id);
-            if (result.ok) {
-              Alert.alert(
-                "Cancelled",
-                result.refundAmount !== undefined
-                  ? `Refund issued: £${result.refundAmount.toLocaleString()}`
-                  : "Booking cancelled successfully",
-              );
-              await loadBookings();
-            } else {
-              Alert.alert("Error", result.error ?? "Failed to cancel booking");
-            }
-          } else {
-            const success = await updateBookingStatus(booking.id, {
-              status: "cancelled",
-            });
-            if (success) {
-              await loadBookings();
-            } else {
-              Alert.alert("Error", "Failed to cancel booking");
-            }
+    const confirmCancellation = async () => {
+      if (isPaidOrConfirmed) {
+        const result = await cancelBooking(booking.id);
+        if (result.ok) {
+          showToastMessage({
+            message:
+              result.refundAmount !== undefined
+                ? `Refund issued: £${result.refundAmount.toLocaleString()}`
+                : "Booking cancelled successfully",
+            type: "success",
+          });
+          await loadBookings();
+        } else {
+          showToastMessage({
+            message: result.error ?? "Failed to cancel booking",
+            type: "danger",
+          });
+        }
+      } else {
+        const success = await updateBookingStatus(booking.id, {
+          status: "cancelled",
+        });
+        if (success) {
+          await loadBookings();
+        } else {
+          showToastMessage({
+            message: "Failed to cancel booking",
+            type: "danger",
+          });
+        }
+      }
+    };
+
+    const showPolicySheet = () => {
+      showActionSheetWithOptions(
+        {
+          title: "Cancellation Policy",
+          message: getCancellationPolicyText(),
+          options: ["Back", "Yes, Cancel"],
+          cancelButtonIndex: 0,
+          destructiveButtonIndex: 1,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            void confirmCancellation();
           }
         },
+      );
+    };
+
+    showActionSheetWithOptions(
+      {
+        title,
+        message,
+        options: ["View Policy", "Keep Booking", "Yes, Cancel"],
+        cancelButtonIndex: 1,
+        destructiveButtonIndex: 2,
       },
-    ]);
+      (buttonIndex) => {
+        if (buttonIndex === 0) {
+          showPolicySheet();
+        } else if (buttonIndex === 2) {
+          void confirmCancellation();
+        }
+      },
+    );
   };
 
   const getStatusColor = (status: string) => {

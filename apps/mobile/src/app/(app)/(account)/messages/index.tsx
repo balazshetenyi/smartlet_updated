@@ -17,15 +17,15 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActionSheetIOS,
-  Platform,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import { showToastMessage } from "@/components/shared/ToastMessage";
 
 export default function MessagesScreen() {
   const { session } = useAuthStore();
   const router = useRouter();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -113,34 +113,28 @@ export default function MessagesScreen() {
           prev.filter((c) => c.id !== conversation.id),
         );
       } catch (e) {
-        Alert.alert(
-          "Error",
-          "Could not delete conversation. Please try again.",
-        );
+        showToastMessage({
+          message: "Could not delete conversation. Please try again.",
+          type: "danger",
+        });
       }
     };
 
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ["Cancel", "Delete Conversation"],
-          destructiveButtonIndex: 1,
-          cancelButtonIndex: 0,
-        },
-        (index) => {
-          if (index === 1) doHide();
-        },
-      );
-    } else {
-      Alert.alert(
-        "Delete Conversation",
-        "This conversation will be hidden from your inbox. It will reappear if either party sends a new message.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: doHide },
-        ],
-      );
-    }
+    showActionSheetWithOptions(
+      {
+        title: "Delete Conversation",
+        message:
+          "This conversation will be hidden from your inbox. It will reappear if either party sends a new message.",
+        options: ["Cancel", "Delete Conversation"],
+        cancelButtonIndex: 0,
+        destructiveButtonIndex: 1,
+      },
+      (buttonIndex) => {
+        if (buttonIndex === 1) {
+          void doHide();
+        }
+      },
+    );
   };
 
   const renderConversation = ({ item }: { item: Conversation }) => {

@@ -1,6 +1,5 @@
 import Button from "@/components/shared/Button";
 import { colours, supabase } from "@kiado/shared";
-import { useAuthStore } from "@/store/auth-store";
 import { BookingWithProperty } from "@kiado/shared/types/bookings";
 import { CardField, useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -20,13 +19,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { KeyboardToolbar } from "react-native-keyboard-controller";
+import { showToastMessage } from "@/components/shared/ToastMessage";
 
 export default function PaymentScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
-  const { profile } = useAuthStore();
   const router = useRouter();
   const { confirmSetupIntent } = useStripe();
   const [loading, setLoading] = useState(true);
@@ -65,43 +64,34 @@ export default function PaymentScreen() {
 
       setBooking(data);
 
-      console.log("Calling create-setup-intent with:", { bookingId: data.id });
-
       const response = await supabase.functions.invoke("create-setup-intent", {
         body: { bookingId: data.id },
       });
-
-      console.log("Raw response:", JSON.stringify(response, null, 2));
 
       if (response.error) {
         let errorMessage = "Setup intent failed";
         if (response.response) {
           try {
             const responseText = await response.response.text();
-            console.log("Error response body:", responseText);
             const errorData = JSON.parse(responseText);
             errorMessage = errorData.error || errorMessage;
           } catch (e) {
-            console.error("Could not parse error response:", e);
+            console.error("Could not parse error response.");
           }
         }
         throw new Error(errorMessage);
       }
 
       if (!response.data?.clientSecret) {
-        console.error("Invalid response data:", response.data);
         throw new Error("No client secret received");
       }
 
       setClientSecret(response.data.clientSecret);
     } catch (error) {
-      console.error("Error fetching booking:", error);
-      Alert.alert(
-        "Error",
-        error instanceof Error
-          ? error.message
-          : "Failed to load booking details",
-      );
+      showToastMessage({
+        message: "Failed to load booking details",
+        type: "danger",
+      });
     } finally {
       setLoading(false);
     }
@@ -109,7 +99,7 @@ export default function PaymentScreen() {
 
   const handlePayment = async () => {
     if (!clientSecret) {
-      Alert.alert("Error", "Payment not initialized");
+      showToastMessage({ message: "Payment not initialized", type: "danger" });
       return;
     }
 
@@ -121,7 +111,7 @@ export default function PaymentScreen() {
       });
 
       if (error) {
-        Alert.alert("Card Setup Failed", error.message);
+        showToastMessage({ message: error.message, type: "danger" });
         return;
       }
 
@@ -134,15 +124,14 @@ export default function PaymentScreen() {
           })
           .eq("id", bookingId);
 
-        Alert.alert(
-          "Success",
-          "Card saved. Payment will be taken 48h before check-in.",
-          [{ text: "OK", onPress: () => router.replace("/my-bookings") }],
-        );
+        showToastMessage({
+          message: "Card saved. Payment will be taken 48h before check-in.",
+          type: "success",
+        });
+        router.replace("/my-bookings");
       }
     } catch (error) {
-      console.error("Payment setup error:", error);
-      Alert.alert("Error", "Card setup failed");
+      showToastMessage({ message: "Card setup failed", type: "danger" });
     } finally {
       setProcessing(false);
     }
