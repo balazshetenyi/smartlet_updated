@@ -3,7 +3,7 @@ import { colours } from "@kiado/shared";
 import { Property } from "@kiado/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Calendar, DateData } from "react-native-calendars";
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Alert,
   Modal,
@@ -39,27 +39,13 @@ export default function BookingModal({
   const [checkOut, setCheckOut] = useState<string | null>(
     searchParams.checkOut ?? null,
   );
-  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     if (visible) {
       setCheckIn(searchParams.checkIn ?? null);
       setCheckOut(searchParams.checkOut ?? null);
-      if (searchParams.checkIn && searchParams.checkOut) {
-        setTimeout(() => {
-          scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 400);
-      }
     }
   }, [visible]);
-
-  useEffect(() => {
-    if (checkIn && checkOut) {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }
-  }, [checkIn, checkOut]);
 
   const markedDates = useMemo(() => {
     const marked: any = {};
@@ -69,9 +55,7 @@ export default function BookingModal({
         disabled: true,
         disableTouchEvent: true,
         textColor: colours.textSecondary,
-        customContainerStyle: {
-          backgroundColor: colours.border,
-        },
+        customContainerStyle: { backgroundColor: colours.border },
       };
     });
 
@@ -140,29 +124,44 @@ export default function BookingModal({
     }
 
     if (isShortTerm) {
-      // Auto-snap: check-out is always exactly 7 days after check-in
-      const checkOutDate = new Date(selectedDate);
-      checkOutDate.setDate(checkOutDate.getDate() + 7);
-      const checkOutStr = checkOutDate.toISOString().split("T")[0];
-
-      // Validate no blocked dates fall within the 7-day range
-      const start = new Date(selectedDate);
-      const end = new Date(checkOutStr);
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split("T")[0];
-        if (blockedDates.includes(dateStr)) {
-          Alert.alert(
-            "Unavailable",
-            "This week contains unavailable dates. Please choose a different week.",
+      if (!checkIn || checkOut) {
+        setCheckIn(selectedDate);
+        setCheckOut(null);
+      } else {
+        if (selectedDate <= checkIn) {
+          setCheckIn(selectedDate);
+          setCheckOut(null);
+        } else {
+          const checkInDate = new Date(checkIn);
+          const tappedDate = new Date(selectedDate);
+          const diffDays = Math.ceil(
+            (tappedDate.getTime() - checkInDate.getTime()) /
+              (1000 * 60 * 60 * 24),
           );
-          return;
+          const weeks = Math.max(1, Math.ceil(diffDays / 7));
+          const checkOutDate = new Date(checkIn);
+          checkOutDate.setDate(checkOutDate.getDate() + weeks * 7);
+          const checkOutStr = checkOutDate.toISOString().split("T")[0];
+
+          const start = new Date(checkIn);
+          const end = new Date(checkOutStr);
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split("T")[0];
+            if (blockedDates.includes(dateStr)) {
+              Alert.alert(
+                "Unavailable",
+                "Your selected period contains unavailable dates. Please choose different dates.",
+              );
+              setCheckIn(null);
+              setCheckOut(null);
+              return;
+            }
+          }
+          setCheckIn(checkIn);
+          setCheckOut(checkOutStr);
         }
       }
-
-      setCheckIn(selectedDate);
-      setCheckOut(checkOutStr);
     } else {
-      // Holiday: free range selection
       if (!checkIn || (checkIn && checkOut)) {
         setCheckIn(selectedDate);
         setCheckOut(null);
@@ -187,7 +186,6 @@ export default function BookingModal({
             return;
           }
         }
-
         setCheckOut(selectedDate);
       }
     }
@@ -198,13 +196,37 @@ export default function BookingModal({
       Alert.alert("Error", "Please select check-in and check-out dates");
       return;
     }
-
-    const totalPrice = calculateTotalPrice();
-    onConfirm(new Date(checkIn), new Date(checkOut), totalPrice);
+    onConfirm(new Date(checkIn), new Date(checkOut), calculateTotalPrice());
   };
 
   const weeks = calculateWeeks();
   const nights = calculateNights();
+
+  const months = Array.from({ length: 13 }, (_, i) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + i);
+    return d.toISOString().split("T")[0];
+  });
+
+  const calendarTheme = {
+    backgroundColor: colours.surface,
+    calendarBackground: colours.surface,
+    textSectionTitleColor: colours.text,
+    selectedDayBackgroundColor: colours.primary,
+    selectedDayTextColor: "white",
+    todayTextColor: colours.primary,
+    dayTextColor: colours.text,
+    textDisabledColor: colours.textSecondary,
+    dotColor: colours.primary,
+    selectedDotColor: "white",
+    arrowColor: colours.primary,
+    monthTextColor: colours.text,
+    indicatorColor: colours.primary,
+    textDayFontSize: 16,
+    textMonthFontSize: 16,
+    textDayHeaderFontSize: 14,
+  };
 
   return (
     <Modal
@@ -215,88 +237,78 @@ export default function BookingModal({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Book Your Stay</Text>
-            <TouchableOpacity onPress={onClose}>
-              <MaterialIcons name="close" size={24} color={colours.text} />
-            </TouchableOpacity>
-          </View>
+          {/* ── PINNED TOP: never scrolls ───────────────────────── */}
+          <View style={styles.pinnedTop}>
+            <View style={styles.titleRow}>
+              <Text style={styles.modalTitle}>Book Your Stay</Text>
+              <TouchableOpacity onPress={onClose}>
+                <MaterialIcons name="close" size={24} color={colours.text} />
+              </TouchableOpacity>
+            </View>
 
-          <ScrollView
-            ref={scrollViewRef}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-          >
             <Text style={styles.propertyTitle}>{property.title}</Text>
             <Text style={styles.propertyLocation}>
               {property.city || property.address}
             </Text>
 
-            {/* Date Selection */}
-            <View style={styles.dateSection}>
-              <Text style={styles.label}>
-                {isShortTerm ? "Select Your Week" : "Select Your Dates"}
+            <Text style={styles.label}>Select Your Dates</Text>
+            {isShortTerm && (
+              <Text style={styles.weekHint}>
+                {!checkIn
+                  ? "Tap your arrival date"
+                  : !checkOut
+                    ? "Now tap your departure date"
+                    : `${weeks} week${weeks !== 1 ? "s" : ""} selected`}
               </Text>
-              {isShortTerm && (
-                <Text style={styles.weekHint}>
-                  Tap any date to book that full week (7 nights)
+            )}
+            <View style={styles.selectedDatesInfo}>
+              <View style={styles.dateInfo}>
+                <Text style={styles.dateInfoLabel}>
+                  {isShortTerm ? "Week start" : "Check-in"}
                 </Text>
-              )}
-              <View style={styles.selectedDatesInfo}>
-                <View style={styles.dateInfo}>
-                  <Text style={styles.dateInfoLabel}>
-                    {isShortTerm ? "Week start" : "Check-in"}
-                  </Text>
-                  <Text style={styles.dateInfoValue}>
-                    {checkIn
-                      ? new Date(checkIn).toLocaleDateString()
-                      : "Select date"}
-                  </Text>
-                </View>
-                <MaterialIcons
-                  name="arrow-forward"
-                  size={20}
-                  color={colours.textSecondary}
-                />
-                <View style={styles.dateInfo}>
-                  <Text style={styles.dateInfoLabel}>
-                    {isShortTerm ? "Week end" : "Check-out"}
-                  </Text>
-                  <Text style={styles.dateInfoValue}>
-                    {checkOut
-                      ? new Date(checkOut).toLocaleDateString()
-                      : "Select date"}
-                  </Text>
-                </View>
+                <Text style={styles.dateInfoValue}>
+                  {checkIn
+                    ? new Date(checkIn).toLocaleDateString()
+                    : "Select date"}
+                </Text>
               </View>
+              <View style={styles.dateInfo}>
+                <Text style={styles.dateInfoLabel}>
+                  {isShortTerm ? "Week end" : "Check-out"}
+                </Text>
+                <Text style={styles.dateInfoValue}>
+                  {checkOut
+                    ? new Date(checkOut).toLocaleDateString()
+                    : "Select date"}
+                </Text>
+              </View>
+            </View>
+          </View>
 
+          {/* ── SCROLLABLE MIDDLE: only the months scroll ───────── */}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.calendarScrollContent}
+          >
+            {months.map((monthStart) => (
               <Calendar
+                key={monthStart}
+                current={monthStart}
+                hideArrows
+                disableMonthChange
+                hideExtraDays
                 markingType="period"
                 markedDates={markedDates}
                 onDayPress={handleDayPress}
                 minDate={new Date().toISOString().split("T")[0]}
-                theme={{
-                  backgroundColor: colours.surface,
-                  calendarBackground: colours.surface,
-                  textSectionTitleColor: colours.text,
-                  selectedDayBackgroundColor: colours.primary,
-                  selectedDayTextColor: "white",
-                  todayTextColor: colours.primary,
-                  dayTextColor: colours.text,
-                  textDisabledColor: colours.textSecondary,
-                  dotColor: colours.primary,
-                  selectedDotColor: "white",
-                  arrowColor: colours.primary,
-                  monthTextColor: colours.text,
-                  indicatorColor: colours.primary,
-                  textDayFontSize: 16,
-                  textMonthFontSize: 16,
-                  textDayHeaderFontSize: 14,
-                }}
+                style={styles.monthCalendar}
+                theme={calendarTheme}
               />
-            </View>
+            ))}
+          </ScrollView>
 
-            {/* Price Summary */}
+          {/* ── PINNED BOTTOM: always visible ───────────────────── */}
+          <View style={styles.pinnedBottom}>
             {checkIn && checkOut && (
               <View style={styles.summarySection}>
                 <View style={styles.summaryRow}>
@@ -318,13 +330,12 @@ export default function BookingModal({
                 </View>
               </View>
             )}
-
             <Button
               title="Continue to Payment"
               onPress={handleConfirm}
               buttonStyle={styles.confirmButton}
             />
-          </ScrollView>
+          </View>
         </View>
       </View>
     </Modal>
@@ -337,21 +348,26 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
+  // The sheet itself — flex column so children can use flex: 1
   modalContent: {
     backgroundColor: colours.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: "80%",
+    maxHeight: "90%",
   },
-  modalHeader: {
+  // ── Pinned top ──────────────────────────────────────────────
+  pinnedTop: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colours.border,
+  },
+  titleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
-  },
-  scrollContent: {
-    paddingBottom: 40,
   },
   modalTitle: {
     fontSize: 20,
@@ -367,10 +383,7 @@ const styles = StyleSheet.create({
   propertyLocation: {
     fontSize: 14,
     color: colours.textSecondary,
-    marginBottom: 24,
-  },
-  dateSection: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
@@ -381,7 +394,7 @@ const styles = StyleSheet.create({
   weekHint: {
     fontSize: 12,
     color: colours.textSecondary,
-    marginBottom: 12,
+    marginBottom: 8,
     fontStyle: "italic",
   },
   selectedDatesInfo: {
@@ -391,7 +404,6 @@ const styles = StyleSheet.create({
     backgroundColor: colours.background,
     padding: 16,
     borderRadius: 12,
-    marginBottom: 16,
     borderWidth: 1,
     borderColor: colours.border,
   },
@@ -408,16 +420,30 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colours.text,
   },
+  // ── Scrollable calendar area ─────────────────────────────────
+  calendarScrollContent: {
+    paddingHorizontal: 4,
+    paddingVertical: 8,
+  },
+  monthCalendar: {
+    marginBottom: 8,
+  },
+  // ── Pinned bottom ────────────────────────────────────────────
+  pinnedBottom: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 32,
+    borderTopWidth: 1,
+    borderTopColor: colours.border,
+    backgroundColor: colours.surface,
+  },
   summarySection: {
-    backgroundColor: colours.background,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   summaryLabel: {
     fontSize: 14,
@@ -431,7 +457,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: colours.border,
-    marginVertical: 12,
+    marginVertical: 8,
   },
   totalLabel: {
     fontSize: 16,
