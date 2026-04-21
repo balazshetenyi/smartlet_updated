@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -38,6 +39,12 @@ export default function SearchBar() {
   const [tempMaxPrice, setTempMaxPrice] = useState<string>(
     searchParams.maxPrice ? String(searchParams.maxPrice) : "",
   );
+  const months = Array.from({ length: 13 }, (_, i) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + i);
+    return d.toISOString().split("T")[0];
+  });
 
   const handleSearch = (event: any) => {
     event.preventDefault();
@@ -471,54 +478,109 @@ export default function SearchBar() {
         onRequestClose={() => setShowDatePicker(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Dates</Text>
-              <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                <MaterialIcons name="close" size={24} color={colours.text} />
-              </TouchableOpacity>
+          <View style={styles.datePickerContent}>
+            {/* ── PINNED TOP ── title + hint + date chips */}
+            <View style={styles.datePickerPinnedTop}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select Dates</Text>
+                <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                  <MaterialIcons name="close" size={24} color={colours.text} />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.modalHint}>
+                {(() => {
+                  const isShortTerm = searchParams.rentalType === "short_term";
+                  if (!tempDates.checkIn) {
+                    return isShortTerm
+                      ? "Select week start date"
+                      : "Select check-in date";
+                  }
+                  if (!tempDates.checkOut) {
+                    return "Select check-out date";
+                  }
+                  if (isShortTerm) {
+                    return `Week of ${new Date(tempDates.checkIn).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+                  }
+                  return `${Math.ceil(
+                    (new Date(tempDates.checkOut).getTime() -
+                      new Date(tempDates.checkIn).getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  )} nights selected`;
+                })()}
+              </Text>
+
+              <View style={styles.selectedDatesRow}>
+                <View style={styles.dateChip}>
+                  <Text style={styles.dateChipLabel}>
+                    {searchParams.rentalType === "short_term"
+                      ? "Week start"
+                      : "Check-in"}
+                  </Text>
+                  <Text style={styles.dateChipValue}>
+                    {tempDates.checkIn
+                      ? new Date(tempDates.checkIn).toLocaleDateString()
+                      : "Select date"}
+                  </Text>
+                </View>
+                <MaterialIcons
+                  name="arrow-forward"
+                  size={16}
+                  color={colours.textSecondary}
+                />
+                <View style={styles.dateChip}>
+                  <Text style={styles.dateChipLabel}>
+                    {searchParams.rentalType === "short_term"
+                      ? "Week end"
+                      : "Check-out"}
+                  </Text>
+                  <Text style={styles.dateChipValue}>
+                    {tempDates.checkOut
+                      ? new Date(tempDates.checkOut).toLocaleDateString()
+                      : "Select date"}
+                  </Text>
+                </View>
+              </View>
             </View>
 
-            <Text style={styles.modalHint}>
-              {(() => {
-                const isShortTerm = searchParams.rentalType === "short_term";
-                if (!tempDates.checkIn) {
-                  return isShortTerm
-                    ? "Select week start date"
-                    : "Select check-in date";
-                }
-                if (!tempDates.checkOut) {
-                  return "Select check-out date";
-                }
-                if (isShortTerm) {
-                  return `Week of ${new Date(tempDates.checkIn).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
-                }
-                return `${Math.ceil(
-                  (new Date(tempDates.checkOut).getTime() -
-                    new Date(tempDates.checkIn).getTime()) /
-                    (1000 * 60 * 60 * 24),
-                )} nights selected`;
-              })()}
-            </Text>
+            {/* ── SCROLLABLE MONTHS ── only this section scrolls */}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.calendarScrollContent}
+            >
+              {months.map((monthStart) => (
+                <Calendar
+                  key={monthStart}
+                  current={monthStart}
+                  hideArrows
+                  disableMonthChange
+                  hideExtraDays
+                  markingType="period"
+                  markedDates={getMarkedDates()}
+                  onDayPress={handleDatePress}
+                  minDate={new Date().toISOString().split("T")[0]}
+                  style={styles.monthCalendar}
+                  theme={{
+                    backgroundColor: colours.cardBackground,
+                    calendarBackground: colours.cardBackground,
+                    textSectionTitleColor: colours.text,
+                    selectedDayBackgroundColor: colours.primary,
+                    selectedDayTextColor: "white",
+                    todayTextColor: colours.primary,
+                    dayTextColor: colours.text,
+                    textDisabledColor: colours.textSecondary,
+                    monthTextColor: colours.text,
+                    arrowColor: colours.primary,
+                  }}
+                />
+              ))}
+            </ScrollView>
 
-            <Calendar
-              markedDates={getMarkedDates()}
-              onDayPress={handleDatePress}
-              markingType="period"
-              minDate={new Date().toISOString().split("T")[0]}
-              theme={{
-                selectedDayBackgroundColor: colours.primary,
-                todayTextColor: colours.primary,
-                arrowColor: colours.primary,
-              }}
-            />
-
-            <View style={styles.modalActions}>
+            {/* ── PINNED BOTTOM ── always visible */}
+            <View style={styles.datePickerPinnedBottom}>
               <TouchableOpacity
                 style={styles.clearButton}
-                onPress={() => {
-                  setTempDates({ checkIn: null, checkOut: null });
-                }}
+                onPress={() => setTempDates({ checkIn: null, checkOut: null })}
               >
                 <Text style={styles.clearButtonText}>Clear</Text>
               </TouchableOpacity>
@@ -916,5 +978,58 @@ const styles = StyleSheet.create({
   },
   radiusChipTextSelected: {
     color: colours.primary,
+  },
+  datePickerContent: {
+    backgroundColor: colours.cardBackground,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "90%",
+  },
+  datePickerPinnedTop: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colours.border,
+  },
+  calendarScrollContent: {
+    paddingHorizontal: 4,
+    paddingVertical: 8,
+  },
+  monthCalendar: {
+    marginBottom: 8,
+  },
+  datePickerPinnedBottom: {
+    flexDirection: "row",
+    gap: 12,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 32,
+    borderTopWidth: 1,
+    borderTopColor: colours.border,
+    backgroundColor: colours.cardBackground,
+  },
+  selectedDatesRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colours.background,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colours.border,
+  },
+  dateChip: {
+    flex: 1,
+  },
+  dateChipLabel: {
+    fontSize: 11,
+    color: colours.textSecondary,
+    marginBottom: 2,
+  },
+  dateChipValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colours.text,
   },
 });
