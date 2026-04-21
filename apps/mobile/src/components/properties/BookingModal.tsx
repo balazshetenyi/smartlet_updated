@@ -140,27 +140,48 @@ export default function BookingModal({
     }
 
     if (isShortTerm) {
-      // Auto-snap: check-out is always exactly 7 days after check-in
-      const checkOutDate = new Date(selectedDate);
-      checkOutDate.setDate(checkOutDate.getDate() + 7);
-      const checkOutStr = checkOutDate.toISOString().split("T")[0];
-
-      // Validate no blocked dates fall within the 7-day range
-      const start = new Date(selectedDate);
-      const end = new Date(checkOutStr);
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split("T")[0];
-        if (blockedDates.includes(dateStr)) {
-          Alert.alert(
-            "Unavailable",
-            "This week contains unavailable dates. Please choose a different week.",
+      if (!checkIn || checkOut) {
+        // No check-in yet, or starting fresh — set check-in only
+        setCheckIn(selectedDate);
+        setCheckOut(null);
+      } else {
+        if (selectedDate <= checkIn) {
+          // Tapped on or before check-in — reset
+          setCheckIn(selectedDate);
+          setCheckOut(null);
+        } else {
+          // Snap to nearest whole week (ceiling) from check-in
+          const checkInDate = new Date(checkIn);
+          const tappedDate = new Date(selectedDate);
+          const diffDays = Math.ceil(
+            (tappedDate.getTime() - checkInDate.getTime()) /
+              (1000 * 60 * 60 * 24),
           );
-          return;
+          const weeks = Math.max(1, Math.ceil(diffDays / 7));
+          const checkOutDate = new Date(checkIn);
+          checkOutDate.setDate(checkOutDate.getDate() + weeks * 7);
+          const checkOutStr = checkOutDate.toISOString().split("T")[0];
+
+          // Validate no blocked dates in the full selected range
+          const start = new Date(checkIn);
+          const end = new Date(checkOutStr);
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split("T")[0];
+            if (blockedDates.includes(dateStr)) {
+              Alert.alert(
+                "Unavailable",
+                "Your selected period contains unavailable dates. Please choose different dates.",
+              );
+              setCheckIn(null);
+              setCheckOut(null);
+              return;
+            }
+          }
+
+          setCheckIn(checkIn);
+          setCheckOut(checkOutStr);
         }
       }
-
-      setCheckIn(selectedDate);
-      setCheckOut(checkOutStr);
     } else {
       // Holiday: free range selection
       if (!checkIn || (checkIn && checkOut)) {
@@ -235,11 +256,15 @@ export default function BookingModal({
             {/* Date Selection */}
             <View style={styles.dateSection}>
               <Text style={styles.label}>
-                {isShortTerm ? "Select Your Week" : "Select Your Dates"}
+                {isShortTerm ? "Select Your Dates" : "Select Your Dates"}
               </Text>
               {isShortTerm && (
                 <Text style={styles.weekHint}>
-                  Tap any date to book that full week (7 nights)
+                  {!checkIn
+                    ? "Tap your arrival date"
+                    : !checkOut
+                      ? "Now tap your departure date"
+                      : `${weeks} week${weeks !== 1 ? "s" : ""} selected`}
                 </Text>
               )}
               <View style={styles.selectedDatesInfo}>
@@ -253,11 +278,6 @@ export default function BookingModal({
                       : "Select date"}
                   </Text>
                 </View>
-                <MaterialIcons
-                  name="arrow-forward"
-                  size={20}
-                  color={colours.textSecondary}
-                />
                 <View style={styles.dateInfo}>
                   <Text style={styles.dateInfoLabel}>
                     {isShortTerm ? "Week end" : "Check-out"}

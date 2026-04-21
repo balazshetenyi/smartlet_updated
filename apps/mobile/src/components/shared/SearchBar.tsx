@@ -58,13 +58,30 @@ export default function SearchBar() {
     const isShortTerm = searchParams.rentalType === "short_term";
 
     if (isShortTerm) {
-      // Auto-snap: check-out is always check-in + 7 days
-      const checkOut = new Date(dateString);
-      checkOut.setDate(checkOut.getDate() + 7);
-      setTempDates({
-        checkIn: dateString,
-        checkOut: checkOut.toISOString().split("T")[0],
-      });
+      if (!tempDates.checkIn || tempDates.checkOut) {
+        // No check-in yet, or starting a fresh selection
+        setTempDates({ checkIn: dateString, checkOut: null });
+      } else {
+        if (dateString <= tempDates.checkIn) {
+          // Tapped on or before check-in — reset
+          setTempDates({ checkIn: dateString, checkOut: null });
+        } else {
+          // Snap to the nearest whole week (ceiling) from check-in
+          const checkInDate = new Date(tempDates.checkIn);
+          const tappedDate = new Date(dateString);
+          const diffDays = Math.ceil(
+            (tappedDate.getTime() - checkInDate.getTime()) /
+              (1000 * 60 * 60 * 24),
+          );
+          const weeks = Math.max(1, Math.ceil(diffDays / 7));
+          const checkOut = new Date(tempDates.checkIn);
+          checkOut.setDate(checkOut.getDate() + weeks * 7);
+          setTempDates({
+            checkIn: tempDates.checkIn,
+            checkOut: checkOut.toISOString().split("T")[0],
+          });
+        }
+      }
     } else {
       // Holiday: free range selection
       if (!tempDates.checkIn || (tempDates.checkIn && tempDates.checkOut)) {
@@ -388,7 +405,33 @@ export default function SearchBar() {
             </View>
 
             <Text style={styles.modalHint}>
-              How far from the location should we search?
+              {(() => {
+                const isShortTerm = searchParams.rentalType === "short_term";
+                if (!tempDates.checkIn) {
+                  return isShortTerm
+                    ? "Tap your arrival date"
+                    : "Select check-in date";
+                }
+                if (!tempDates.checkOut) {
+                  return isShortTerm
+                    ? "Now tap your departure date"
+                    : "Select check-out date";
+                }
+                if (isShortTerm) {
+                  const nights = Math.ceil(
+                    (new Date(tempDates.checkOut).getTime() -
+                      new Date(tempDates.checkIn).getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  );
+                  const weeks = nights / 7;
+                  return `${weeks} week${weeks !== 1 ? "s" : ""} selected`;
+                }
+                return `${Math.ceil(
+                  (new Date(tempDates.checkOut).getTime() -
+                    new Date(tempDates.checkIn).getTime()) /
+                    (1000 * 60 * 60 * 24),
+                )} nights selected`;
+              })()}
             </Text>
 
             <View style={styles.radiusOptions}>
