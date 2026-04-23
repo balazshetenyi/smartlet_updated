@@ -1,8 +1,11 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colours } from "@kiado/shared";
+import { colours, supabase } from "@kiado/shared";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -14,7 +17,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "@/components/shared/Button";
 import { showToastMessage } from "@/components/shared/ToastMessage";
-import { submitSurveillanceReport } from "@/utils/surveillance-utils";
+import { ImageSourceType } from "@/enums/image-source-type";
+import { pickImage } from "@/utils/image-picker-utils";
+import {
+  submitSurveillanceReport,
+  uploadReportPhotos,
+} from "@/utils/surveillance-utils";
+
+const MAX_PHOTOS = 3;
 
 type Phase = "form" | "success";
 
@@ -23,10 +33,8 @@ interface SurveillanceReportModalProps {
   propertyId: string;
   propertyTitle: string;
   reporterId: string;
-  /** If true, show "already filed" state instead of the form */
   alreadyReported: boolean;
   onClose: () => void;
-  /** Called after a successful submission */
   onSubmitSuccess: () => void;
 }
 
@@ -43,28 +51,63 @@ export default function SurveillanceReportModal({
   const [description, setDescription] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [photos, setPhotos] = useState<ImagePicker.ImagePickerAsset[]>([]);
 
-  // Reset all local state whenever the modal is hidden
   useEffect(() => {
     if (!visible) {
       setPhase("form");
       setDescription("");
       setConfirmed(false);
       setSubmitting(false);
+      setPhotos([]);
     }
   }, [visible]);
 
   const canSubmit = description.trim().length > 10 && confirmed;
 
+  const handleAddPhoto = () => {
+    Alert.alert("Add Evidence Photo", "Choose a source", [
+      {
+        text: "Take Photo",
+        onPress: async () => {
+          const asset = await pickImage(ImageSourceType.Camera);
+          if (asset) setPhotos((prev) => [...prev, asset]);
+        },
+      },
+      {
+        text: "Choose from Library",
+        onPress: async () => {
+          const asset = await pickImage(ImageSourceType.Library);
+          if (asset) setPhotos((prev) => [...prev, asset]);
+        },
+      },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
     if (!canSubmit || submitting) return;
     setSubmitting(true);
     try {
-      await submitSurveillanceReport(
+      const report = await submitSurveillanceReport(
         propertyId,
         reporterId,
         description.trim(),
       );
+
+      if (photos.length > 0) {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session) {
+          await uploadReportPhotos(report.id, photos, session);
+        }
+      }
+
       setPhase("success");
       onSubmitSuccess();
     } catch {
@@ -76,6 +119,8 @@ export default function SurveillanceReportModal({
       setSubmitting(false);
     }
   };
+
+  // ─── Render helpers ────────────────────────────────────────────────────────
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -153,6 +198,7 @@ export default function SurveillanceReportModal({
           <Text style={styles.propertyChipText}>🏠 {propertyTitle}</Text>
         </View>
 
+        {/* Description */}
         <View style={styles.fieldGroup}>
           <Text style={styles.fieldLabel}>
             Describe what you found or suspect{" "}
@@ -169,6 +215,49 @@ export default function SurveillanceReportModal({
           />
         </View>
 
+        {/* Evidence photos */}
+        <View style={styles.fieldGroup}>
+          <Text style={styles.fieldLabel}>
+            Evidence photos{" "}
+            <Text style={styles.optionalLabel}>
+              (optional · max {MAX_PHOTOS})
+            </Text>
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.photoRow}
+          >
+            {photos.map((photo, index) => (
+              <View key={index} style={styles.photoThumbWrapper}>
+                <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
+                <TouchableOpacity
+                  style={styles.photoRemoveBtn}
+                  onPress={() => removePhoto(index)}
+                  hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                >
+                  <MaterialIcons name="close" size={12} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <TouchableOpacity
+                style={styles.photoAddBtn}
+                onPress={handleAddPhoto}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons
+                  name="add-a-photo"
+                  size={22}
+                  color={colours.textSecondary}
+                />
+                <Text style={styles.photoAddText}>Add photo</Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+        </View>
+
+        {/* Warning */}
         <View style={styles.warningBox}>
           <MaterialIcons name="warning" size={18} color={colours.warning} />
           <Text style={styles.warningText}>
@@ -178,6 +267,7 @@ export default function SurveillanceReportModal({
           </Text>
         </View>
 
+        {/* Confirmation checkbox */}
         <TouchableOpacity
           style={styles.confirmRow}
           onPress={() => setConfirmed((v) => !v)}
@@ -233,7 +323,7 @@ export default function SurveillanceReportModal({
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <View style={styles.content}>
+        <View style={styles.overlay}>
           {renderHeader()}
           <View style={styles.divider} />
           {showAlreadyReported && renderAlreadyReported()}
@@ -246,12 +336,12 @@ export default function SurveillanceReportModal({
 }
 
 const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
     backgroundColor: colours.surface,
+  },
+  overlay: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",
@@ -311,6 +401,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colours.text,
   },
+  optionalLabel: {
+    fontWeight: "400",
+    color: colours.textSecondary,
+  },
   required: {
     color: colours.danger,
   },
@@ -325,6 +419,54 @@ const styles = StyleSheet.create({
     minHeight: 100,
     lineHeight: 20,
   },
+  // Photo picker
+  photoRow: {
+    flexDirection: "row",
+    gap: 10,
+    paddingVertical: 4,
+  },
+  photoThumbWrapper: {
+    position: "relative",
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  photoThumb: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    backgroundColor: colours.border,
+  },
+  photoRemoveBtn: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoAddBtn: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderColor: colours.border,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    backgroundColor: colours.background,
+  },
+  photoAddText: {
+    fontSize: 11,
+    color: colours.textSecondary,
+    fontWeight: "500",
+  },
+  // Warning
   warningBox: {
     flexDirection: "row",
     alignItems: "flex-start",

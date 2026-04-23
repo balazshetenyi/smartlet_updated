@@ -3,6 +3,9 @@ import {
   SurveillanceReport,
   SurveillanceReportWithProperty,
 } from "@kiado/shared/types/property";
+import { uploadImageToStorage } from "@/utils/image-picker-utils";
+import * as ImagePicker from "expo-image-picker";
+import { Session } from "@supabase/supabase-js";
 
 /**
  * Submit a new surveillance report for a property.
@@ -84,4 +87,39 @@ export const checkExistingReport = async (
 
   if (error) return false;
   return data !== null;
+};
+
+/**
+ * Upload evidence photos for a report and record their URLs in
+ * surveillance_report_photos. Best-effort — a photo failure does not
+ * throw; the report itself is already persisted.
+ */
+export const uploadReportPhotos = async (
+  reportId: string,
+  assets: ImagePicker.ImagePickerAsset[],
+  session: Session,
+): Promise<void> => {
+  for (const asset of assets) {
+    try {
+      const url = await uploadImageToStorage(
+        asset,
+        "report-evidence",
+        session,
+        reportId, // folder = reportId, so path = reportId/userId_timestamp.jpg
+      );
+
+      if (url) {
+        const { error } = await supabase
+          .from("surveillance_report_photos")
+          .insert({ report_id: reportId, photo_url: url });
+
+        if (error) {
+          console.error("Error recording report photo:", error);
+        }
+      }
+    } catch (err) {
+      // Best-effort: log but don't abort the whole submission
+      console.error("Error uploading report photo:", err);
+    }
+  }
 };
