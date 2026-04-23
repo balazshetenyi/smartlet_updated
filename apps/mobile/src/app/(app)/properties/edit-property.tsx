@@ -28,6 +28,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import SurveillanceDeclarationSection, {
+  DeclarationType,
+} from "@/components/properties/SurveillanceDeclarationSection";
 
 export default function EditPropertyScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -46,6 +49,17 @@ export default function EditPropertyScreen() {
     Array<{ id: string; url: string }>
   >([]);
   const [selectingCover, setSelectingCover] = useState(false);
+  const [declarationType, setDeclarationType] =
+    useState<DeclarationType | null>(null);
+  const [externalDevicesDescription, setExternalDevicesDescription] =
+    useState("");
+  const [declarationConfirmed, setDeclarationConfirmed] = useState(false);
+  const isDeclarationValid =
+    declarationType !== null &&
+    (declarationType === "none" ||
+      (declarationType === "external_only" &&
+        externalDevicesDescription.trim().length > 0)) &&
+    declarationConfirmed;
 
   const {
     control,
@@ -128,6 +142,21 @@ export default function EditPropertyScreen() {
       if (!amenitiesError && propertyAmenities) {
         const amenityIds = propertyAmenities.map((pa) => pa.amenity_id);
         setValue("amenities", amenityIds);
+      }
+
+      // Load existing surveillance declaration if present
+      const { data: existingDeclaration } = await supabase
+        .from("property_surveillance_declarations")
+        .select("*")
+        .eq("property_id", id)
+        .single();
+
+      if (existingDeclaration) {
+        setDeclarationType(existingDeclaration.declaration_type);
+        setExternalDevicesDescription(
+          existingDeclaration.external_devices_description ?? "",
+        );
+        setDeclarationConfirmed(true);
       }
     } catch (error) {
       Alert.alert("Error", "Failed to load property details");
@@ -259,6 +288,31 @@ export default function EditPropertyScreen() {
   };
 
   const onSubmit = async (data: AddNewProperty) => {
+    if (!declarationType) {
+      Alert.alert(
+        "Declaration required",
+        "Please complete the Surveillance Declaration before creating your listing.",
+      );
+      return;
+    }
+    if (
+      declarationType === "external_only" &&
+      !externalDevicesDescription.trim()
+    ) {
+      Alert.alert(
+        "Description required",
+        "Please describe your external surveillance devices and their locations.",
+      );
+      return;
+    }
+    if (!declarationConfirmed) {
+      Alert.alert(
+        "Confirmation required",
+        "Please confirm the accuracy of your Surveillance Declaration.",
+      );
+      return;
+    }
+
     try {
       // Update property basic info
       const { error: updateError } = await supabase
@@ -279,6 +333,26 @@ export default function EditPropertyScreen() {
         .eq("id", id);
 
       if (updateError) throw updateError;
+
+      // Save the surveillance declaration
+      const { error: declarationError } = await supabase
+        .from("property_surveillance_declarations")
+        .upsert(
+          {
+            property_id: id,
+            landlord_id: profile?.id,
+            declaration_type: declarationType,
+            external_devices_description:
+              declarationType === "external_only"
+                ? externalDevicesDescription.trim()
+                : null,
+            declared_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "property_id" },
+        );
+
+      if (declarationError) throw declarationError;
 
       // Delete removed photos
       if (photosToDelete.length > 0) {
@@ -692,6 +766,17 @@ export default function EditPropertyScreen() {
           </Text>
         </View>
 
+        <View style={styles.section}>
+          <SurveillanceDeclarationSection
+            declarationType={declarationType}
+            onDeclarationTypeChange={setDeclarationType}
+            externalDevicesDescription={externalDevicesDescription}
+            onExternalDevicesDescriptionChange={setExternalDevicesDescription}
+            confirmed={declarationConfirmed}
+            onConfirmedChange={setDeclarationConfirmed}
+          />
+        </View>
+
         <View style={styles.buttonRow}>
           <Button
             title="Cancel"
@@ -703,7 +788,7 @@ export default function EditPropertyScreen() {
           <Button
             title="Update Property"
             onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isDeclarationValid}
             loading={isSubmitting}
             buttonStyle={[styles.button, styles.submitButton]}
             testID="update-property-button"

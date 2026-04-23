@@ -90,6 +90,14 @@ export default function AccountLayout() {
           headerLeft: () => <HeaderBackButton />,
         }}
       />
+      <Stack.Screen
+        name="my-reports"
+        options={{
+          title: "My Reports",
+          headerShown: true,
+          headerLeft: () => <HeaderBackButton />,
+        }}
+      />
     </Stack>
   );
 }

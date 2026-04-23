@@ -1,7 +1,7 @@
 export const TERMS_OF_SERVICE = `
 # Terms of Service for Kiado
 
-**Last Updated: 5 April 2026**
+**Last Updated: 23 April 2026**
 
 These Terms of Service ("**Terms**") set out the terms on which you may use Kiado (the "**App**") and any related services made available by **Mozaik Software Solutions Ltd**, a company registered in England and Wales (registered office: Suite RA01, 195–197 Wood Street, London, E17 3NU) ("**we**", "**us**", or "**our**"). Please read them carefully. By accessing or using the App you agree to these Terms. If you do not agree, do not use the App.
 
@@ -39,6 +39,14 @@ These Terms of Service ("**Terms**") set out the terms on which you may use Kiad
 - Landlords must comply with all local laws, safety standards, and any applicable licensing or registration requirements.
 - Landlords are responsible for managing bookings, accepting or rejecting requests (if applicable), and for communicating with Tenants in a timely and professional manner.
 
+**Surveillance and tenant privacy**
+
+- Landlords must not install, operate, or knowingly permit any covert surveillance device — including hidden cameras, audio recording devices, or tracking devices — anywhere inside a Property, including all rooms, hallways, and any shared indoor spaces. This prohibition applies regardless of whether the device is active or inactive.
+- Before a Property can be listed or made available for booking, Landlords must complete a **Surveillance Declaration** confirming either: (a) that no surveillance devices of any kind are present inside the Property; or (b) that only external surveillance devices are present (such as a video doorbell or exterior CCTV), with a written description of those devices and their locations. A Property will not be visible or bookable until a Surveillance Declaration has been completed.
+- Any disclosed external surveillance device must be positioned so that it captures only the exterior of the Property and does not record any indoor area or private outdoor space (such as a garden or balcony used exclusively by the Tenant).
+- Landlords must update their Surveillance Declaration promptly if the surveillance status of any Property changes. Failure to update the declaration is treated as a false declaration under these Terms.
+- Providing a false or misleading Surveillance Declaration — or installing a covert surveillance device following a declaration of none — is a serious breach of these Terms and may constitute a criminal offence under the Voyeurism (Offences) Act 2019, the Regulation of Investigatory Powers Act 2000, and/or the UK General Data Protection Regulation and Data Protection Act 2018. We will report credible evidence of such conduct to the relevant authorities without further notice.
+
 ## 6. Tenant obligations and bookings
 
 - Tenants must provide accurate booking information (name, contact details, payment details).
@@ -73,6 +81,9 @@ You must not:
 - Use the App to harass, stalk, threaten, or abuse other people.
 - Attempt to access or interfere with another user's account.
 - Circumvent fees or payment processes, or attempt to hide or falsify your identity or contact details.
+- Install, operate, or knowingly permit any covert surveillance device — including hidden cameras or audio recorders — inside a Property, whether or not a Tenant is in occupation.
+- Provide a false, incomplete, or misleading Surveillance Declaration.
+- Capture, store, or transmit images, audio, video, or any other personal data relating to Tenants or their guests without their explicit prior written consent.
 
 ## 11. Intellectual property
 
@@ -118,6 +129,9 @@ The App relies on the following third-party services to function. We do not cont
 - We may suspend or terminate your access to the App at any time for breach of these Terms, illegal activity, or where required by law.
 - You may close your account at any time. Termination does not affect rights or obligations accrued before termination.
 
+Where we receive a credible report or evidence of a covert surveillance device inside a Property, we will immediately suspend the affected listing and set it as unavailable pending investigation. Where the evidence warrants it, we will also suspend the Landlord's account. A confirmed breach of the surveillance provisions in Section 5 will ordinarily result in permanent removal from the platform. These actions do not limit any other legal remedies available to the affected Tenant or to us.
+
+
 ## 18. Complaints and disputes
 
 - If you have a complaint about a Booking, please contact us promptly so we can try to resolve it.
@@ -162,4 +176,12 @@ If you have questions, concerns, or a request under data protection law, contact
 
 - Nothing in these Terms seeks to exclude or limit rights that you may have as a consumer under applicable UK consumer protection laws, including the Consumer Rights Act 2015.
 - If you are a consumer, certain provisions may not apply to the extent they conflict with mandatory consumer rights.
+
+## 27. Surveillance Declaration
+
+- Every Property listed on Kiado must have an active Surveillance Declaration on file. By submitting a Surveillance Declaration, the Landlord warrants that the information provided is true, accurate, and complete at the time of submission and will be kept up to date.
+- The Surveillance Declaration is displayed on the Property's listing page so that Tenants can make an informed decision before booking.
+- Tenants who have reason to believe that a Property contains undisclosed surveillance devices may report this through the in-app reporting mechanism. Reports will be reviewed by us and may result in immediate suspension of the listing and account investigation as described in Section 17.
+- We do not independently verify the accuracy of Surveillance Declarations. Responsibility for accuracy rests entirely with the Landlord. However, we take reports seriously and will act promptly on credible evidence of a breach.
+- Nothing in this section limits a Tenant's right to contact the police, the Information Commissioner's Office, or any other relevant authority in respect of suspected unlawful surveillance.
 `;
