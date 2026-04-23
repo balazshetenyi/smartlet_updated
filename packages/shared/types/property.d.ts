@@ -92,3 +92,41 @@ export type Notification = {
   read: boolean;
   created_at: string;
 };
+
+export type SurveillanceDeclarationType = "none" | "external_only";
+
+export type SurveillanceDeclaration = {
+  property_id: string;
+  landlord_id: string;
+  declaration_type: SurveillanceDeclarationType;
+  external_devices_description: string | null;
+  declared_at: string;
+  updated_at: string;
+  locked: boolean;
+  locked_at: string | null;
+  locked_reason: string | null;
+};
+
+export type SurveillanceReportStatus =
+  | "pending"
+  | "investigating"
+  | "resolved_breach"
+  | "resolved_no_breach";
+
+export type SurveillanceReport = {
+  id: string;
+  property_id: string;
+  reporter_id: string;
+  description: string;
+  status: SurveillanceReportStatus;
+  created_at: string;
+  resolved_at: string | null;
+  resolved_by: string | null;
+  resolution_notes: string | null;
+};
+
+export type SurveillanceReportWithProperty = SurveillanceReport & {
+  property_title: string;
+  property_city: string | null;
+  property_address: string | null;
+};

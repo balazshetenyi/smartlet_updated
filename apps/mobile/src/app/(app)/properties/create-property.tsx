@@ -26,12 +26,26 @@ import {
   Text,
   View,
 } from "react-native";
+import SurveillanceDeclarationSection from "@/components/properties/SurveillanceDeclarationSection";
+import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
 
 export default function CreatePropertyScreen() {
   const { profile } = useAuthStore();
   const router = useRouter();
   const [isAvailable, setIsAvailable] = useState(true);
   const [assets, setAssets] = useState<Array<ImagePicker.ImagePickerAsset>>([]);
+  const [declarationType, setDeclarationType] =
+    useState<SurveillanceDeclarationType | null>(null);
+  const [externalDevicesDescription, setExternalDevicesDescription] =
+    useState("");
+  const [declarationConfirmed, setDeclarationConfirmed] = useState(false);
+  const isDeclarationValid =
+    declarationType !== null &&
+    (declarationType === "none" ||
+      (declarationType === "external_only" &&
+        externalDevicesDescription.trim().length > 0)) &&
+    declarationConfirmed;
+
   const {
     control,
     handleSubmit,
@@ -123,6 +137,32 @@ export default function CreatePropertyScreen() {
   };
 
   const onSubmit = async (data: AddNewProperty) => {
+    // Validate declaration before touching the network
+    if (!declarationType) {
+      Alert.alert(
+        "Declaration required",
+        "Please complete the Surveillance Declaration before creating your listing.",
+      );
+      return;
+    }
+    if (
+      declarationType === "external_only" &&
+      !externalDevicesDescription.trim()
+    ) {
+      Alert.alert(
+        "Description required",
+        "Please describe your external surveillance devices and their locations.",
+      );
+      return;
+    }
+    if (!declarationConfirmed) {
+      Alert.alert(
+        "Confirmation required",
+        "Please confirm the accuracy of your Surveillance Declaration.",
+      );
+      return;
+    }
+
     try {
       const created = await createProperty({
         ...data,
@@ -130,10 +170,29 @@ export default function CreatePropertyScreen() {
         is_available: isAvailable,
       });
 
+      // Save the surveillance declaration
+      const { error: declarationError } = await supabase
+        .from("property_surveillance_declarations")
+        .upsert(
+          {
+            property_id: created.id,
+            landlord_id: profile?.id,
+            declaration_type: declarationType,
+            external_devices_description:
+              declarationType === "external_only"
+                ? externalDevicesDescription.trim()
+                : null,
+            declared_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "property_id" },
+        );
+
+      if (declarationError) throw declarationError;
+
       if (created?.id && assets.length > 0) {
         await uploadPropertyImages(created.id, assets);
 
-        // Get the first photo and set it as cover
         const { data: photos } = await supabase
           .from("property_photos")
           .select("id")
@@ -152,6 +211,9 @@ export default function CreatePropertyScreen() {
           onPress: () => {
             reset();
             setAssets([]);
+            setDeclarationType(null);
+            setExternalDevicesDescription("");
+            setDeclarationConfirmed(false);
             router.replace("/");
           },
         },
@@ -445,10 +507,21 @@ export default function CreatePropertyScreen() {
           </Text>
         </View>
 
+        <View style={styles.section}>
+          <SurveillanceDeclarationSection
+            declarationType={declarationType}
+            onDeclarationTypeChange={setDeclarationType}
+            externalDevicesDescription={externalDevicesDescription}
+            onExternalDevicesDescriptionChange={setExternalDevicesDescription}
+            confirmed={declarationConfirmed}
+            onConfirmedChange={setDeclarationConfirmed}
+          />
+        </View>
+
         <Button
           title="Create Property"
           onPress={handleSubmit(onSubmit)}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isDeclarationValid}
           loading={isSubmitting}
           buttonStyle={styles.submitButton}
           testID="create-property-button"

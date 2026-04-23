@@ -3,8 +3,14 @@ import Button from "@/components/shared/Button";
 import { colours, supabase } from "@kiado/shared";
 import { useAuthStore } from "@/store/auth-store";
 import { CreateBookingData } from "@kiado/shared/types/bookings";
-import { Amenity, Property } from "@kiado/shared/types/property";
+import {
+  Amenity,
+  Property,
+  SurveillanceDeclarationType,
+} from "@kiado/shared/types/property";
 import { createBooking, fetchBlockedDates } from "@/utils/booking-utils";
+import SurveillanceReportModal from "@/components/properties/SurveillanceReportModal";
+import { checkExistingReport } from "@/utils/surveillance-utils";
 import {
   fetchPropertyPhotos,
   parsePropertyLocation,
@@ -68,6 +74,17 @@ export default function PropertyDetailsScreen() {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [declaration, setDeclaration] = useState<
+    | {
+        declaration_type: SurveillanceDeclarationType;
+        external_devices_description: string | null;
+        locked: boolean;
+      }
+    | null
+    | undefined
+  >(undefined);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [alreadyReported, setAlreadyReported] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [lightboxVisible, setLightboxVisible] = useState(false);
   const [mapOffCentre, setMapOffCentre] = useState(false);
@@ -189,6 +206,23 @@ export default function PropertyDetailsScreen() {
 
       if (propertyError) throw propertyError;
       setProperty(propertyData);
+
+      // Fetch surveillance declaration
+      const { data: declarationData } = await supabase
+        .from("property_surveillance_declarations")
+        .select("declaration_type, external_devices_description, locked")
+        .eq("property_id", propertyData.id)
+        .maybeSingle();
+
+      setDeclaration(declarationData ?? null);
+      // Check if this tenant has already filed a report for this property
+      if (profile && propertyData.landlord_id !== profile.id) {
+        const hasReport = await checkExistingReport(
+          propertyData.id,
+          profile.id,
+        );
+        setAlreadyReported(hasReport);
+      }
 
       // Fetch landlord info
       if (propertyData?.landlord_id) {
@@ -654,6 +688,118 @@ export default function PropertyDetailsScreen() {
               </View>
             </View>
           )}
+
+          {/* Privacy & Safety */}
+          {declaration !== undefined && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Privacy & Safety</Text>
+
+              {declaration === null ? (
+                // No declaration filed at all
+                <View
+                  style={[styles.declarationBadge, styles.declarationPending]}
+                >
+                  <MaterialIcons
+                    name="help-outline"
+                    size={18}
+                    color={colours.muted}
+                  />
+                  <Text
+                    style={[styles.declarationText, { color: colours.muted }]}
+                  >
+                    No surveillance declaration on file
+                  </Text>
+                </View>
+              ) : declaration.locked ? (
+                // Property under investigation
+                <View
+                  style={[styles.declarationBadge, styles.declarationLocked]}
+                >
+                  <MaterialIcons
+                    name="warning"
+                    size={18}
+                    color={colours.danger}
+                  />
+                  <Text
+                    style={[styles.declarationText, { color: colours.danger }]}
+                  >
+                    This property is currently under investigation
+                  </Text>
+                </View>
+              ) : declaration.declaration_type === "none" ? (
+                // Landlord declared no devices
+                <View style={[styles.declarationBadge, styles.declarationNone]}>
+                  <MaterialIcons
+                    name="security"
+                    size={18}
+                    color={colours.success}
+                  />
+                  <Text
+                    style={[styles.declarationText, { color: colours.success }]}
+                  >
+                    No surveillance devices declared
+                  </Text>
+                </View>
+              ) : (
+                // Landlord declared external devices only
+                <View>
+                  <View
+                    style={[
+                      styles.declarationBadge,
+                      styles.declarationExternal,
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="videocam"
+                      size={18}
+                      color={colours.warning}
+                    />
+                    <Text
+                      style={[
+                        styles.declarationText,
+                        { color: colours.warning },
+                      ]}
+                    >
+                      External surveillance disclosed
+                    </Text>
+                  </View>
+                  {declaration.external_devices_description && (
+                    <Text style={styles.declarationDescription}>
+                      {declaration.external_devices_description}
+                    </Text>
+                  )}
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Report button — tenants only */}
+          {profile && profile.id !== property.landlord_id && (
+            <TouchableOpacity
+              style={[
+                styles.reportButton,
+                alreadyReported && styles.reportButtonFiled,
+              ]}
+              onPress={() => setShowReportModal(true)}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons
+                name={alreadyReported ? "shield" : "report-problem"}
+                size={16}
+                color={alreadyReported ? colours.success : colours.danger}
+              />
+              <Text
+                style={[
+                  styles.reportButtonText,
+                  alreadyReported && styles.reportButtonTextFiled,
+                ]}
+              >
+                {alreadyReported
+                  ? "Report filed — under review"
+                  : "Report suspected surveillance"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
 
@@ -698,6 +844,20 @@ export default function PropertyDetailsScreen() {
           blockedDates={blockedDates}
           onClose={() => setShowBookingModal(false)}
           onConfirm={handleBookingConfirm}
+        />
+      )}
+
+      {profile && property && (
+        <SurveillanceReportModal
+          visible={showReportModal}
+          propertyId={property.id}
+          propertyTitle={property.title}
+          reporterId={profile.id}
+          alreadyReported={alreadyReported}
+          onClose={() => setShowReportModal(false)}
+          onSubmitSuccess={() => {
+            setAlreadyReported(true);
+          }}
         />
       )}
 
@@ -1219,5 +1379,66 @@ const styles = StyleSheet.create({
   lightboxImage: {
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH * 1.2,
+  },
+  declarationBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  declarationNone: {
+    backgroundColor: "#10B98115",
+    borderColor: colours.success,
+  },
+  declarationExternal: {
+    backgroundColor: "#F59E0B15",
+    borderColor: colours.warning,
+  },
+  declarationPending: {
+    backgroundColor: colours.background,
+    borderColor: colours.border,
+  },
+  declarationLocked: {
+    backgroundColor: "#EF444415",
+    borderColor: colours.danger,
+  },
+  declarationText: {
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
+  },
+  declarationDescription: {
+    fontSize: 13,
+    color: colours.textSecondary,
+    marginTop: 8,
+    lineHeight: 19,
+    paddingHorizontal: 2,
+  },
+  reportButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colours.danger,
+    backgroundColor: "#FEF2F2",
+    marginTop: 8,
+    alignSelf: "flex-start",
+  },
+  reportButtonFiled: {
+    borderColor: colours.success,
+    backgroundColor: "#D1FAE5",
+  },
+  reportButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colours.danger,
+  },
+  reportButtonTextFiled: {
+    color: colours.success,
   },
 });

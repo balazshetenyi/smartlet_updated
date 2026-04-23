@@ -26,6 +26,7 @@ Please read this policy carefully. By using the App you confirm that you have re
 ### 2.2 Property Information (Landlords)
 - Property address, description, pricing, and availability
 - Property photographs
+- Surveillance Declaration data: the type of declaration submitted (no surveillance, or external surveillance only), any written description of disclosed external devices, and the date and time the declaration was made or last updated.
 
 ### 2.3 Location Data
 - Approximate or precise device location, collected only when you grant permission, to show nearby properties and assist with property search.
@@ -65,10 +66,36 @@ Please read this policy carefully. By using the App you confirm that you have re
 | Preventing fraud and ensuring security | Legitimate interests / Legal obligation |
 | Complying with legal and regulatory obligations | Legal obligation |
 | Improving the App based on usage patterns | Legitimate interests |
+| Storing and displaying a Landlord's Surveillance Declaration on their property listing | Performance of a contract / Legal obligation |
+| Investigating reports of suspected covert surveillance and taking enforcement action | Legitimate interests (protecting user safety) / Legal obligation |
+| Retaining records of Surveillance Declarations and associated reports for accountability purposes | Legitimate interests / Legal obligation |
 
 Where we rely on **legitimate interests**, we have considered those interests against your rights and are satisfied they do not override them. You may object to processing based on legitimate interests at any time (see section 9).
 
 Where we rely on **consent** (e.g. location access), you may withdraw consent at any time via your device settings. Withdrawal does not affect the lawfulness of processing before withdrawal.
+
+___
+
+## 3a. Surveillance Declarations and Tenant Safety
+
+As a condition of listing a property on Kiado, Landlords are required to submit a **Surveillance Declaration** confirming whether any surveillance devices are present at their property. This declaration is stored against the Landlord's account and the relevant property record.
+
+**What we collect and store in this context:**
+- The type of declaration (no surveillance devices, or external surveillance only)
+- A written description of any disclosed external devices, if applicable
+- The timestamp of the declaration and any subsequent updates
+- Any tenant reports of suspected undisclosed surveillance associated with the property
+
+**How this data is used:**
+- The declaration is displayed publicly on the property listing so that prospective Tenants can make an informed decision.
+- Tenant reports of suspected covert surveillance are used to investigate potential breaches of our Terms of Service and, where appropriate, to refer matters to the relevant authorities.
+- We retain records of declarations and reports to maintain an auditable history of compliance and to support any legal proceedings that may arise.
+
+**Legal basis:** We process this data on the basis of the performance of a contract (operating the platform requires us to maintain and display declarations), legitimate interests (protecting tenants from unlawful surveillance), and legal obligation (compliance with the Voyeurism (Offences) Act 2019, the Regulation of Investigatory Powers Act 2000, and the UK GDPR).
+
+**Retention:** Surveillance Declaration records are retained for the lifetime of the property listing. Where a report of covert surveillance has been made, the associated records are retained for seven years from the date of the report to support any legal proceedings.
+
+We do not independently verify the physical accuracy of Surveillance Declarations. If you believe a property you have stayed in contained undisclosed surveillance devices, you should report it through the App and, if you believe a criminal offence may have taken place, contact the police directly.
 
 ---
 
@@ -150,6 +177,8 @@ No method of transmission over the internet is 100% secure. While we take all re
 | Error and session data (Sentry) | 90 days |
 | Push notification tokens | Deleted when you sign out or delete your account |
 | Waitlist email addresses | Until you request removal or Kiado launches publicly |
+| Surveillance Declarations | For the lifetime of the property listing, then deleted with the landlord's account |
+| Surveillance reports and associated investigation records | 7 years from the date of the report |
 
 You may request deletion of your account and data at any time from within the App (Profile → Delete Account) or by emailing info@mozaiksoftwaresolutions.com.
 
