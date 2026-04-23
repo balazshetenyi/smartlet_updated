@@ -263,6 +263,21 @@ export default function ProfileScreen() {
           <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/my-reports")}
+        >
+          <View style={styles.menuItemLeft}>
+            <MaterialIcons
+              name="report-problem"
+              size={24}
+              color={colours.text}
+            />
+            <Text style={styles.menuItemText}>My Reports</Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+        </TouchableOpacity>
+
         {/* My Listings - Only for Landlords */}
         {isLandlord && (
           <>
