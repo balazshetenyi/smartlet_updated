@@ -26,27 +26,19 @@ Deno.serve(async (req: Request) => {
 
     // Verify the caller is authenticated and owns this report
     const authHeader = req.headers.get("Authorization") ?? "";
-    const callerClient = createClient(
-      supabaseUrl,
-      Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "",
-      {
-        global: { headers: { Authorization: authHeader } },
-      },
-    );
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
     const {
       data: { user },
       error: authError,
-    } = await callerClient.auth.getUser();
+    } = await supabaseAdmin.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) throw new Error("Unauthorised");
 
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-
-    // Fetch the report with property and reporter details
+    // Fetch the report — the reporter_id filter doubles as ownership check
     const { data: report, error: reportError } = await supabaseAdmin
       .from("surveillance_reports")
       .select("id, description, reporter_id, property_id")
       .eq("id", reportId)
-      .eq("reporter_id", user.id) // ensure caller owns this report
+      .eq("reporter_id", user.id)
       .single();
 
     if (reportError || !report)
