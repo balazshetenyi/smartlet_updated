@@ -6,6 +6,7 @@ import {
 import { uploadImageToStorage } from "@/utils/image-picker-utils";
 import * as ImagePicker from "expo-image-picker";
 import { Session } from "@supabase/supabase-js";
+import { env } from "@/config/env";
 
 /**
  * Submit a new surveillance report for a property.
@@ -27,7 +28,32 @@ export const submitSurveillanceReport = async (
     .single();
 
   if (error) throw error;
+
+  // Non-blocking — notify admins and landlord. A notification failure
+  // must never prevent the report from being returned to the caller.
+  notifyAdminsOfSurveillanceReport(data.id).catch((e) =>
+    console.error("Failed to notify admins of surveillance report:", e),
+  );
+
   return data as SurveillanceReport;
+};
+
+const notifyAdminsOfSurveillanceReport = async (
+  reportId: string,
+): Promise<void> => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return;
+
+  await fetch(`${env.SUPABASE_FUNCTIONS_URL}/notify-surveillance-report`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ reportId }),
+  });
 };
 
 /**
