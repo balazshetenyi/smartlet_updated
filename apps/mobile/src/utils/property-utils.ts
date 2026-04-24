@@ -14,11 +14,24 @@ export const fetchAllProperties = async (): Promise<{
   holiday_properties: Property[];
 }> => {
   try {
-    const { data, error } = await supabase
+    const { data: lockedDeclarations } = await supabase
+      .from("property_surveillance_declarations")
+      .select("property_id")
+      .eq("locked", true);
+
+    const lockedIds = (lockedDeclarations ?? []).map((d) => d.property_id);
+
+    let query = supabase
       .from("properties")
       .select("*")
       .eq("is_available", true)
       .order("created_at", { ascending: false });
+
+    if (lockedIds.length > 0) {
+      query = query.not("id", "in", `(${lockedIds.join(",")})`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       throw new Error(`Error fetching properties: ${error.message}`);
