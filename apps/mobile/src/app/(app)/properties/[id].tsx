@@ -98,6 +98,13 @@ export default function PropertyDetailsScreen() {
       });
       return;
     }
+    if (declaration?.locked) {
+      showToastMessage({
+        message: "This property is currently unavailable for booking",
+        type: "danger",
+      });
+      return;
+    }
     if (
       property?.rental_type === "holiday" ||
       property?.rental_type === "short_term"
@@ -830,7 +837,9 @@ export default function PropertyDetailsScreen() {
                 title="Book Now"
                 onPress={handleBookProperty}
                 buttonStyle={styles.bookButton}
-                disabled={!property.is_available}
+                disabled={
+                  !property.is_available || declaration?.locked === true
+                }
               />
             )}
           </View>
