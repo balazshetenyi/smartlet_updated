@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Button from "@/components/shared/Button";
 import { showToastMessage } from "@/components/shared/ToastMessage";
 import { ImageSourceType } from "@/enums/image-source-type";
@@ -316,21 +316,18 @@ export default function SurveillanceReportModal({
   const showForm = !alreadyReported && phase === "form";
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-        <View style={styles.overlay}>
-          {renderHeader()}
-          <View style={styles.divider} />
-          {showAlreadyReported && renderAlreadyReported()}
-          {showSuccess && renderSuccess()}
-          {showForm && renderForm()}
-        </View>
-      </SafeAreaView>
+    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+          <View style={styles.overlay}>
+            {renderHeader()}
+            <View style={styles.divider} />
+            {showAlreadyReported && renderAlreadyReported()}
+            {showSuccess && renderSuccess()}
+            {showForm && renderForm()}
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   );
 }
