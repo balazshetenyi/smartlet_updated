@@ -3,8 +3,8 @@ import AppBar from "@/components/shared/AppBar";
 import SearchBar from "@/components/shared/SearchBar";
 import { useAuthStore } from "@/store/auth-store";
 import { usePropertyStore } from "@/store/property-store";
-import { colours } from "@kiado/shared";
-import { useEffect, useState } from "react";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Button,
@@ -18,6 +18,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as Sentry from "@sentry/react-native";
 
 export default function HomeScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const {
     longTermProperties,
     shortTermProperties,
@@ -37,12 +39,26 @@ export default function HomeScreen() {
     loadProperties();
   }, [loadProperties, profile?.id]);
 
+  // While the profile has not yet loaded, or if this is a landlord (redirect
+  // is firing in _layout.tsx), show a neutral loading state so there is no
+  // flash of the tenant UI.
+  if (!profile || profile.user_role === "landlord") {
+    return (
+      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+        <AppBar />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <AppBar />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colours.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
@@ -56,7 +72,7 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colours.primary}
+            tintColor={theme.primary}
           />
         }
       >
@@ -115,55 +131,57 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.surface,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
-    padding: 20,
-  },
-  welcomeSection: {
-    marginBottom: 24,
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: colours.darkSlateBlue,
-    marginBottom: 4,
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: colours.textSecondary,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 16,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-  },
-  emptyText: {
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    marginTop: 4,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.surface,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    content: {
+      padding: 20,
+    },
+    welcomeSection: {
+      marginBottom: 24,
+    },
+    welcomeTitle: {
+      fontSize: 28,
+      fontWeight: "700",
+      color: t.darkSlateBlue,
+      marginBottom: 4,
+    },
+    welcomeSubtitle: {
+      fontSize: 16,
+      color: t.textSecondary,
+    },
+    section: {
+      marginBottom: 32,
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 16,
+    },
+    emptyContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 60,
+    },
+    emptyText: {
+      marginTop: 12,
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+    },
+    emptySubtext: {
+      fontSize: 14,
+      color: t.textSecondary,
+      marginTop: 4,
+    },
+  });
+}

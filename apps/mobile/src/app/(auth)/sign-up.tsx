@@ -1,5 +1,4 @@
 import { signUpSchema } from "@/config/schemas";
-import { colours } from "@kiado/shared";
 import {
   getPasswordStrength,
   getPasswordStrengthText,
@@ -16,10 +15,13 @@ import zod from "zod";
 import { useAuthStore } from "@/store/auth-store";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const SignUp = () => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
   const [consentGiven, setConsentGiven] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
@@ -117,7 +119,7 @@ const SignUp = () => {
                 leftIcon={{
                   type: "font-awesome",
                   name: "user",
-                  color: colours.muted,
+                  color: theme.muted,
                 }}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -146,7 +148,7 @@ const SignUp = () => {
                 leftIcon={{
                   type: "font-awesome",
                   name: "user",
-                  color: colours.muted,
+                  color: theme.muted,
                 }}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -175,7 +177,7 @@ const SignUp = () => {
                 leftIcon={{
                   type: "font-awesome",
                   name: "envelope",
-                  color: colours.muted,
+                  color: theme.muted,
                 }}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -207,7 +209,7 @@ const SignUp = () => {
                   leftIcon={{
                     type: "font-awesome",
                     name: "lock",
-                    color: colours.muted,
+                    color: theme.muted,
                   }}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -302,7 +304,7 @@ const SignUp = () => {
                   leftIcon={{
                     type: "font-awesome",
                     name: "lock",
-                    color: colours.muted,
+                    color: theme.muted,
                   }}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -349,7 +351,7 @@ const SignUp = () => {
             <MaterialIcons
               name={consentGiven ? "check-box" : "check-box-outline-blank"}
               size={22}
-              color={consentGiven ? colours.primary : colours.muted}
+              color={consentGiven ? theme.primary : theme.muted}
             />
             <Text style={styles.consentText}>
               I agree to the{" "}
@@ -375,7 +377,7 @@ const SignUp = () => {
             <MaterialIcons
               name={ageConfirmed ? "check-box" : "check-box-outline-blank"}
               size={22}
-              color={ageConfirmed ? colours.primary : colours.muted}
+              color={ageConfirmed ? theme.primary : theme.muted}
             />
             <Text style={styles.consentText}>
               I confirm that I am 18 years of age or older
@@ -413,10 +415,11 @@ const SignUp = () => {
 
 export default SignUp;
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     paddingHorizontal: 10,
     paddingBottom: 24,
   },
@@ -424,7 +427,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   input: {
-    color: colours.text,
+    color: t.text,
   },
   passwordStrength: {
     flexDirection: "row",
@@ -444,7 +447,7 @@ const styles = StyleSheet.create({
   },
   strengthLabel: {
     fontSize: 12,
-    color: colours.muted,
+    color: t.muted,
     marginRight: 8,
   },
   strengthText: {
@@ -458,13 +461,13 @@ const styles = StyleSheet.create({
   },
   requirementsTitle: {
     fontSize: 12,
-    color: colours.muted,
+    color: t.muted,
     marginBottom: 5,
     fontWeight: "bold",
   },
   requirement: {
     fontSize: 11,
-    color: colours.muted,
+    color: t.muted,
     marginBottom: 2,
   },
   requirementMet: {
@@ -478,7 +481,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 10,
-    color: colours.text,
+    color: t.text,
     textAlign: "center",
   },
   slider: {
@@ -486,13 +489,13 @@ const styles = StyleSheet.create({
     height: 40,
   },
   signUpButton: {
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
     marginTop: 20,
     borderRadius: 8,
     paddingVertical: 12,
   },
   signUpButtonDisabled: {
-    backgroundColor: colours.muted,
+    backgroundColor: t.muted,
   },
   signInContainer: {
     flexDirection: "row",
@@ -501,11 +504,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   signInText: {
-    color: colours.muted,
+    color: t.muted,
     fontSize: 14,
   },
   signInButtonText: {
-    color: colours.primary,
+    color: t.primary,
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -526,13 +529,14 @@ const styles = StyleSheet.create({
   consentText: {
     flex: 1,
     fontSize: 13,
-    color: colours.muted,
+    color: t.muted,
     lineHeight: 20,
   },
   consentLink: {
     fontSize: 13,
-    color: colours.primary,
+    color: t.primary,
     fontWeight: "600",
     textDecorationLine: "underline",
   },
-});
+  });
+}

@@ -1,11 +1,12 @@
 import PropertyCard from "@/components/properties/PropertyCard";
 import Button from "@/components/shared/Button";
-import { colours, supabase, Property } from "@kiado/shared";
+import { supabase, Property } from "@kiado/shared";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth-store";
 import { deleteProperty, fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,6 +18,8 @@ import {
 } from "react-native";
 
 const Properties = () => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { profile } = useAuthStore();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -91,7 +94,7 @@ const Properties = () => {
     >
       <View style={styles.section}>
         {loadingProperties ? (
-          <ActivityIndicator size="small" color={colours.primary} />
+          <ActivityIndicator size="small" color={theme.primary} />
         ) : properties.length > 0 ? (
           <>
             {properties.map((property) => (
@@ -111,7 +114,7 @@ const Properties = () => {
                     <MaterialIcons
                       name="event-busy"
                       size={16}
-                      color={colours.primary}
+                      color={theme.primary}
                     />
                     <Text style={styles.actionText}>Unavailable</Text>
                   </TouchableOpacity>
@@ -124,7 +127,7 @@ const Properties = () => {
                     <MaterialIcons
                       name="edit"
                       size={16}
-                      color={colours.primary}
+                      color={theme.primary}
                     />
                     <Text style={styles.actionText}>Edit</Text>
                   </TouchableOpacity>
@@ -135,7 +138,7 @@ const Properties = () => {
                     <MaterialIcons
                       name="delete"
                       size={16}
-                      color={colours.danger}
+                      color={theme.danger}
                     />
                     <Text style={[styles.actionText, styles.dangerText]}>
                       Delete
@@ -147,7 +150,7 @@ const Properties = () => {
           </>
         ) : (
           <View style={styles.emptyState}>
-            <MaterialIcons name="home-work" size={48} color={colours.muted} />
+            <MaterialIcons name="home-work" size={48} color={theme.muted} />
             <Text style={styles.emptyText}>No properties yet</Text>
             <Button
               title="Create Property"
@@ -163,61 +166,63 @@ const Properties = () => {
 
 export default Properties;
 
-const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  contentContainer: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  propertyWrapper: {
-    marginBottom: 24,
-    backgroundColor: colours.surface,
-    borderRadius: 16,
-  },
-  propertyActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    padding: 16,
-  },
-  propertyActionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: 16,
-  },
-  actionText: {
-    marginLeft: 4,
-    color: colours.primary,
-  },
-  dangerText: {
-    color: colours.danger,
-  },
-  emptyState: {
-    alignItems: "center",
-    marginTop: 32,
-  },
-  emptyText: {
-    marginTop: 8,
-    fontSize: 16,
-    color: colours.muted,
-  },
-  createButton: {
-    marginTop: 16,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    scrollView: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    contentContainer: {
+      padding: 20,
+      paddingBottom: 40,
+    },
+    section: {
+      marginBottom: 32,
+    },
+    sectionHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: t.text,
+    },
+    propertyWrapper: {
+      marginBottom: 24,
+      backgroundColor: t.surface,
+      borderRadius: 16,
+    },
+    propertyActions: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      padding: 16,
+    },
+    propertyActionButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginLeft: 16,
+    },
+    actionText: {
+      marginLeft: 4,
+      color: t.primary,
+    },
+    dangerText: {
+      color: t.danger,
+    },
+    emptyState: {
+      alignItems: "center",
+      marginTop: 32,
+    },
+    emptyText: {
+      marginTop: 8,
+      fontSize: 16,
+      color: t.muted,
+    },
+    createButton: {
+      marginTop: 16,
+    },
+  });
+}

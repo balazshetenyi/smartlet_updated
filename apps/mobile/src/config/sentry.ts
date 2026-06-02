@@ -12,6 +12,10 @@ import * as Sentry from "@sentry/react-native";
 import { isProduction, isDevelopment, env } from "./env";
 
 export function initSentry() {
+  if (isDevelopment) {
+    return;
+  }
+
   // Only initialize Sentry if DSN is provided
   const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
 

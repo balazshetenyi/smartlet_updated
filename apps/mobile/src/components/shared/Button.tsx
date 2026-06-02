@@ -1,5 +1,5 @@
-import { colours } from "@kiado/shared";
-import React from "react";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import React, { useMemo } from "react";
 import {
   AccessibilityState,
   ActivityIndicator,
@@ -64,52 +64,31 @@ const Button = ({
   accessibilityRole,
   accessibilityState,
 }: ButtonProps) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const getButtonStyle = () => {
-    const baseStyle: ViewStyle[] = [styles.button];
-
-    if (type === "outline") {
-      baseStyle.push(styles.outlineButton);
-    } else if (type === "clear") {
-      baseStyle.push(styles.clearButton);
-    }
-
+    const base: ViewStyle[] = [styles.button];
+    if (type === "outline") base.push(styles.outlineButton);
+    else if (type === "clear") base.push(styles.clearButton);
     if (disabled || loading) {
-      if (type === "outline") {
-        baseStyle.push(styles.disabledOutlineButton);
-      } else {
-        baseStyle.push(styles.disabledButton);
-      }
+      if (type === "outline") base.push(styles.disabledOutlineButton);
+      else base.push(styles.disabledButton);
     }
-
-    if (Array.isArray(buttonStyle)) {
-      baseStyle.push(...buttonStyle);
-    } else if (buttonStyle) {
-      baseStyle.push(buttonStyle);
-    }
-
-    return baseStyle;
+    if (Array.isArray(buttonStyle)) base.push(...buttonStyle);
+    else if (buttonStyle) base.push(buttonStyle);
+    return base;
   };
 
   const getTitleStyle = () => {
-    const baseStyle: TextStyle[] = [styles.title];
-
-    if (type === "outline") {
-      baseStyle.push(styles.outlineTitle);
-    } else if (type === "clear") {
-      baseStyle.push(styles.clearTitle);
+    const base: TextStyle[] = [styles.title];
+    if (type === "outline") base.push(styles.outlineTitle);
+    else if (type === "clear") base.push(styles.clearTitle);
+    if ((disabled || loading) && (type === "outline" || type === "clear")) {
+      base.push(styles.disabledOutlineTitle);
     }
-
-    if (disabled || loading) {
-      if (type === "outline" || type === "clear") {
-        baseStyle.push(styles.disabledOutlineTitle);
-      }
-    }
-
-    if (titleStyle) {
-      baseStyle.push(titleStyle);
-    }
-
-    return baseStyle;
+    if (titleStyle) base.push(titleStyle);
+    return base;
   };
 
   return (
@@ -125,9 +104,7 @@ const Button = ({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator
-          color={type === "solid" ? "white" : colours.primary}
-        />
+        <ActivityIndicator color={type === "solid" ? "white" : theme.primary} />
       ) : (
         <Text style={getTitleStyle()}>{title}</Text>
       )}
@@ -135,45 +112,47 @@ const Button = ({
   );
 };
 
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: colours.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  outlineButton: {
-    backgroundColor: "transparent",
-    borderWidth: 1.5,
-    borderColor: colours.primary,
-  },
-  clearButton: {
-    backgroundColor: "transparent",
-  },
-  disabledButton: {
-    backgroundColor: colours.muted,
-    opacity: 0.6,
-  },
-  disabledOutlineButton: {
-    borderColor: colours.muted,
-    opacity: 0.6,
-  },
-  title: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  outlineTitle: {
-    color: colours.primary,
-  },
-  clearTitle: {
-    color: colours.primary,
-  },
-  disabledOutlineTitle: {
-    color: colours.muted,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    button: {
+      backgroundColor: t.primary,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    outlineButton: {
+      backgroundColor: "transparent",
+      borderWidth: 1.5,
+      borderColor: t.primary,
+    },
+    clearButton: {
+      backgroundColor: "transparent",
+    },
+    disabledButton: {
+      backgroundColor: t.muted,
+      opacity: 0.6,
+    },
+    disabledOutlineButton: {
+      borderColor: t.muted,
+      opacity: 0.6,
+    },
+    title: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    outlineTitle: {
+      color: t.primary,
+    },
+    clearTitle: {
+      color: t.primary,
+    },
+    disabledOutlineTitle: {
+      color: t.muted,
+    },
+  });
+}
 
 export default Button;

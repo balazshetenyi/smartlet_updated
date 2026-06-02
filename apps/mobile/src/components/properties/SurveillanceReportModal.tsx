@@ -1,7 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -23,6 +23,7 @@ import {
   submitSurveillanceReport,
   uploadReportPhotos,
 } from "@/utils/surveillance-utils";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const MAX_PHOTOS = 3;
 
@@ -47,6 +48,8 @@ export default function SurveillanceReportModal({
   onClose,
   onSubmitSuccess,
 }: SurveillanceReportModalProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [phase, setPhase] = useState<Phase>("form");
   const [description, setDescription] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -125,14 +128,14 @@ export default function SurveillanceReportModal({
   const renderHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <MaterialIcons name="report-problem" size={22} color={colours.danger} />
+        <MaterialIcons name="report-problem" size={22} color={theme.danger} />
         <Text style={styles.headerTitle}>Report Suspected Surveillance</Text>
       </View>
       <TouchableOpacity
         onPress={onClose}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <MaterialIcons name="close" size={24} color={colours.text} />
+        <MaterialIcons name="close" size={24} color={theme.text} />
       </TouchableOpacity>
     </View>
   );
@@ -140,7 +143,7 @@ export default function SurveillanceReportModal({
   const renderAlreadyReported = () => (
     <View style={styles.centeredState}>
       <View style={styles.stateIconWrapper}>
-        <MaterialIcons name="shield" size={56} color={colours.success} />
+        <MaterialIcons name="shield" size={56} color={theme.success} />
       </View>
       <Text style={styles.stateTitle}>Report Already Filed</Text>
       <Text style={styles.stateBody}>
@@ -159,7 +162,7 @@ export default function SurveillanceReportModal({
   const renderSuccess = () => (
     <View style={styles.centeredState}>
       <View style={styles.stateIconWrapper}>
-        <MaterialIcons name="check-circle" size={64} color={colours.success} />
+        <MaterialIcons name="check-circle" size={64} color={theme.success} />
       </View>
       <Text style={styles.stateTitle}>Report Submitted</Text>
       <Text style={styles.stateBody}>
@@ -207,7 +210,7 @@ export default function SurveillanceReportModal({
           <TextInput
             style={styles.textArea}
             placeholder="e.g. A small camera-like device in the smoke detector above the bed, an unexplained blinking LED behind the TV…"
-            placeholderTextColor={colours.textSecondary}
+            placeholderTextColor={theme.textSecondary}
             value={description}
             onChangeText={setDescription}
             multiline
@@ -249,7 +252,7 @@ export default function SurveillanceReportModal({
                 <MaterialIcons
                   name="add-a-photo"
                   size={22}
-                  color={colours.textSecondary}
+                  color={theme.textSecondary}
                 />
                 <Text style={styles.photoAddText}>Add photo</Text>
               </TouchableOpacity>
@@ -259,7 +262,7 @@ export default function SurveillanceReportModal({
 
         {/* Warning */}
         <View style={styles.warningBox}>
-          <MaterialIcons name="warning" size={18} color={colours.warning} />
+          <MaterialIcons name="warning" size={18} color={theme.warning} />
           <Text style={styles.warningText}>
             Filing a false report is a breach of our Terms of Service and may
             have legal consequences. Only report if you genuinely suspect an
@@ -276,7 +279,7 @@ export default function SurveillanceReportModal({
           <MaterialIcons
             name={confirmed ? "check-box" : "check-box-outline-blank"}
             size={22}
-            color={confirmed ? colours.primary : colours.muted}
+            color={confirmed ? theme.primary : theme.muted}
           />
           <Text style={styles.confirmText}>
             I believe this report is accurate and I am not filing it
@@ -332,225 +335,227 @@ export default function SurveillanceReportModal({
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colours.surface,
-  },
-  overlay: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    flex: 1,
-    paddingRight: 12,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: colours.text,
-    flexShrink: 1,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colours.border,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-    gap: 16,
-  },
-  introText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    lineHeight: 21,
-  },
-  propertyChip: {
-    alignSelf: "flex-start",
-    backgroundColor: colours.background,
-    borderWidth: 1,
-    borderColor: colours.border,
-    borderRadius: 20,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  propertyChipText: {
-    fontSize: 13,
-    color: colours.textSecondary,
-    fontWeight: "500",
-  },
-  fieldGroup: {
-    gap: 6,
-  },
-  fieldLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  optionalLabel: {
-    fontWeight: "400",
-    color: colours.textSecondary,
-  },
-  required: {
-    color: colours.danger,
-  },
-  textArea: {
-    borderWidth: 1,
-    borderColor: colours.border,
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 14,
-    color: colours.text,
-    backgroundColor: colours.background,
-    minHeight: 100,
-    lineHeight: 20,
-  },
-  // Photo picker
-  photoRow: {
-    flexDirection: "row",
-    gap: 10,
-    paddingVertical: 4,
-  },
-  photoThumbWrapper: {
-    position: "relative",
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  photoThumb: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    backgroundColor: colours.border,
-  },
-  photoRemoveBtn: {
-    position: "absolute",
-    top: 4,
-    right: 4,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  photoAddBtn: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderStyle: "dashed",
-    borderColor: colours.border,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    backgroundColor: colours.background,
-  },
-  photoAddText: {
-    fontSize: 11,
-    color: colours.textSecondary,
-    fontWeight: "500",
-  },
-  // Warning
-  warningBox: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    backgroundColor: "#FFFBEB",
-    borderWidth: 1,
-    borderColor: colours.warning,
-    borderRadius: 8,
-    padding: 12,
-  },
-  warningText: {
-    flex: 1,
-    fontSize: 12,
-    color: "#92400E",
-    lineHeight: 18,
-  },
-  confirmRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    paddingTop: 4,
-  },
-  confirmText: {
-    flex: 1,
-    fontSize: 13,
-    color: colours.textSecondary,
-    lineHeight: 19,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
-    borderTopWidth: 1,
-    borderTopColor: colours.border,
-    backgroundColor: colours.surface,
-  },
-  actionButton: {
-    flex: 1,
-  },
-  submitButton: {
-    flex: 1,
-    backgroundColor: colours.danger,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  submitButtonDisabled: {
-    backgroundColor: colours.muted,
-    opacity: 0.6,
-  },
-  submitButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  centeredState: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 32,
-    gap: 16,
-  },
-  stateIconWrapper: {
-    marginBottom: 4,
-  },
-  stateTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.text,
-    textAlign: "center",
-  },
-  stateBody: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    lineHeight: 22,
-    textAlign: "center",
-  },
-  emphasis: {
-    fontWeight: "600",
-    color: colours.text,
-  },
-  fullWidthButton: {
-    marginTop: 8,
-    width: "100%",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: t.surface,
+    },
+    overlay: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+    },
+    headerLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      flex: 1,
+      paddingRight: 12,
+    },
+    headerTitle: {
+      fontSize: 16,
+      fontWeight: "700",
+      color: t.text,
+      flexShrink: 1,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: t.border,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: 20,
+      gap: 16,
+    },
+    introText: {
+      fontSize: 14,
+      color: t.textSecondary,
+      lineHeight: 21,
+    },
+    propertyChip: {
+      alignSelf: "flex-start",
+      backgroundColor: t.background,
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 20,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+    },
+    propertyChipText: {
+      fontSize: 13,
+      color: t.textSecondary,
+      fontWeight: "500",
+    },
+    fieldGroup: {
+      gap: 6,
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: t.text,
+    },
+    optionalLabel: {
+      fontWeight: "400",
+      color: t.textSecondary,
+    },
+    required: {
+      color: t.danger,
+    },
+    textArea: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 10,
+      padding: 12,
+      fontSize: 14,
+      color: t.text,
+      backgroundColor: t.background,
+      minHeight: 100,
+      lineHeight: 20,
+    },
+    // Photo picker
+    photoRow: {
+      flexDirection: "row",
+      gap: 10,
+      paddingVertical: 4,
+    },
+    photoThumbWrapper: {
+      position: "relative",
+      width: 80,
+      height: 80,
+      borderRadius: 10,
+      overflow: "hidden",
+    },
+    photoThumb: {
+      width: 80,
+      height: 80,
+      borderRadius: 10,
+      backgroundColor: t.border,
+    },
+    photoRemoveBtn: {
+      position: "absolute",
+      top: 4,
+      right: 4,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: "rgba(0,0,0,0.6)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    photoAddBtn: {
+      width: 80,
+      height: 80,
+      borderRadius: 10,
+      borderWidth: 1.5,
+      borderStyle: "dashed",
+      borderColor: t.border,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+      backgroundColor: t.background,
+    },
+    photoAddText: {
+      fontSize: 11,
+      color: t.textSecondary,
+      fontWeight: "500",
+    },
+    // Warning
+    warningBox: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 10,
+      backgroundColor: "#FFFBEB",
+      borderWidth: 1,
+      borderColor: t.warning,
+      borderRadius: 8,
+      padding: 12,
+    },
+    warningText: {
+      flex: 1,
+      fontSize: 12,
+      color: "#92400E",
+      lineHeight: 18,
+    },
+    confirmRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 10,
+      paddingTop: 4,
+    },
+    confirmText: {
+      flex: 1,
+      fontSize: 13,
+      color: t.textSecondary,
+      lineHeight: 19,
+    },
+    actions: {
+      flexDirection: "row",
+      gap: 12,
+      paddingHorizontal: 20,
+      paddingTop: 12,
+      paddingBottom: 8,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      backgroundColor: t.surface,
+    },
+    actionButton: {
+      flex: 1,
+    },
+    submitButton: {
+      flex: 1,
+      backgroundColor: t.danger,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    submitButtonDisabled: {
+      backgroundColor: t.muted,
+      opacity: 0.6,
+    },
+    submitButtonText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    centeredState: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 32,
+      gap: 16,
+    },
+    stateIconWrapper: {
+      marginBottom: 4,
+    },
+    stateTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: t.text,
+      textAlign: "center",
+    },
+    stateBody: {
+      fontSize: 14,
+      color: t.textSecondary,
+      lineHeight: 22,
+      textAlign: "center",
+    },
+    emphasis: {
+      fontWeight: "600",
+      color: t.text,
+    },
+    fullWidthButton: {
+      marginTop: 8,
+      width: "100%",
+    },
+  });
+}

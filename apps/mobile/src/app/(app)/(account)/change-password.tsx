@@ -1,8 +1,8 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { Toast } from "react-native-toast-notifications";
@@ -11,6 +11,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { router } from "expo-router";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 import { showToastMessage } from "@/components/shared/ToastMessage";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const changePasswordSchema = zod
   .object({
@@ -32,6 +33,8 @@ const changePasswordSchema = zod
   });
 
 export default function ChangePasswordScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [loading, setLoading] = useState(false);
   const { keyboardOffset } = useKeyboardOffset();
 
@@ -108,7 +111,7 @@ export default function ChangePasswordScreen() {
                 leftIcon={{
                   type: "font-awesome",
                   name: "lock",
-                  color: colours.muted,
+                  color: theme.muted,
                 }}
                 onChangeText={onChange}
                 value={value}
@@ -135,7 +138,7 @@ export default function ChangePasswordScreen() {
                 leftIcon={{
                   type: "font-awesome",
                   name: "lock",
-                  color: colours.muted,
+                  color: theme.muted,
                 }}
                 onChangeText={onChange}
                 value={value}
@@ -162,7 +165,7 @@ export default function ChangePasswordScreen() {
                 leftIcon={{
                   type: "font-awesome",
                   name: "lock",
-                  color: colours.muted,
+                  color: theme.muted,
                 }}
                 onChangeText={onChange}
                 value={value}
@@ -185,7 +188,7 @@ export default function ChangePasswordScreen() {
               loading={loading}
               buttonStyle={[
                 styles.updateButton,
-                { backgroundColor: colours.primary },
+                { backgroundColor: theme.primary },
               ]}
               titleStyle={styles.updateButtonText}
             />
@@ -196,43 +199,45 @@ export default function ChangePasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: colours.surface,
-    justifyContent: "center",
-  },
-  header: {
-    marginBottom: 28,
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 8,
-    textAlign: "center",
-    color: colours.text,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colours.muted,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  form: {
-    width: "100%",
-    gap: 10,
-  },
-  buttonContainer: {
-    marginTop: 14,
-  },
-  updateButton: {
-    borderRadius: 8,
-    paddingVertical: 12,
-  },
-  updateButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: t.surface,
+      justifyContent: "center",
+    },
+    header: {
+      marginBottom: 28,
+      alignItems: "center",
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: "700",
+      marginBottom: 8,
+      textAlign: "center",
+      color: t.text,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: t.muted,
+      textAlign: "center",
+      lineHeight: 20,
+    },
+    form: {
+      width: "100%",
+      gap: 10,
+    },
+    buttonContainer: {
+      marginTop: 14,
+    },
+    updateButton: {
+      borderRadius: 8,
+      paddingVertical: 12,
+    },
+    updateButtonText: {
+      fontSize: 16,
+      fontWeight: "600",
+    },
+  });
+}

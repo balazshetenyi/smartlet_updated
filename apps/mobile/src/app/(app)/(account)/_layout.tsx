@@ -1,4 +1,4 @@
-import { colours } from "@kiado/shared";
+import { useTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
@@ -6,44 +6,32 @@ import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 
 export default function AccountLayout() {
   const router = useRouter();
+  const theme = useTheme();
 
   return (
     <Stack
       screenOptions={{
         headerShown: false,
+        headerStyle: { backgroundColor: theme.surface },
+        headerTintColor: theme.primary,
+        headerTitleStyle: { fontWeight: "700", color: theme.text },
       }}
     >
       <Stack.Screen
         name="profile"
-        options={{
-          title: "Profile",
-          headerShown: true,
-          headerLeft: () => <HeaderBackButton />,
-        }}
+        options={{ title: "Profile", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
       <Stack.Screen
         name="change-password"
-        options={{
-          title: "Change Password",
-          headerShown: true,
-          headerLeft: () => <HeaderBackButton />,
-        }}
+        options={{ title: "Change Password", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
       <Stack.Screen
         name="notifications"
-        options={{
-          title: "Notifications",
-          headerShown: true,
-          headerLeft: () => <HeaderBackButton />,
-        }}
+        options={{ title: "Notifications", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
       <Stack.Screen
         name="my-bookings"
-        options={{
-          title: "My Bookings",
-          headerShown: true,
-          headerLeft: () => <HeaderBackButton />,
-        }}
+        options={{ title: "My Bookings", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
       <Stack.Screen
         name="my-properties"
@@ -57,46 +45,26 @@ export default function AccountLayout() {
               style={{ marginRight: 8, padding: 4 }}
               accessibilityLabel="Create Property"
             >
-              <MaterialIcons
-                name="add-home"
-                size={24}
-                color={colours.primary}
-              />
+              <MaterialIcons name="add-home" size={24} color={theme.primary} />
             </TouchableOpacity>
           ),
         }}
       />
       <Stack.Screen
         name="earnings"
-        options={{
-          title: "Earnings",
-          headerShown: true,
-          headerLeft: () => <HeaderBackButton />,
-        }}
+        options={{ title: "Earnings", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
       <Stack.Screen
         name="payout-setup"
-        options={{
-          title: "Payout Settings",
-          headerShown: true,
-          headerLeft: () => <HeaderBackButton />,
-        }}
+        options={{ title: "Payout Settings", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
       <Stack.Screen
         name="booking-requests"
-        options={{
-          title: "Booking Requests",
-          headerShown: true,
-          headerLeft: () => <HeaderBackButton />,
-        }}
+        options={{ title: "Booking Requests", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
       <Stack.Screen
         name="my-reports"
-        options={{
-          title: "My Reports",
-          headerShown: true,
-          headerLeft: () => <HeaderBackButton />,
-        }}
+        options={{ title: "My Reports", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
     </Stack>
   );

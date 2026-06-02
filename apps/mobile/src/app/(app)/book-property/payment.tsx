@@ -1,9 +1,9 @@
 import Button from "@/components/shared/Button";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { BookingWithProperty } from "@kiado/shared/types/bookings";
 import { CardField, useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,8 +20,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { KeyboardToolbar } from "react-native-keyboard-controller";
 import { showToastMessage } from "@/components/shared/ToastMessage";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function PaymentScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
@@ -168,7 +171,7 @@ export default function PaymentScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colours.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
@@ -241,9 +244,9 @@ export default function PaymentScreen() {
                 }}
                 cardStyle={{
                   backgroundColor: isDark
-                    ? colours.darkSlateBlue
-                    : colours.surface,
-                  textColor: isDark ? "#F9FAFB" : colours.text,
+                    ? theme.darkSlateBlue
+                    : theme.surface,
+                  textColor: isDark ? "#F9FAFB" : theme.text,
                   borderWidth: 1,
                   borderRadius: 8,
                 }}
@@ -267,14 +270,15 @@ export default function PaymentScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   scrollContent: {
     flexGrow: 1,
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   loadingContainer: {
     flex: 1,
@@ -283,7 +287,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
   content: {
     padding: 20,
@@ -291,26 +295,26 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: colours.text,
+    color: t.text,
     marginBottom: 24,
   },
   summaryCard: {
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     padding: 20,
     borderWidth: 1,
-    borderColor: colours.border,
+    borderColor: t.border,
     borderRadius: 16,
     marginBottom: 24,
   },
   propertyTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginBottom: 4,
   },
   propertyLocation: {
     fontSize: 14,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginBottom: 16,
   },
   summaryRow: {
@@ -320,27 +324,27 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
   summaryValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
   },
   divider: {
     height: 1,
-    backgroundColor: colours.border,
+    backgroundColor: t.border,
     marginVertical: 16,
   },
   totalLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
   },
   totalValue: {
     fontSize: 20,
     fontWeight: "700",
-    color: colours.primary,
+    color: t.primary,
   },
   paymentSection: {
     marginBottom: 24,
@@ -348,16 +352,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginBottom: 16,
   },
   cardField: {
     width: "100%",
     height: 50,
     marginBottom: 16,
-    color: colours.text,
+    color: t.text,
   },
   payButton: {
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
   },
-});
+  });
+}

@@ -1,13 +1,13 @@
 import { useAuthStore } from "@/store/auth-store";
 import { useMessageStore } from "@/store/message-store";
-import { colours, Message } from "@kiado/shared";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import {
   fetchTotalUnreadCount,
   subscribeToMessages,
 } from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 
@@ -15,12 +15,13 @@ const logoImg = require("@kiado/shared/assets/images/kiado-logo.png");
 
 export default function AppBar() {
   const router = useRouter();
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { session } = useAuthStore();
   const { unreadCount, setUnreadCount, loadMessages } = useMessageStore();
 
   const fetchUnreadCount = useCallback(async () => {
     if (!session?.user?.id) return;
-
     try {
       const count = await fetchTotalUnreadCount(session.user.id);
       setUnreadCount(count);
@@ -32,40 +33,26 @@ export default function AppBar() {
   useFocusEffect(
     useCallback(() => {
       fetchUnreadCount();
-
-      // Subscribe to message updates to refresh unread count in real-time
       const channel = subscribeToMessages(
         session?.user?.id || "",
-        (messages: Message[]) => {
-          loadMessages(messages);
-        },
+        (messages) => { loadMessages(messages); },
       );
-
-      return () => {
-        channel.unsubscribe();
-      };
+      return () => { channel.unsubscribe(); };
     }, [fetchUnreadCount, loadMessages, session?.user?.id]),
   );
 
   return (
     <View style={styles.appBar}>
       <View style={styles.appBarContent}>
-        {/* Logo/Brand */}
         <View style={styles.brandContainer}>
           <Image source={logoImg} style={styles.logo} contentFit="contain" />
         </View>
-
-        {/* Search and Profile */}
         <View style={styles.appBarActions}>
           <TouchableOpacity
             style={styles.messageButton}
             onPress={() => router.navigate("/messages")}
           >
-            <MaterialIcons
-              name="chat-bubble-outline"
-              size={24}
-              color={colours.text}
-            />
+            <MaterialIcons name="chat-bubble-outline" size={24} color={theme.text} />
             {unreadCount > 0 && (
               <View style={styles.unreadBadge}>
                 <Text style={styles.unreadBadgeText}>
@@ -78,7 +65,7 @@ export default function AppBar() {
             style={styles.profileButton}
             onPress={() => router.navigate("/profile")}
           >
-            <MaterialIcons name="person" size={24} color={colours.text} />
+            <MaterialIcons name="person" size={24} color={theme.text} />
           </TouchableOpacity>
         </View>
       </View>
@@ -86,70 +73,68 @@ export default function AppBar() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  appBar: {
-    backgroundColor: colours.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colours.border,
-  },
-  appBarContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  brandContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  logo: {
-    height: 32, // Adjust height as needed
-    width: 120, // Adjust width as needed
-  },
-  appBarActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colours.primaryLight,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  messageButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colours.primaryLight,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  unreadBadge: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    backgroundColor: colours.primary,
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 6,
-    borderWidth: 2,
-    borderColor: colours.surface,
-  },
-  unreadBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "700",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    appBar: {
+      backgroundColor: t.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    appBarContent: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+    },
+    brandContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    logo: {
+      height: 32,
+      width: 120,
+    },
+    appBarActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 16,
+    },
+    profileButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: t.primaryLight,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    messageButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: t.primaryLight,
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
+    },
+    unreadBadge: {
+      position: "absolute",
+      top: -4,
+      right: -4,
+      backgroundColor: t.primary,
+      borderRadius: 10,
+      minWidth: 20,
+      height: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 6,
+      borderWidth: 2,
+      borderColor: t.surface,
+    },
+    unreadBadgeText: {
+      color: "#FFFFFF",
+      fontSize: 11,
+      fontWeight: "700",
+    },
+  });
+}

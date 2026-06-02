@@ -1,11 +1,15 @@
+import { useMemo } from "react";
 import { useSearch } from "@/context/SearchContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colours } from "@kiado/shared";
 import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import SearchFilters from "./SearchFilters";
 import { useState } from "react";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function SearchFilterActions() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const [filtersVisible, setFiltersVisible] = useState(false);
   const { searchParams, updateSearchParams, hasActiveFilters, clearFilters } =
     useSearch();
@@ -30,7 +34,7 @@ export default function SearchFilterActions() {
           <MaterialIcons
             name="tune"
             size={16}
-            color={activeFilterCount > 0 ? "#fff" : colours.primary}
+            color={activeFilterCount > 0 ? "#fff" : theme.primary}
           />
           <Text
             style={[
@@ -52,7 +56,7 @@ export default function SearchFilterActions() {
             <MaterialIcons
               name="close"
               size={14}
-              color={colours.textSecondary}
+              color={theme.textSecondary}
             />
             <Text style={styles.clearFiltersText}>Clear filters</Text>
           </TouchableOpacity>
@@ -69,44 +73,46 @@ export default function SearchFilterActions() {
   );
 }
 
-const styles = StyleSheet.create({
-  actionsRow: {
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 10,
-    marginTop: 4,
-  },
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: colours.primary,
-    backgroundColor: colours.surface,
-  },
-  filterButtonActive: {
-    backgroundColor: colours.primary,
-    borderColor: colours.primary,
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.primary,
-  },
-  filterButtonTextActive: {
-    color: "#fff",
-  },
-  clearFiltersButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  clearFiltersText: {
-    fontSize: 13,
-    color: colours.textSecondary,
-    fontWeight: "500",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    actionsRow: {
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 10,
+      marginTop: 4,
+    },
+    filterButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 16,
+      paddingVertical: 9,
+      borderRadius: 22,
+      borderWidth: 1.5,
+      borderColor: t.primary,
+      backgroundColor: t.surface,
+    },
+    filterButtonActive: {
+      backgroundColor: t.primary,
+      borderColor: t.primary,
+    },
+    filterButtonText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.primary,
+    },
+    filterButtonTextActive: {
+      color: "#fff",
+    },
+    clearFiltersButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    clearFiltersText: {
+      fontSize: 13,
+      color: t.textSecondary,
+      fontWeight: "500",
+    },
+  });
+}
