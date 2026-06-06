@@ -45,7 +45,7 @@ export default function AppBar() {
     <View style={styles.appBar}>
       <View style={styles.appBarContent}>
         <View style={styles.brandContainer}>
-          <Image source={logoImg} style={styles.logo} contentFit="contain" />
+          <Image source={logoImg} style={styles.logo} contentFit="contain" tintColor={theme.text} />
         </View>
         <View style={styles.appBarActions}>
           <TouchableOpacity

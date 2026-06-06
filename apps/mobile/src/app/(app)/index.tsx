@@ -5,13 +5,15 @@ import { useAuthStore } from "@/store/auth-store";
 import { usePropertyStore } from "@/store/property-store";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   ActivityIndicator,
-  Button,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,6 +22,9 @@ import * as Sentry from "@sentry/react-native";
 export default function HomeScreen() {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const router = useRouter();
+  const { guest } = useLocalSearchParams<{ guest?: string }>();
+  const isGuestMode = guest === "1";
   const {
     longTermProperties,
     shortTermProperties,
@@ -30,6 +35,14 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { profile } = useAuthStore();
 
+  // Redirect landlords to their dashboard unless they've explicitly chosen
+  // to browse as a guest (i.e. navigated here with ?guest=1).
+  useEffect(() => {
+    if (profile?.user_role === "landlord" && !isGuestMode) {
+      router.replace("/landlord");
+    }
+  }, [profile?.user_role, isGuestMode]);
+
   const onRefresh = () => {
     setRefreshing(true);
     loadProperties();
@@ -39,10 +52,9 @@ export default function HomeScreen() {
     loadProperties();
   }, [loadProperties, profile?.id]);
 
-  // While the profile has not yet loaded, or if this is a landlord (redirect
-  // is firing in _layout.tsx), show a neutral loading state so there is no
-  // flash of the tenant UI.
-  if (!profile || profile.user_role === "landlord") {
+  // Show a neutral loading state while the profile is loading or while
+  // a landlord redirect is in flight.
+  if (!profile || (profile.user_role === "landlord" && !isGuestMode)) {
     return (
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <AppBar />
@@ -67,6 +79,17 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <AppBar />
+      {isGuestMode && (
+        <TouchableOpacity
+          style={styles.dashboardBanner}
+          onPress={() => router.replace("/landlord")}
+          accessibilityLabel="Back to dashboard"
+        >
+          <MaterialIcons name="dashboard" size={16} color={theme.surface} />
+          <Text style={styles.dashboardBannerText}>Back to your dashboard</Text>
+          <MaterialIcons name="arrow-forward" size={16} color={theme.surface} />
+        </TouchableOpacity>
+      )}
       <ScrollView
         refreshControl={
           <RefreshControl
@@ -136,6 +159,20 @@ function createStyles(t: AppTheme) {
     container: {
       flex: 1,
       backgroundColor: t.surface,
+    },
+    dashboardBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: t.primary,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+    },
+    dashboardBannerText: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: t.surface,
     },
     loadingContainer: {
       flex: 1,

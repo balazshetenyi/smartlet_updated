@@ -1,5 +1,5 @@
-import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "@/hooks/useTheme";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
