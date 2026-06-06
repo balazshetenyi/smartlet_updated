@@ -1,4 +1,4 @@
-import { colours, supabase } from "@kiado/shared";
+import { lightTheme as colours, supabase } from "@kiado/shared";
 import { Alert } from "react-native";
 
 export const getRoleColor = (role?: string) => {

@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/store/auth-store";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { Conversation, Message } from "@kiado/shared/types/message";
 import { pickImage } from "@/utils/image-picker-utils";
 import { ImageSourceType } from "@/enums/image-source-type";
@@ -15,7 +15,7 @@ import {
 } from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -37,10 +37,14 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { StatusBar } from "expo-status-bar";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { showToastMessage } from "@/components/shared/ToastMessage";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 export default function ChatScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const { conversation_id, propertyTitle, propertyId, landlordId, tenantId } =
     useLocalSearchParams<{
       conversation_id: string;
@@ -414,7 +418,7 @@ export default function ChatScreen() {
                   <MaterialIcons
                     name="insert-drive-file"
                     size={24}
-                    color={colours.primary}
+                    color={theme.primary}
                   />
                   <Text style={styles.documentText}>Document</Text>
                 </View>
@@ -448,7 +452,7 @@ export default function ChatScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colours.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </View>
     );
@@ -477,7 +481,7 @@ export default function ChatScreen() {
                     <MaterialIcons
                       name="person"
                       size={20}
-                      color={colours.muted}
+                      color={theme.muted}
                     />
                   </View>
                 )}
@@ -515,7 +519,7 @@ export default function ChatScreen() {
                 style={{ paddingHorizontal: 8, paddingVertical: 4 }}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <MaterialIcons name="flag" size={22} color={colours.warning} />
+                <MaterialIcons name="flag" size={22} color={theme.warning} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleHideConversation}
@@ -525,7 +529,7 @@ export default function ChatScreen() {
                 <MaterialIcons
                   name="delete-outline"
                   size={22}
-                  color={colours.danger}
+                  color={theme.danger}
                 />
               </TouchableOpacity>
             </View>
@@ -546,7 +550,7 @@ export default function ChatScreen() {
             <MaterialIcons
               name="chat-bubble-outline"
               size={64}
-              color={colours.muted}
+              color={theme.muted}
             />
             <Text style={styles.emptyText}>No messages yet</Text>
             <Text style={styles.emptySubtext}>Start the conversation!</Text>
@@ -563,7 +567,7 @@ export default function ChatScreen() {
           <MaterialIcons
             name="image"
             size={24}
-            color={sending ? colours.muted : colours.primary}
+            color={sending ? theme.muted : theme.primary}
           />
         </TouchableOpacity>
 
@@ -572,7 +576,7 @@ export default function ChatScreen() {
           value={inputText}
           onChangeText={setInputText}
           placeholder="Type a message..."
-          placeholderTextColor={colours.textSecondary}
+          placeholderTextColor={theme.textSecondary}
           multiline
           maxLength={1000}
           editable={!sending}
@@ -630,196 +634,199 @@ export default function ChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  flatList: {
-    flex: 1,
-  },
-  headerTitleContainer: {},
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  headerAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-  },
-  headerAvatarPlaceholder: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colours.background,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTextContainer: {
-    flex: 1,
-    overflow: "hidden",
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: colours.textSecondary,
-    marginTop: 2,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  messagesList: {
-    padding: 16,
-    // flexGrow: 1,
-  },
-  dateSeparator: {
-    alignItems: "center",
-    marginVertical: 16,
-  },
-  dateText: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    backgroundColor: colours.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  messageContainer: {
-    maxWidth: "75%",
-    marginBottom: 12,
-    borderRadius: 16,
-    padding: 12,
-  },
-  ownMessage: {
-    alignSelf: "flex-end",
-    backgroundColor: colours.primary,
-    borderBottomRightRadius: 4,
-  },
-  otherMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: colours.surface,
-    borderBottomLeftRadius: 4,
-  },
-  messageImage: {
-    width: 200,
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  documentAttachment: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    padding: 8,
-    backgroundColor: colours.primaryLight,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  documentText: {
-    fontSize: 14,
-    color: colours.primary,
-    fontWeight: "500",
-  },
-  messageText: {
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  ownMessageText: {
-    color: "#FFFFFF",
-  },
-  otherMessageText: {
-    color: colours.text,
-  },
-  messageTime: {
-    fontSize: 11,
-    marginTop: 4,
-  },
-  ownMessageTime: {
-    color: "rgba(255, 255, 255, 0.7)",
-    textAlign: "right",
-  },
-  otherMessageTime: {
-    color: colours.textSecondary,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: colours.border,
-    backgroundColor: colours.surface,
-  },
-  attachButton: {
-    padding: 8,
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: colours.background,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: colours.text,
-    marginRight: 8,
-  },
-  sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colours.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sendButtonDisabled: {
-    backgroundColor: colours.muted,
-    opacity: 0.5,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colours.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    textAlign: "center",
-  },
-  imageViewerOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.95)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  imageViewerClose: {
-    position: "absolute",
-    top: 52,
-    right: 20,
-    zIndex: 10,
-    padding: 8,
-  },
-  imageViewerScrollContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  imageViewerImage: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_WIDTH,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    flatList: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    headerTitleContainer: {},
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+    },
+    headerAvatar: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+    },
+    headerAvatarPlaceholder: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: t.background,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerTextContainer: {
+      flex: 1,
+      overflow: "hidden",
+    },
+    headerTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+    },
+    headerSubtitle: {
+      fontSize: 13,
+      color: t.textSecondary,
+      marginTop: 2,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    messagesList: {
+      padding: 16,
+      // flexGrow: 1,
+    },
+    dateSeparator: {
+      alignItems: "center",
+      marginVertical: 16,
+    },
+    dateText: {
+      fontSize: 12,
+      color: t.textSecondary,
+      backgroundColor: t.surface,
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    messageContainer: {
+      maxWidth: "75%",
+      marginBottom: 12,
+      borderRadius: 16,
+      padding: 12,
+    },
+    ownMessage: {
+      alignSelf: "flex-end",
+      backgroundColor: t.primary,
+      borderBottomRightRadius: 4,
+    },
+    otherMessage: {
+      alignSelf: "flex-start",
+      backgroundColor: t.surface,
+      borderBottomLeftRadius: 4,
+    },
+    messageImage: {
+      width: 200,
+      height: 200,
+      borderRadius: 8,
+      marginBottom: 4,
+    },
+    documentAttachment: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      padding: 8,
+      backgroundColor: t.primaryLight,
+      borderRadius: 8,
+      marginBottom: 4,
+    },
+    documentText: {
+      fontSize: 14,
+      color: t.primary,
+      fontWeight: "500",
+    },
+    messageText: {
+      fontSize: 15,
+      lineHeight: 20,
+    },
+    ownMessageText: {
+      color: "#FFFFFF",
+    },
+    otherMessageText: {
+      color: t.text,
+    },
+    messageTime: {
+      fontSize: 11,
+      marginTop: 4,
+    },
+    ownMessageTime: {
+      color: "rgba(255, 255, 255, 0.7)",
+      textAlign: "right",
+    },
+    otherMessageTime: {
+      color: t.textSecondary,
+    },
+    inputContainer: {
+      flexDirection: "row",
+      padding: 12,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      backgroundColor: t.surface,
+    },
+    attachButton: {
+      padding: 8,
+      marginRight: 8,
+    },
+    input: {
+      flex: 1,
+      backgroundColor: t.background,
+      borderRadius: 20,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      fontSize: 15,
+      color: t.text,
+      marginRight: 8,
+    },
+    sendButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: t.primary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    sendButtonDisabled: {
+      backgroundColor: t.muted,
+      opacity: 0.5,
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 40,
+    },
+    emptyText: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: t.text,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptySubtext: {
+      fontSize: 14,
+      color: t.textSecondary,
+      textAlign: "center",
+    },
+    imageViewerOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.95)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    imageViewerClose: {
+      position: "absolute",
+      top: 52,
+      right: 20,
+      zIndex: 10,
+      padding: 8,
+    },
+    imageViewerScrollContent: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    imageViewerImage: {
+      width: SCREEN_WIDTH,
+      height: SCREEN_WIDTH,
+    },
+  });
+}

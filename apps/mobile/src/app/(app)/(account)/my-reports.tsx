@@ -1,5 +1,4 @@
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@kiado/shared";
 import type {
   SurveillanceReportStatus,
   SurveillanceReportWithProperty,
@@ -9,7 +8,7 @@ import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { showToastMessage } from "@/components/shared/ToastMessage";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -19,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 type StatusConfig = {
   backgroundColor: string;
@@ -62,7 +62,15 @@ function formatDate(dateString: string): string {
   });
 }
 
-function ReportCard({ report }: { report: SurveillanceReportWithProperty }) {
+type ReportCardStyles = ReturnType<typeof createStyles>;
+
+function ReportCard({
+  report,
+  styles,
+}: {
+  report: SurveillanceReportWithProperty;
+  styles: ReportCardStyles;
+}) {
   const config = STATUS_CONFIG[report.status];
   const isResolved =
     report.status === "resolved_breach" ||
@@ -114,6 +122,8 @@ function ReportCard({ report }: { report: SurveillanceReportWithProperty }) {
 }
 
 export default function MyReportsScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { profile } = useAuthStore();
   const [reports, setReports] = useState<SurveillanceReportWithProperty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -150,11 +160,11 @@ export default function MyReportsScreen() {
 
       {loading ? (
         <View style={styles.centeredContainer}>
-          <ActivityIndicator size="large" color={colours.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       ) : error ? (
         <View style={styles.centeredContainer}>
-          <MaterialIcons name="error-outline" size={64} color={colours.muted} />
+          <MaterialIcons name="error-outline" size={64} color={theme.muted} />
           <Text style={styles.stateText}>Failed to load reports</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadReports}>
             <Text style={styles.retryButtonText}>Retry</Text>
@@ -162,7 +172,7 @@ export default function MyReportsScreen() {
         </View>
       ) : reports.length === 0 ? (
         <View style={styles.centeredContainer}>
-          <MaterialIcons name="gpp-bad" size={64} color={colours.muted} />
+          <MaterialIcons name="gpp-bad" size={64} color={theme.muted} />
           <Text style={styles.emptyTitle}>No reports filed</Text>
           <Text style={styles.emptyText}>
             If you suspect an undisclosed surveillance device in a property, you
@@ -171,9 +181,12 @@ export default function MyReportsScreen() {
         </View>
       ) : (
         <FlatList
+          style={styles.container}
           data={reports}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ReportCard report={item} />}
+          renderItem={({ item }) => (
+            <ReportCard report={item} styles={styles} />
+          )}
           contentContainerStyle={styles.listContent}
         />
       )}
@@ -181,121 +194,123 @@ export default function MyReportsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 32,
-  },
-  listContent: {
-    paddingVertical: 8,
-  },
-  card: {
-    backgroundColor: colours.surface,
-    borderRadius: 12,
-    marginHorizontal: 12,
-    marginVertical: 8,
-    padding: 14,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
-  propertyInfo: {
-    flex: 1,
-    marginRight: 10,
-  },
-  propertyTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 2,
-  },
-  propertyLocation: {
-    fontSize: 13,
-    color: colours.textSecondary,
-  },
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  filedDate: {
-    fontSize: 12,
-    color: colours.muted,
-    marginBottom: 6,
-  },
-  description: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    lineHeight: 20,
-  },
-  resolutionBox: {
-    marginTop: 10,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 8,
-    padding: 10,
-  },
-  resolutionLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colours.textSecondary,
-    marginBottom: 4,
-  },
-  resolutionNotes: {
-    fontSize: 13,
-    color: colours.textSecondary,
-    lineHeight: 18,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colours.text,
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  emptyText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    textAlign: "center",
-    lineHeight: 22,
-  },
-  stateText: {
-    fontSize: 16,
-    color: colours.textSecondary,
-    marginTop: 12,
-    textAlign: "center",
-  },
-  retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    backgroundColor: colours.primary,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    centeredContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 32,
+    },
+    listContent: {
+      paddingVertical: 8,
+    },
+    card: {
+      backgroundColor: t.surface,
+      borderRadius: 12,
+      marginHorizontal: 12,
+      marginVertical: 8,
+      padding: 14,
+      elevation: 2,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+    },
+    cardHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 8,
+    },
+    propertyInfo: {
+      flex: 1,
+      marginRight: 10,
+    },
+    propertyTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 2,
+    },
+    propertyLocation: {
+      fontSize: 13,
+      color: t.textSecondary,
+    },
+    statusBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 999,
+    },
+    statusText: {
+      fontSize: 12,
+      fontWeight: "600",
+    },
+    filedDate: {
+      fontSize: 12,
+      color: t.muted,
+      marginBottom: 6,
+    },
+    description: {
+      fontSize: 14,
+      color: t.textSecondary,
+      lineHeight: 20,
+    },
+    resolutionBox: {
+      marginTop: 10,
+      backgroundColor: "#F3F4F6",
+      borderRadius: 8,
+      padding: 10,
+    },
+    resolutionLabel: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: t.textSecondary,
+      marginBottom: 4,
+    },
+    resolutionNotes: {
+      fontSize: 13,
+      color: t.textSecondary,
+      lineHeight: 18,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: t.text,
+      marginTop: 16,
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    emptyText: {
+      fontSize: 14,
+      color: t.textSecondary,
+      textAlign: "center",
+      lineHeight: 22,
+    },
+    stateText: {
+      fontSize: 16,
+      color: t.textSecondary,
+      marginTop: 12,
+      textAlign: "center",
+    },
+    retryButton: {
+      marginTop: 16,
+      paddingHorizontal: 24,
+      paddingVertical: 10,
+      backgroundColor: t.primary,
+      borderRadius: 8,
+    },
+    retryButtonText: {
+      color: "#FFFFFF",
+      fontSize: 14,
+      fontWeight: "600",
+    },
+  });
+}

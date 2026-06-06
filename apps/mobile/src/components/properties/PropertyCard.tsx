@@ -1,8 +1,8 @@
-import { colours } from "@kiado/shared";
 import { Property } from "@kiado/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import React from "react";
+import React, { useMemo } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 interface PropertyCardProps {
   property: Property;
@@ -15,6 +15,9 @@ export default function PropertyCard({
   onPress,
   imageUrl,
 }: PropertyCardProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const getPriceDisplay = () => {
     if (!property.price) return "Price not set";
 
@@ -78,7 +81,7 @@ export default function PropertyCard({
             <MaterialIcons
               name={badge.icon as any}
               size={12}
-              color={colours.primary}
+              color={theme.primary}
             />
             <Text style={styles.rentalTypeText}>{badge.text}</Text>
           </View>
@@ -88,7 +91,7 @@ export default function PropertyCard({
           <MaterialIcons
             name="location-on"
             size={16}
-            color={colours.textSecondary}
+            color={theme.textSecondary}
           />
           <Text style={styles.location} numberOfLines={1}>
             {property.city || "Location not specified"}
@@ -100,13 +103,13 @@ export default function PropertyCard({
           <View style={styles.details}>
             {property.bedrooms !== undefined && (
               <View style={styles.detailItem}>
-                <MaterialIcons name="bed" size={16} color={colours.muted} />
+                <MaterialIcons name="bed" size={16} color={theme.muted} />
                 <Text style={styles.detailText}>{property.bedrooms}</Text>
               </View>
             )}
             {property.bathrooms !== undefined && (
               <View style={styles.detailItem}>
-                <MaterialIcons name="bathtub" size={16} color={colours.muted} />
+                <MaterialIcons name="bathtub" size={16} color={theme.muted} />
                 <Text style={styles.detailText}>{property.bathrooms}</Text>
               </View>
             )}
@@ -117,128 +120,130 @@ export default function PropertyCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colours.cardBackground,
-    borderRadius: 12,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: colours.overlay,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  image: {
-    width: "100%",
-    height: 200,
-    backgroundColor: colours.background,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  cardUnavailable: {
-    opacity: 0.75,
-  },
-  imageUnavailable: {
-    opacity: 0.5,
-  },
-  unavailableOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 200,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1,
-  },
-  unavailableText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 8,
-  },
-  content: {
-    padding: 16,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colours.text,
-    flex: 1,
-    marginRight: 8,
-  },
-  availableBadge: {
-    backgroundColor: colours.success,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  availableText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  location: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    marginLeft: 4,
-    flex: 1,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  rentalTypeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: colours.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  rentalTypeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: colours.primary,
-  },
-  price: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.primary,
-  },
-  priceLabel: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: colours.textSecondary,
-  },
-  details: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  detailItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  detailText: {
-    fontSize: 14,
-    color: colours.muted,
-    fontWeight: "500",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: t.cardBackground,
+      borderRadius: 12,
+      marginBottom: 16,
+      elevation: 2,
+      shadowColor: t.overlay,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+    },
+    image: {
+      width: "100%",
+      height: 200,
+      backgroundColor: t.background,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+    },
+    cardUnavailable: {
+      opacity: 0.75,
+    },
+    imageUnavailable: {
+      opacity: 0.5,
+    },
+    unavailableOverlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 200,
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1,
+    },
+    unavailableText: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "600",
+      marginTop: 8,
+    },
+    content: {
+      padding: 16,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 8,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: t.text,
+      flex: 1,
+      marginRight: 8,
+    },
+    availableBadge: {
+      backgroundColor: t.success,
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    availableText: {
+      color: "#FFFFFF",
+      fontSize: 12,
+      fontWeight: "600",
+    },
+    locationRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    location: {
+      fontSize: 14,
+      color: t.textSecondary,
+      marginLeft: 4,
+      flex: 1,
+    },
+    footer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    rentalTypeBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      backgroundColor: t.primaryLight,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+      alignSelf: "flex-start",
+      marginBottom: 8,
+    },
+    rentalTypeText: {
+      fontSize: 11,
+      fontWeight: "600",
+      color: t.primary,
+    },
+    price: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: t.primary,
+    },
+    priceLabel: {
+      fontSize: 14,
+      fontWeight: "400",
+      color: t.textSecondary,
+    },
+    details: {
+      flexDirection: "row",
+      gap: 16,
+    },
+    detailItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    detailText: {
+      fontSize: 14,
+      color: t.muted,
+      fontWeight: "500",
+    },
+  });
+}

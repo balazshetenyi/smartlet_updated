@@ -1,6 +1,6 @@
 import BookingModal from "@/components/properties/BookingModal";
 import Button from "@/components/shared/Button";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { useAuthStore } from "@/store/auth-store";
 import { CreateBookingData } from "@kiado/shared/types/bookings";
 import {
@@ -22,7 +22,7 @@ import {
   useNavigation,
   useRouter,
 } from "expo-router";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -56,10 +56,13 @@ import MapView, {
 } from "react-native-maps";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { showToastMessage } from "@/components/shared/ToastMessage";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function PropertyDetailsScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
@@ -177,7 +180,7 @@ export default function PropertyDetailsScreen() {
             }}
             accessibilityLabel="Edit Property"
           >
-            <MaterialIcons name="edit" size={24} color={colours.primary} />
+            <MaterialIcons name="edit" size={24} color={theme.primary} />
           </TouchableOpacity>
         ),
       });
@@ -381,7 +384,7 @@ export default function PropertyDetailsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer} edges={["top", "bottom"]}>
-        <ActivityIndicator size="large" color={colours.primary} />
+        <ActivityIndicator size="large" color={theme.primary} />
       </SafeAreaView>
     );
   }
@@ -389,7 +392,7 @@ export default function PropertyDetailsScreen() {
   if (!property) {
     return (
       <SafeAreaView style={styles.errorContainer} edges={["top", "bottom"]}>
-        <MaterialIcons name="error-outline" size={64} color={colours.muted} />
+        <MaterialIcons name="error-outline" size={64} color={theme.muted} />
         <Text style={styles.errorText}>Property not found</Text>
         <Button
           title="Go Back"
@@ -446,7 +449,7 @@ export default function PropertyDetailsScreen() {
             </ScrollView>
           ) : (
             <View style={styles.imagePlaceholder}>
-              <MaterialIcons name="home" size={80} color={colours.muted} />
+              <MaterialIcons name="home" size={80} color={theme.muted} />
               <Text style={styles.imagePlaceholderText}>Property Image</Text>
             </View>
           )}
@@ -487,7 +490,7 @@ export default function PropertyDetailsScreen() {
             <MaterialIcons
               name={rentalInfo.icon as any}
               size={16}
-              color={colours.primary}
+              color={theme.primary}
             />
             <Text style={styles.rentalTypeText}>{rentalInfo.text}</Text>
           </View>
@@ -496,7 +499,7 @@ export default function PropertyDetailsScreen() {
             <MaterialIcons
               name="location-on"
               size={20}
-              color={colours.textSecondary}
+              color={theme.textSecondary}
             />
             <Text style={styles.location}>
               {property.address && `${property.address}, `}
@@ -599,7 +602,7 @@ export default function PropertyDetailsScreen() {
                   <MaterialIcons
                     name="open-in-new"
                     size={16}
-                    color={colours.primary}
+                    color={theme.primary}
                   />
                   <Text style={styles.mapOverlayText}>Open in Maps</Text>
                 </TouchableOpacity>
@@ -616,7 +619,7 @@ export default function PropertyDetailsScreen() {
           <View style={styles.featuresContainer}>
             {property.bedrooms !== undefined && (
               <View style={styles.feature}>
-                <MaterialIcons name="bed" size={24} color={colours.primary} />
+                <MaterialIcons name="bed" size={24} color={theme.primary} />
                 <Text style={styles.featureText}>
                   {property.bedrooms} Bedrooms
                 </Text>
@@ -627,7 +630,7 @@ export default function PropertyDetailsScreen() {
                 <MaterialIcons
                   name="bathtub"
                   size={24}
-                  color={colours.primary}
+                  color={theme.primary}
                 />
                 <Text style={styles.featureText}>
                   {property.bathrooms} Bathrooms
@@ -636,7 +639,7 @@ export default function PropertyDetailsScreen() {
             )}
             {property.max_guests !== undefined && property.max_guests > 0 && (
               <View style={styles.feature}>
-                <MaterialIcons name="group" size={24} color={colours.primary} />
+                <MaterialIcons name="group" size={24} color={theme.primary} />
                 <Text style={styles.featureText}>
                   {property.max_guests}{" "}
                   {`Guest${property.max_guests > 1 ? "s" : ""}`}
@@ -654,7 +657,7 @@ export default function PropertyDetailsScreen() {
                   <MaterialIcons
                     name="person"
                     size={32}
-                    color={colours.primary}
+                    color={theme.primary}
                   />
                 </View>
                 <View style={styles.landlordInfo}>
@@ -685,7 +688,7 @@ export default function PropertyDetailsScreen() {
                     <MaterialIcons
                       name={amenity.icon as any}
                       size={18}
-                      color={colours.primary}
+                      color={theme.primary}
                     />
                     <Text style={styles.amenityText} numberOfLines={1}>
                       {amenity.name}
@@ -709,10 +712,10 @@ export default function PropertyDetailsScreen() {
                   <MaterialIcons
                     name="help-outline"
                     size={18}
-                    color={colours.muted}
+                    color={theme.muted}
                   />
                   <Text
-                    style={[styles.declarationText, { color: colours.muted }]}
+                    style={[styles.declarationText, { color: theme.muted }]}
                   >
                     No surveillance declaration on file
                   </Text>
@@ -725,10 +728,10 @@ export default function PropertyDetailsScreen() {
                   <MaterialIcons
                     name="warning"
                     size={18}
-                    color={colours.danger}
+                    color={theme.danger}
                   />
                   <Text
-                    style={[styles.declarationText, { color: colours.danger }]}
+                    style={[styles.declarationText, { color: theme.danger }]}
                   >
                     This property is currently under investigation
                   </Text>
@@ -739,10 +742,10 @@ export default function PropertyDetailsScreen() {
                   <MaterialIcons
                     name="security"
                     size={18}
-                    color={colours.success}
+                    color={theme.success}
                   />
                   <Text
-                    style={[styles.declarationText, { color: colours.success }]}
+                    style={[styles.declarationText, { color: theme.success }]}
                   >
                     No surveillance devices declared
                   </Text>
@@ -759,12 +762,12 @@ export default function PropertyDetailsScreen() {
                     <MaterialIcons
                       name="videocam"
                       size={18}
-                      color={colours.warning}
+                      color={theme.warning}
                     />
                     <Text
                       style={[
                         styles.declarationText,
-                        { color: colours.warning },
+                        { color: theme.warning },
                       ]}
                     >
                       External surveillance disclosed
@@ -793,7 +796,7 @@ export default function PropertyDetailsScreen() {
               <MaterialIcons
                 name={alreadyReported ? "shield" : "report-problem"}
                 size={16}
-                color={alreadyReported ? colours.success : colours.danger}
+                color={alreadyReported ? theme.success : theme.danger}
               />
               <Text
                 style={[
@@ -932,28 +935,29 @@ export default function PropertyDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
     padding: 20,
   },
   errorText: {
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginTop: 16,
     marginBottom: 24,
   },
@@ -971,19 +975,19 @@ const styles = StyleSheet.create({
   heroImage: {
     width: SCREEN_WIDTH,
     height: 300,
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   imagePlaceholder: {
     width: "100%",
     height: "100%",
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
     alignItems: "center",
     justifyContent: "center",
   },
   imagePlaceholderText: {
     marginTop: 8,
     fontSize: 14,
-    color: colours.muted,
+    color: t.muted,
   },
   imagePagination: {
     position: "absolute",
@@ -998,11 +1002,11 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     opacity: 0.5,
   },
   paginationDotActive: {
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
     opacity: 1,
     width: 24,
   },
@@ -1022,13 +1026,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: colours.text,
+    color: t.text,
     flex: 1,
   },
   availableBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colours.success,
+    backgroundColor: t.success,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -1043,7 +1047,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: colours.primaryLight,
+    backgroundColor: t.primaryLight,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
@@ -1053,7 +1057,7 @@ const styles = StyleSheet.create({
   rentalTypeText: {
     fontSize: 13,
     fontWeight: "600",
-    color: colours.primary,
+    color: t.primary,
   },
   locationRow: {
     flexDirection: "row",
@@ -1063,7 +1067,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 16,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     flex: 1,
   },
   mapContainer: {
@@ -1071,7 +1075,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: colours.border,
+    borderColor: t.border,
     position: "relative",
   },
   map: {
@@ -1084,14 +1088,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     paddingVertical: 10,
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     borderTopWidth: 1,
-    borderTopColor: colours.border,
+    borderTopColor: t.border,
   },
   mapOverlayText: {
     fontSize: 13,
     fontWeight: "600",
-    color: colours.primary,
+    color: t.primary,
   },
   reCentreButton: {
     position: "absolute",
@@ -1100,7 +1104,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -1124,22 +1128,22 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 32,
     fontWeight: "700",
-    color: colours.primary,
+    color: t.primary,
   },
   priceLabel: {
     fontSize: 18,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginLeft: 4,
   },
   availabilityToggle: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colours.border,
+    borderColor: t.border,
   },
   availabilityInfo: {
     flexDirection: "row",
@@ -1153,12 +1157,12 @@ const styles = StyleSheet.create({
   availabilityTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginBottom: 2,
   },
   availabilitySubtext: {
     fontSize: 13,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
   featuresContainer: {
     flexDirection: "row",
@@ -1169,7 +1173,7 @@ const styles = StyleSheet.create({
   feature: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colours.primaryLight,
+    backgroundColor: t.primaryLight,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
@@ -1178,7 +1182,7 @@ const styles = StyleSheet.create({
   featureText: {
     fontSize: 14,
     fontWeight: "600",
-    color: colours.primary,
+    color: t.primary,
   },
   section: {
     marginBottom: 24,
@@ -1197,16 +1201,16 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colours.primary,
+    borderColor: t.primary,
   },
   selectCoverText: {
     fontSize: 14,
     fontWeight: "600",
-    color: colours.primary,
+    color: t.primary,
   },
   coverHint: {
     fontSize: 12,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginBottom: 12,
     fontStyle: "italic",
   },
@@ -1222,15 +1226,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderStyle: "dashed",
-    borderColor: colours.primary,
-    backgroundColor: colours.surface,
+    borderColor: t.primary,
+    backgroundColor: t.surface,
     alignItems: "center",
     justifyContent: "center",
   },
   addTileText: {
     marginTop: 6,
     fontSize: 12,
-    color: colours.primary,
+    color: t.primary,
     fontWeight: "600",
   },
   photoTileWrapper: {
@@ -1240,13 +1244,13 @@ const styles = StyleSheet.create({
   },
   coverPhotoWrapper: {
     borderWidth: 3,
-    borderColor: colours.primary,
+    borderColor: t.primary,
   },
   miniThumb: {
     width: 96,
     height: 96,
     borderRadius: 12,
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
   },
   coverBadge: {
     position: "absolute",
@@ -1255,7 +1259,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -1278,18 +1282,18 @@ const styles = StyleSheet.create({
   photoHint: {
     marginTop: 8,
     fontSize: 12,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginBottom: 12,
   },
   landlordCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     padding: 16,
     borderRadius: 12,
     gap: 12,
@@ -1298,7 +1302,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colours.primaryLight,
+    backgroundColor: t.primaryLight,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1308,17 +1312,17 @@ const styles = StyleSheet.create({
   landlordName: {
     fontSize: 16,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginBottom: 2,
   },
   landlordRole: {
     fontSize: 14,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
-    color: colours.text,
+    color: t.text,
   },
   amenitiesGrid: {
     flexDirection: "row",
@@ -1328,7 +1332,7 @@ const styles = StyleSheet.create({
   amenityItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
@@ -1337,18 +1341,18 @@ const styles = StyleSheet.create({
   amenityText: {
     fontSize: 13,
     fontWeight: "500",
-    color: colours.text,
+    color: t.text,
   },
   bottomBarSafeArea: {
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     borderTopWidth: 1,
-    borderTopColor: colours.border,
+    borderTopColor: t.border,
   },
   bottomBar: {
     flexDirection: "row",
     padding: 10,
     gap: 12,
-    shadowColor: colours.shadow,
+    shadowColor: t.shadow,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -1359,7 +1363,7 @@ const styles = StyleSheet.create({
   },
   bookButton: {
     flex: 1,
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
   },
   // Slideshow
   lightboxContainer: {
@@ -1399,19 +1403,19 @@ const styles = StyleSheet.create({
   },
   declarationNone: {
     backgroundColor: "#10B98115",
-    borderColor: colours.success,
+    borderColor: t.success,
   },
   declarationExternal: {
     backgroundColor: "#F59E0B15",
-    borderColor: colours.warning,
+    borderColor: t.warning,
   },
   declarationPending: {
-    backgroundColor: colours.background,
-    borderColor: colours.border,
+    backgroundColor: t.background,
+    borderColor: t.border,
   },
   declarationLocked: {
     backgroundColor: "#EF444415",
-    borderColor: colours.danger,
+    borderColor: t.danger,
   },
   declarationText: {
     fontSize: 14,
@@ -1420,7 +1424,7 @@ const styles = StyleSheet.create({
   },
   declarationDescription: {
     fontSize: 13,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginTop: 8,
     lineHeight: 19,
     paddingHorizontal: 2,
@@ -1433,21 +1437,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colours.danger,
+    borderColor: t.danger,
     backgroundColor: "#FEF2F2",
     marginTop: 8,
     alignSelf: "flex-start",
   },
   reportButtonFiled: {
-    borderColor: colours.success,
+    borderColor: t.success,
     backgroundColor: "#D1FAE5",
   },
   reportButtonText: {
     fontSize: 13,
     fontWeight: "600",
-    color: colours.danger,
+    color: t.danger,
   },
   reportButtonTextFiled: {
-    color: colours.success,
+    color: t.success,
   },
-});
+  });
+}

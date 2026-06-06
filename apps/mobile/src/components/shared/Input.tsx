@@ -1,4 +1,5 @@
-import { colours } from "@kiado/shared";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import { useMemo } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 interface InputProps {
@@ -74,7 +75,7 @@ interface InputProps {
     | "oneTimeCode";
   multiline?: boolean;
   numberOfLines?: number;
-  leftIcon?: any; // Keep for backwards compatibility but don't render
+  leftIcon?: any;
 }
 
 const Input = ({
@@ -97,87 +98,94 @@ const Input = ({
   textContentType,
   multiline = false,
   numberOfLines = 1,
-  leftIcon, // Accept but ignore for now
-}: InputProps) => (
-  <View style={styles.container}>
-    {label && <Text style={styles.label}>{label}</Text>}
-    <View style={styles.inputWrapper}>
-      <TextInput
-        onChangeText={onChangeText}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        value={value}
-        placeholder={placeholder}
-        placeholderTextColor={colours.muted}
-        autoCapitalize={autoCapitalize}
-        autoComplete={autoComplete}
-        autoCorrect={autoCorrect}
-        style={[
-          styles.input,
-          multiline && styles.multilineInput,
-          !editable && styles.disabledInput,
-          errorMessage && styles.inputError,
-          style,
-        ]}
-        testID={testID}
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
-        maxLength={maxLength}
-        editable={editable}
-        textContentType={textContentType}
-        multiline={multiline}
-        numberOfLines={numberOfLines}
-        textAlignVertical={multiline ? "top" : "center"}
-      />
-    </View>
-    {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-  </View>
-);
+  leftIcon,
+}: InputProps) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colours.border,
-    backgroundColor: colours.surface,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    fontSize: 16,
-    color: colours.text,
-  },
-  multilineInput: {
-    minHeight: 100,
-    paddingTop: 12,
-  },
-  disabledInput: {
-    backgroundColor: colours.background,
-    color: colours.textSecondary,
-    opacity: 0.7,
-  },
-  inputError: {
-    borderColor: colours.danger,
-    borderWidth: 1.5,
-  },
-  errorText: {
-    color: colours.danger,
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
-  },
-});
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <View style={styles.inputWrapper}>
+        <TextInput
+          onChangeText={onChangeText}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          value={value}
+          placeholder={placeholder}
+          placeholderTextColor={theme.muted}
+          autoCapitalize={autoCapitalize}
+          autoComplete={autoComplete}
+          autoCorrect={autoCorrect}
+          style={[
+            styles.input,
+            multiline && styles.multilineInput,
+            !editable && styles.disabledInput,
+            errorMessage && styles.inputError,
+            style,
+          ]}
+          testID={testID}
+          secureTextEntry={secureTextEntry}
+          keyboardType={keyboardType}
+          maxLength={maxLength}
+          editable={editable}
+          textContentType={textContentType}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          textAlignVertical={multiline ? "top" : "center"}
+        />
+      </View>
+      {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+    </View>
+  );
+};
+
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 8,
+    },
+    inputWrapper: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    input: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: t.border,
+      backgroundColor: t.surface,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      fontSize: 16,
+      color: t.text,
+    },
+    multilineInput: {
+      minHeight: 100,
+      paddingTop: 12,
+    },
+    disabledInput: {
+      backgroundColor: t.background,
+      color: t.textSecondary,
+      opacity: 0.7,
+    },
+    inputError: {
+      borderColor: t.danger,
+      borderWidth: 1.5,
+    },
+    errorText: {
+      color: t.danger,
+      fontSize: 12,
+      marginTop: 4,
+      marginLeft: 4,
+    },
+  });
+}
 
 export default Input;

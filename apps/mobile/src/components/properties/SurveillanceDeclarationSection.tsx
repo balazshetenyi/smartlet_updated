@@ -1,7 +1,6 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colours } from "@kiado/shared";
 import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 interface Props {
   declarationType: SurveillanceDeclarationType | null;
@@ -27,12 +27,15 @@ export default function SurveillanceDeclarationSection({
   confirmed,
   onConfirmedChange,
 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerIcon}>
-          <MaterialIcons name="security" size={20} color={colours.primary} />
+          <MaterialIcons name="security" size={20} color={theme.primary} />
         </View>
         <View style={styles.headerText}>
           <Text style={styles.title}>Surveillance Declaration</Text>
@@ -64,7 +67,7 @@ export default function SurveillanceDeclarationSection({
               : "radio-button-unchecked"
           }
           size={22}
-          color={declarationType === "none" ? colours.primary : colours.muted}
+          color={declarationType === "none" ? theme.primary : theme.muted}
         />
         <View style={styles.optionText}>
           <Text style={styles.optionTitle}>No surveillance devices</Text>
@@ -93,8 +96,8 @@ export default function SurveillanceDeclarationSection({
           size={22}
           color={
             declarationType === "external_only"
-              ? colours.primary
-              : colours.muted
+              ? theme.primary
+              : theme.muted
           }
         />
         <View style={styles.optionText}>
@@ -115,7 +118,7 @@ export default function SurveillanceDeclarationSection({
           <TextInput
             style={styles.descriptionInput}
             placeholder="e.g. Video doorbell at front entrance, CCTV camera above garage door facing the driveway"
-            placeholderTextColor={colours.textSecondary}
+            placeholderTextColor={theme.textSecondary}
             value={externalDevicesDescription}
             onChangeText={onExternalDevicesDescriptionChange}
             multiline
@@ -134,7 +137,7 @@ export default function SurveillanceDeclarationSection({
         <MaterialIcons
           name={confirmed ? "check-box" : "check-box-outline-blank"}
           size={22}
-          color={confirmed ? colours.primary : colours.muted}
+          color={confirmed ? theme.primary : theme.muted}
         />
         <Text style={styles.confirmationText}>
           I confirm this declaration is accurate and complete. I understand that
@@ -146,102 +149,104 @@ export default function SurveillanceDeclarationSection({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    borderWidth: 1,
-    borderColor: colours.primary,
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-    backgroundColor: colours.surface,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  headerIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colours.primaryLight,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerText: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colours.text,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginTop: 1,
-  },
-  body: {
-    fontSize: 13,
-    color: colours.textSecondary,
-    lineHeight: 19,
-  },
-  option: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colours.border,
-    backgroundColor: colours.background,
-  },
-  optionSelected: {
-    borderColor: colours.primary,
-    backgroundColor: colours.primaryLight,
-  },
-  optionText: {
-    flex: 1,
-  },
-  optionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  optionDescription: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginTop: 2,
-    lineHeight: 17,
-  },
-  descriptionContainer: {
-    gap: 6,
-  },
-  descriptionLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  descriptionInput: {
-    borderWidth: 1,
-    borderColor: colours.border,
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 13,
-    color: colours.text,
-    backgroundColor: colours.background,
-    minHeight: 80,
-  },
-  confirmation: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    paddingTop: 4,
-  },
-  confirmationText: {
-    flex: 1,
-    fontSize: 12,
-    color: colours.textSecondary,
-    lineHeight: 18,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      borderWidth: 1,
+      borderColor: t.primary,
+      borderRadius: 12,
+      padding: 16,
+      gap: 12,
+      backgroundColor: t.surface,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+    },
+    headerIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: t.primaryLight,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerText: {
+      flex: 1,
+    },
+    title: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: t.text,
+    },
+    subtitle: {
+      fontSize: 12,
+      color: t.textSecondary,
+      marginTop: 1,
+    },
+    body: {
+      fontSize: 13,
+      color: t.textSecondary,
+      lineHeight: 19,
+    },
+    option: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 10,
+      padding: 12,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: t.border,
+      backgroundColor: t.background,
+    },
+    optionSelected: {
+      borderColor: t.primary,
+      backgroundColor: t.primaryLight,
+    },
+    optionText: {
+      flex: 1,
+    },
+    optionTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.text,
+    },
+    optionDescription: {
+      fontSize: 12,
+      color: t.textSecondary,
+      marginTop: 2,
+      lineHeight: 17,
+    },
+    descriptionContainer: {
+      gap: 6,
+    },
+    descriptionLabel: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: t.text,
+    },
+    descriptionInput: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 8,
+      padding: 10,
+      fontSize: 13,
+      color: t.text,
+      backgroundColor: t.background,
+      minHeight: 80,
+    },
+    confirmation: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 10,
+      paddingTop: 4,
+    },
+    confirmationText: {
+      flex: 1,
+      fontSize: 12,
+      color: t.textSecondary,
+      lineHeight: 18,
+    },
+  });
+}

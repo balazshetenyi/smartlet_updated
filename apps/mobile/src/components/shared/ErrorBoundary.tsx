@@ -5,7 +5,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { colours } from "@kiado/shared";
+import { lightTheme as colours } from "@kiado/shared";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { captureError } from "@/config/sentry";
 import { logger } from "@/utils/logger";
@@ -96,59 +96,63 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  content: {
-    alignItems: "center",
-    maxWidth: 400,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: colours.text,
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  message: {
-    fontSize: 16,
-    color: colours.textSecondary,
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  errorDetails: {
-    backgroundColor: colours.cardBackground,
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 24,
-    width: "100%",
-  },
-  errorTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.error,
-    marginBottom: 8,
-  },
-  errorText: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    fontFamily: "monospace",
-  },
-  button: {
-    backgroundColor: colours.primary,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
+function createStyles(t: typeof colours) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
+    content: {
+      alignItems: "center",
+      maxWidth: 400,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: t.text,
+      marginTop: 16,
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    message: {
+      fontSize: 16,
+      color: t.textSecondary,
+      textAlign: "center",
+      marginBottom: 24,
+    },
+    errorDetails: {
+      backgroundColor: t.cardBackground,
+      padding: 16,
+      borderRadius: 8,
+      marginBottom: 24,
+      width: "100%",
+    },
+    errorTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.error,
+      marginBottom: 8,
+    },
+    errorText: {
+      fontSize: 12,
+      color: t.textSecondary,
+      fontFamily: "monospace",
+    },
+    button: {
+      backgroundColor: t.primary,
+      paddingHorizontal: 32,
+      paddingVertical: 12,
+      borderRadius: 8,
+    },
+    buttonText: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+  });
+}
+
+const styles = createStyles(colours);

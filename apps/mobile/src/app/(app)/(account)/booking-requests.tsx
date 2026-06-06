@@ -1,11 +1,11 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { BookingWithTenant } from "@kiado/shared/types/bookings";
 import { fetchBookingRequests } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,8 +20,11 @@ import { Card } from "@/components/shared/Card";
 import { PropertyImage } from "@/components/properties/PropertyImage";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { showToastMessage } from "@/components/shared/ToastMessage";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function BookingRequestsScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const listRef = useRef<FlatList<BookingWithTenant>>(null);
   const { profile } = useAuthStore();
   const { showActionSheetWithOptions } = useActionSheet();
@@ -157,16 +160,16 @@ export default function BookingRequestsScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
-        return colours.success;
+        return theme.success;
       case "pending":
-        return colours.warning;
+        return theme.warning;
       case "declined":
       case "cancelled":
-        return colours.danger;
+        return theme.danger;
       case "completed":
-        return colours.muted;
+        return theme.muted;
       default:
-        return colours.textSecondary;
+        return theme.textSecondary;
     }
   };
 
@@ -181,14 +184,14 @@ export default function BookingRequestsScreen() {
       if (item.payment_status === "paid") {
         return {
           icon: "check-circle" as const,
-          color: colours.success,
+          color: theme.success,
           text: "Paid",
         };
       }
       if (item.payment_status === "due") {
         return {
           icon: "schedule" as const,
-          color: colours.warning,
+          color: theme.warning,
           text: "Payment Due",
         };
       }
@@ -235,7 +238,7 @@ export default function BookingRequestsScreen() {
               />
             ) : (
               <View style={[styles.guestAvatar, styles.guestAvatarPlaceholder]}>
-                <MaterialIcons name="person" size={20} color={colours.muted} />
+                <MaterialIcons name="person" size={20} color={theme.muted} />
               </View>
             )}
             <View>
@@ -248,7 +251,7 @@ export default function BookingRequestsScreen() {
 
           <View style={styles.datesContainer}>
             <View style={styles.dateInfo}>
-              <MaterialIcons name="login" size={20} color={colours.primary} />
+              <MaterialIcons name="login" size={20} color={theme.primary} />
               <View>
                 <Text style={styles.dateLabel}>Check-in</Text>
                 <Text style={styles.dateValue}>
@@ -262,7 +265,7 @@ export default function BookingRequestsScreen() {
             </View>
 
             <View style={styles.dateInfo}>
-              <MaterialIcons name="logout" size={20} color={colours.danger} />
+              <MaterialIcons name="logout" size={20} color={theme.danger} />
               <View>
                 <Text style={styles.dateLabel}>Check-out</Text>
                 <Text style={styles.dateValue}>
@@ -325,7 +328,7 @@ export default function BookingRequestsScreen() {
                 <MaterialIcons
                   name="schedule"
                   size={16}
-                  color={colours.muted}
+                  color={theme.muted}
                 />
                 <Text style={styles.expiredText}>
                   {new Date() >= new Date(item.check_in)
@@ -357,7 +360,7 @@ export default function BookingRequestsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colours.primary} />
+        <ActivityIndicator size="large" color={theme.primary} />
       </SafeAreaView>
     );
   }
@@ -373,7 +376,7 @@ export default function BookingRequestsScreen() {
       <SafeAreaView style={styles.container} edges={["bottom"]}>
         {bookings.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="inbox" size={64} color={colours.muted} />
+            <MaterialIcons name="inbox" size={64} color={theme.muted} />
             <Text style={styles.emptyTitle}>No booking requests</Text>
             <Text style={styles.emptyText}>
               Booking requests from tenants will appear here
@@ -381,6 +384,7 @@ export default function BookingRequestsScreen() {
           </View>
         ) : (
           <FlatList
+            style={styles.container}
             ref={listRef}
             data={bookings}
             renderItem={renderBookingCard}
@@ -399,7 +403,7 @@ export default function BookingRequestsScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor={colours.primary}
+                tintColor={theme.primary}
               />
             }
           />
@@ -409,209 +413,211 @@ export default function BookingRequestsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colours.background,
-  },
-  listContent: {
-    padding: 16,
-  },
-  highlightedBookingContent: {
-    borderWidth: 1,
-    borderColor: colours.primary,
-    borderRadius: 12,
-    backgroundColor: colours.primaryLight,
-  },
-  bookingContent: {
-    padding: 16,
-  },
-  bookingHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  propertyTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: "700",
-    color: colours.text,
-    marginRight: 12,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  paymentStatusContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignSelf: "flex-start",
-  },
-  paymentStatusText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  guestInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 16,
-    padding: 12,
-    borderRadius: 8,
-  },
-  guestAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  guestAvatarPlaceholder: {
-    backgroundColor: colours.border,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  guestLabel: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginBottom: 2,
-  },
-  guestName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  datesContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-    gap: 12,
-  },
-  dateInfo: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: 8,
-  },
-  dateLabel: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginBottom: 2,
-  },
-  dateValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  pricingSection: {
-    paddingTop: 16,
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colours.border,
-    marginBottom: 16,
-    gap: 8,
-  },
-  nightsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  breakdownRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  breakdownLabel: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  breakdownValue: {
-    fontSize: 14,
-    color: colours.text,
-  },
-  breakdownFee: {
-    fontSize: 14,
-    color: colours.danger,
-  },
-  payoutRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 8,
-    marginTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: colours.border,
-  },
-  payoutLabel: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: colours.text,
-  },
-  payoutValue: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.success,
-  },
-  expiredContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-  },
-  expiredText: {
-    fontSize: 13,
-    color: colours.muted,
-    fontStyle: "italic",
-    flex: 1,
-  },
-  actionsContainer: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-  },
-  declineButton: {
-    borderColor: colours.danger,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 32,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    textAlign: "center",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: t.background,
+    },
+    listContent: {
+      padding: 16,
+    },
+    highlightedBookingContent: {
+      borderWidth: 1,
+      borderColor: t.primary,
+      borderRadius: 12,
+      backgroundColor: t.primaryLight,
+    },
+    bookingContent: {
+      padding: 16,
+    },
+    bookingHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    propertyTitle: {
+      flex: 1,
+      fontSize: 18,
+      fontWeight: "700",
+      color: t.text,
+      marginRight: 12,
+    },
+    statusBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 12,
+    },
+    statusText: {
+      fontSize: 12,
+      fontWeight: "600",
+    },
+    paymentStatusContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 6,
+      alignSelf: "flex-start",
+    },
+    paymentStatusText: {
+      fontSize: 12,
+      fontWeight: "600",
+    },
+    guestInfo: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: 16,
+      padding: 12,
+      borderRadius: 8,
+    },
+    guestAvatar: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+    },
+    guestAvatarPlaceholder: {
+      backgroundColor: t.border,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    guestLabel: {
+      fontSize: 12,
+      color: t.textSecondary,
+      marginBottom: 2,
+    },
+    guestName: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+    },
+    datesContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 16,
+      gap: 12,
+    },
+    dateInfo: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      padding: 12,
+      borderRadius: 8,
+    },
+    dateLabel: {
+      fontSize: 12,
+      color: t.textSecondary,
+      marginBottom: 2,
+    },
+    dateValue: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.text,
+    },
+    summaryLabel: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    pricingSection: {
+      paddingTop: 16,
+      marginTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      marginBottom: 16,
+      gap: 8,
+    },
+    nightsRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 8,
+    },
+    breakdownRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    breakdownLabel: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    breakdownValue: {
+      fontSize: 14,
+      color: t.text,
+    },
+    breakdownFee: {
+      fontSize: 14,
+      color: t.danger,
+    },
+    payoutRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingTop: 8,
+      marginTop: 4,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+    },
+    payoutLabel: {
+      fontSize: 16,
+      fontWeight: "700",
+      color: t.text,
+    },
+    payoutValue: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: t.success,
+    },
+    expiredContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 4,
+    },
+    expiredText: {
+      fontSize: 13,
+      color: t.muted,
+      fontStyle: "italic",
+      flex: 1,
+    },
+    actionsContainer: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    actionButton: {
+      flex: 1,
+    },
+    declineButton: {
+      borderColor: t.danger,
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 32,
+    },
+    emptyTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: t.text,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptyText: {
+      fontSize: 14,
+      color: t.textSecondary,
+      textAlign: "center",
+    },
+  });
+}

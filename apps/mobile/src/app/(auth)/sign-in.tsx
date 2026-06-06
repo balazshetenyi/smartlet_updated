@@ -2,15 +2,15 @@ import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import { signInSchema } from "@/config/schemas";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 import { Toast } from "react-native-toast-notifications";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 /**
  * Auth component for user authentication.
@@ -18,6 +18,8 @@ import { Toast } from "react-native-toast-notifications";
  * If the user does not have an account, they can navigate to the sign-up page.
  */
 export default function SignIn() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const params = useLocalSearchParams();
   const { loading, signIn } = useAuthStore();
   const { keyboardOffset } = useKeyboardOffset();
@@ -44,7 +46,7 @@ export default function SignIn() {
     <KeyboardAwareScrollView
       bottomOffset={keyboardOffset + 170}
       keyboardShouldPersistTaps="handled"
-      style={{ flex: 1, backgroundColor: colours.surface }}
+      style={{ flex: 1, backgroundColor: theme.surface }}
     >
       <View className="p-4">
         <Controller
@@ -59,7 +61,7 @@ export default function SignIn() {
               leftIcon={{
                 type: "font-awesome",
                 name: "envelope",
-                color: colours.muted,
+                color: theme.muted,
               }}
               onChangeText={onChange}
               value={value}
@@ -70,7 +72,7 @@ export default function SignIn() {
               errorMessage={error ? error.message : undefined}
               textContentType="emailAddress"
               keyboardType="email-address"
-              style={{ color: colours.text }}
+              style={{ color: theme.text }}
               autoComplete="email"
               autoCorrect={false}
             />
@@ -90,7 +92,7 @@ export default function SignIn() {
               leftIcon={{
                 type: "font-awesome",
                 name: "lock",
-                color: colours.muted,
+                color: theme.muted,
               }}
               onChangeText={onChange}
               value={value}
@@ -102,7 +104,7 @@ export default function SignIn() {
               errorMessage={error ? error.message : undefined}
               textContentType="password"
               keyboardType="default"
-              style={{ color: colours.text }}
+              style={{ color: theme.text }}
               autoComplete="password"
               autoCorrect={false}
             />
@@ -121,7 +123,7 @@ export default function SignIn() {
             disabled={formState.isSubmitting}
             // loading={loading}
             onPress={handleSubmit(signIn)}
-            buttonStyle={{ backgroundColor: colours.primary }}
+            buttonStyle={{ backgroundColor: theme.primary }}
             testID="sign-in-button"
             accessibilityLabel="Sign In Button"
             accessibilityHint="Sign in with your email and password"
@@ -134,7 +136,7 @@ export default function SignIn() {
           >
             <Text
               style={{
-                color: colours.primary,
+                color: theme.primary,
                 textAlign: "right",
                 fontSize: 14,
               }}
@@ -146,7 +148,7 @@ export default function SignIn() {
         <View className="p-4 self-stretch">
           <Text
             style={{
-              color: colours.muted,
+              color: theme.muted,
               fontSize: 12,
               marginBottom: 10,
             }}
@@ -164,14 +166,18 @@ export default function SignIn() {
             accessibilityRole="button"
             accessibilityState={{ disabled: formState.isSubmitting }}
             buttonStyle={{
-              backgroundColor: colours.surface,
-              borderColor: colours.primary,
+              backgroundColor: theme.surface,
+              borderColor: theme.primary,
               borderWidth: 1,
             }}
-            titleStyle={{ color: colours.primary }}
+            titleStyle={{ color: theme.primary }}
           />
         </View>
       </View>
     </KeyboardAwareScrollView>
   );
+}
+
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({});
 }

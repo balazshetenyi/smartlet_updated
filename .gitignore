@@ -54,3 +54,5 @@ supabase/seed*
 # Turborepo
 .turbo
 supabase/snippets/
+
+build*

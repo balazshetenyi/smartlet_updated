@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   TextInput,
@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useGooglePlaces, PlacePrediction } from "@/hooks/useGooglePlaces";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colours } from "@kiado/shared";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 interface Props {
   initialValue: string;
@@ -24,6 +24,9 @@ export default function LocationAutocomplete({
   onSelect,
   onChangeText,
 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const [input, setInput] = useState(initialValue);
   const {
     predictions,
@@ -53,17 +56,17 @@ export default function LocationAutocomplete({
     <View style={styles.container}>
       {/* Input Field (Matches your existing search row style) */}
       <View style={styles.inputContainer}>
-        <MaterialIcons name="search" size={24} color={colours.darkSlateBlue} />
+        <MaterialIcons name="search" size={24} color={theme.darkSlateBlue} />
         <TextInput
           style={styles.input}
           placeholder="Where are you going?"
-          placeholderTextColor={colours.textSecondary}
+          placeholderTextColor={theme.textSecondary}
           value={input}
           onChangeText={handleInput}
           returnKeyType="search"
           autoCorrect={false}
         />
-        {loading && <ActivityIndicator size="small" color={colours.primary} />}
+        {loading && <ActivityIndicator size="small" color={theme.primary} />}
       </View>
 
       {/* Floating Dropdown */}
@@ -80,7 +83,7 @@ export default function LocationAutocomplete({
                     <MaterialIcons
                       name="location-on"
                       size={20}
-                      color={colours.darkSlateBlue}
+                      color={theme.darkSlateBlue}
                     />
                   </View>
                   <Text style={styles.predictionText} numberOfLines={2}>
@@ -99,69 +102,71 @@ export default function LocationAutocomplete({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    // Relative positioning ensures the absolute dropdown stays anchored to this input
-    position: "relative",
-    zIndex: 1000, // Highest z-index to float over other fields
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    gap: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: colours.text,
-  },
-  dropdown: {
-    position: "absolute",
-    top: "100%", // Start immediately below the input
-    left: 0,
-    right: 0,
-    backgroundColor: colours.surface,
-    borderRadius: 12,
-    marginTop: 8, // Small gap below input
-    maxHeight: 300, // Prevent it from taking over the whole screen
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      // Relative positioning ensures the absolute dropdown stays anchored to this input
+      position: "relative",
+      zIndex: 1000, // Highest z-index to float over other fields
+    },
+    inputContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 12,
+      gap: 12,
+    },
+    input: {
+      flex: 1,
+      fontSize: 16,
+      color: t.text,
+    },
+    dropdown: {
+      position: "absolute",
+      top: "100%", // Start immediately below the input
+      left: 0,
+      right: 0,
+      backgroundColor: t.surface,
+      borderRadius: 12,
+      marginTop: 8, // Small gap below input
+      maxHeight: 300, // Prevent it from taking over the whole screen
 
-    // iOS Shadow
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+      // iOS Shadow
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 12,
 
-    // Android Shadow
-    elevation: 8,
+      // Android Shadow
+      elevation: 8,
 
-    // Border for definition
-    borderWidth: 1,
-    borderColor: colours.border,
-  },
-  predictionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    gap: 12,
-  },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colours.background,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  predictionText: {
-    flex: 1,
-    fontSize: 15,
-    color: colours.text,
-    lineHeight: 20,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colours.border,
-    marginLeft: 64, // Indent line to match text start
-  },
-});
+      // Border for definition
+      borderWidth: 1,
+      borderColor: t.border,
+    },
+    predictionRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 16,
+      gap: 12,
+    },
+    iconCircle: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: t.background,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    predictionText: {
+      flex: 1,
+      fontSize: 15,
+      color: t.text,
+      lineHeight: 20,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: t.border,
+      marginLeft: 64, // Indent line to match text start
+    },
+  });
+}

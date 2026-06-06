@@ -1,9 +1,9 @@
 import PropertyCard from "@/components/properties/PropertyCard";
-import { colours, supabase, Property } from "@kiado/shared";
+import { supabase, Property } from "@kiado/shared";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +19,7 @@ import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
 import { useSearch } from "@/context/SearchContext";
 import SearchFilterActions from "@/components/search/SearchFilterActions";
 import ActiveSearchFilters from "@/components/search/ActiveSearchFilters";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 type RentalType = "long-term" | "short-term" | "holiday";
 
@@ -46,6 +47,8 @@ const RENTAL_TYPE_CONFIG: Record<
 };
 
 export default function PropertyCategoryScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
   const { type } = useLocalSearchParams<{ type: RentalType }>();
   const { buildSearchParams } = useSearch();
@@ -148,7 +151,7 @@ export default function PropertyCategoryScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <MaterialIcons name="home" size={64} color={colours.muted} />
+      <MaterialIcons name="home" size={64} color={theme.muted} />
       <Text style={styles.emptyText}>No properties available</Text>
       <Text style={styles.emptySubtext}>
         Check back later for new {config?.title.toLowerCase()}
@@ -159,7 +162,7 @@ export default function PropertyCategoryScreen() {
   if (!config) {
     return (
       <SafeAreaView style={styles.errorContainer}>
-        <MaterialIcons name="error-outline" size={64} color={colours.muted} />
+        <MaterialIcons name="error-outline" size={64} color={theme.muted} />
         <Text style={styles.errorText}>Invalid property type</Text>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backLink}>Go Back</Text>
@@ -179,7 +182,7 @@ export default function PropertyCategoryScreen() {
           }}
         />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colours.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </>
     );
@@ -196,6 +199,7 @@ export default function PropertyCategoryScreen() {
       />
       <SafeAreaView style={styles.container} edges={["bottom"]}>
         <FlatList
+          style={styles.container}
           data={properties}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
@@ -216,7 +220,7 @@ export default function PropertyCategoryScreen() {
             loadingMore ? (
               <ActivityIndicator
                 size="small"
-                color={colours.primary}
+                color={theme.primary}
                 style={{ paddingVertical: 16 }}
               />
             ) : null
@@ -225,7 +229,7 @@ export default function PropertyCategoryScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={colours.primary}
+              tintColor={theme.primary}
             />
           }
         />
@@ -234,35 +238,36 @@ export default function PropertyCategoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
     padding: 20,
   },
   errorText: {
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginTop: 16,
     marginBottom: 24,
   },
   backLink: {
     fontSize: 16,
     fontWeight: "600",
-    color: colours.primary,
+    color: t.primary,
   },
   listContent: {
     padding: 16,
@@ -272,7 +277,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: colours.border,
+    borderBottomColor: t.border,
   },
   header: {
     flexDirection: "row",
@@ -287,12 +292,12 @@ const styles = StyleSheet.create({
   resultsCount: {
     fontSize: 22,
     fontWeight: "800",
-    color: colours.text,
+    color: t.text,
   },
   resultsCountLabel: {
     fontSize: 18,
     fontWeight: "500",
-    color: colours.text,
+    color: t.text,
   },
   cardWrapper: {
     marginBottom: 16,
@@ -305,13 +310,14 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginTop: 8,
     textAlign: "center",
   },
-});
+  });
+}

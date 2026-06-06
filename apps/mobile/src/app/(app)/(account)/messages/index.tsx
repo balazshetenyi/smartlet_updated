@@ -1,4 +1,5 @@
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth-store";
 import { Conversation } from "@kiado/shared/types/message";
 import {
@@ -7,7 +8,7 @@ import {
 } from "@/utils/message-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -23,6 +24,8 @@ import { useActionSheet } from "@expo/react-native-action-sheet";
 import { showToastMessage } from "@/components/shared/ToastMessage";
 
 export default function MessagesScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { session } = useAuthStore();
   const router = useRouter();
   const { showActionSheetWithOptions } = useActionSheet();
@@ -162,7 +165,7 @@ export default function MessagesScreen() {
             />
           ) : (
             <View style={styles.avatarPlaceholder}>
-              <MaterialIcons name="person" size={28} color={colours.muted} />
+              <MaterialIcons name="person" size={28} color={theme.muted} />
             </View>
           )}
           {hasUnread && <View style={styles.unreadDot} />}
@@ -193,7 +196,7 @@ export default function MessagesScreen() {
                     : "attach-file"
                 }
                 size={14}
-                color={colours.textSecondary}
+                color={theme.textSecondary}
                 style={{ marginRight: 4 }}
               />
             )}
@@ -223,7 +226,7 @@ export default function MessagesScreen() {
       <MaterialIcons
         name="chat-bubble-outline"
         size={64}
-        color={colours.muted}
+        color={theme.muted}
       />
       <Text style={styles.emptyText}>No messages yet</Text>
       <Text style={styles.emptySubtext}>
@@ -237,7 +240,7 @@ export default function MessagesScreen() {
       // Remove top safe area to avoid double spacing (header already handles inset)
       <SafeAreaView style={styles.container} edges={["bottom"]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colours.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
@@ -246,6 +249,7 @@ export default function MessagesScreen() {
   return (
     // Use only bottom edge to prevent extra gap under the stack header
     <FlatList
+      style={styles.container}
       data={conversations}
       renderItem={renderConversation}
       keyExtractor={(item) => item.id}
@@ -257,131 +261,133 @@ export default function MessagesScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={colours.primary}
+          tintColor={theme.primary}
         />
       }
     />
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  listContent: {
-    // paddingVertical: 8,
-  },
-  emptyList: {
-    flexGrow: 1,
-  },
-  conversationItem: {
-    flexDirection: "row",
-    padding: 16,
-    backgroundColor: colours.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colours.border,
-    alignItems: "center",
-  },
-  avatarContainer: {
-    position: "relative",
-    marginRight: 12,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  avatarPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colours.background,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  unreadDot: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: colours.primary,
-    borderWidth: 2,
-    borderColor: colours.surface,
-  },
-  conversationContent: {
-    flex: 1,
-  },
-  conversationHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  unreadText: {
-    fontWeight: "700",
-  },
-  timestamp: {
-    fontSize: 12,
-    color: colours.textSecondary,
-  },
-  propertyTitle: {
-    fontSize: 13,
-    color: colours.primary,
-    marginBottom: 4,
-  },
-  lastMessageRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  lastMessage: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    flex: 1,
-  },
-  unreadBadge: {
-    backgroundColor: colours.primary,
-    borderRadius: 12,
-    minWidth: 24,
-    height: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 8,
-    marginLeft: 8,
-  },
-  unreadBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colours.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    textAlign: "center",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    listContent: {
+      // paddingVertical: 8,
+    },
+    emptyList: {
+      flexGrow: 1,
+    },
+    conversationItem: {
+      flexDirection: "row",
+      padding: 16,
+      backgroundColor: t.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+      alignItems: "center",
+    },
+    avatarContainer: {
+      position: "relative",
+      marginRight: 12,
+    },
+    avatar: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+    },
+    avatarPlaceholder: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: t.background,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    unreadDot: {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: t.primary,
+      borderWidth: 2,
+      borderColor: t.surface,
+    },
+    conversationContent: {
+      flex: 1,
+    },
+    conversationHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 4,
+    },
+    userName: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+    },
+    unreadText: {
+      fontWeight: "700",
+    },
+    timestamp: {
+      fontSize: 12,
+      color: t.textSecondary,
+    },
+    propertyTitle: {
+      fontSize: 13,
+      color: t.primary,
+      marginBottom: 4,
+    },
+    lastMessageRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    lastMessage: {
+      fontSize: 14,
+      color: t.textSecondary,
+      flex: 1,
+    },
+    unreadBadge: {
+      backgroundColor: t.primary,
+      borderRadius: 12,
+      minWidth: 24,
+      height: 24,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 8,
+      marginLeft: 8,
+    },
+    unreadBadgeText: {
+      color: "#FFFFFF",
+      fontSize: 12,
+      fontWeight: "700",
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 40,
+    },
+    emptyText: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: t.text,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptySubtext: {
+      fontSize: 14,
+      color: t.textSecondary,
+      textAlign: "center",
+    },
+  });
+}

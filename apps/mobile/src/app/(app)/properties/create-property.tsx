@@ -11,10 +11,10 @@ import {
 } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Alert,
@@ -28,8 +28,11 @@ import {
 } from "react-native";
 import SurveillanceDeclarationSection from "@/components/properties/SurveillanceDeclarationSection";
 import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function CreatePropertyScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { profile } = useAuthStore();
   const router = useRouter();
   const [isAvailable, setIsAvailable] = useState(true);
@@ -229,7 +232,7 @@ export default function CreatePropertyScreen() {
       contentContainerStyle={styles.contentContainer}
     >
       <View style={styles.header}>
-        <MaterialIcons name="add-home" size={32} color={colours.primary} />
+        <MaterialIcons name="add-home" size={32} color={theme.primary} />
         <Text style={styles.subtitle}>
           Fill in the details to list your property
         </Text>
@@ -434,7 +437,7 @@ export default function CreatePropertyScreen() {
               <MaterialIcons
                 name={isAvailable ? "check-circle" : "cancel"}
                 size={20}
-                color={isAvailable ? colours.success : colours.muted}
+                color={isAvailable ? theme.success : theme.muted}
               />
               <Text style={styles.availabilityText}>Available for Rent</Text>
             </View>
@@ -442,10 +445,10 @@ export default function CreatePropertyScreen() {
               value={isAvailable}
               onValueChange={setIsAvailable}
               trackColor={{
-                false: colours.border,
-                true: colours.primaryLight,
+                false: theme.border,
+                true: theme.primaryLight,
               }}
-              thumbColor={isAvailable ? colours.primary : colours.muted}
+              thumbColor={isAvailable ? theme.primary : theme.muted}
             />
           </View>
         </View>
@@ -479,7 +482,7 @@ export default function CreatePropertyScreen() {
               <MaterialIcons
                 name="add-a-photo"
                 size={24}
-                color={colours.primary}
+                color={theme.primary}
               />
               <Text style={styles.addTileText}>Add photos</Text>
             </Pressable>
@@ -531,10 +534,11 @@ export default function CreatePropertyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   contentContainer: {
     padding: 20,
@@ -547,12 +551,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: colours.text,
+    color: t.text,
     marginTop: 12,
   },
   subtitle: {
     fontSize: 20,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginTop: 4,
   },
   form: {
@@ -564,12 +568,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginBottom: 16,
   },
   input: {
-    backgroundColor: colours.surface,
-    borderColor: colours.border,
+    backgroundColor: t.surface,
+    borderColor: t.border,
     borderRadius: 12,
   },
   textArea: {
@@ -587,7 +591,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -600,11 +604,11 @@ const styles = StyleSheet.create({
   availabilityText: {
     fontSize: 16,
     fontWeight: "500",
-    color: colours.text,
+    color: t.text,
   },
   submitButton: {
     marginTop: 8,
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
     borderRadius: 12,
   },
   photoGrid: {
@@ -618,15 +622,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderStyle: "dashed",
-    borderColor: colours.primary,
-    backgroundColor: colours.surface,
+    borderColor: t.primary,
+    backgroundColor: t.surface,
     alignItems: "center",
     justifyContent: "center",
   },
   addTileText: {
     marginTop: 6,
     fontSize: 12,
-    color: colours.primary,
+    color: t.primary,
     fontWeight: "600",
   },
   thumbWrapper: {
@@ -635,7 +639,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     position: "relative",
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
   },
   thumb: {
     width: "100%",
@@ -655,6 +659,7 @@ const styles = StyleSheet.create({
   photoHint: {
     marginTop: 8,
     fontSize: 12,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
-});
+  });
+}

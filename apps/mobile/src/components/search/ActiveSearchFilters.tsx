@@ -1,11 +1,16 @@
+import { useMemo } from "react";
 import { useSearch } from "@/context/SearchContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { Amenity } from "@kiado/shared/types/property";
 import { useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function ActiveSearchFilters() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const [amenityMap, setAmenityMap] = useState<Record<string, Amenity>>({});
   const { searchParams, updateSearchParams, hasActiveFilters } = useSearch();
 
@@ -44,7 +49,7 @@ export default function ActiveSearchFilters() {
               <Text style={styles.activeChipText}>
                 {searchParams.minBedrooms}+ beds
               </Text>
-              <MaterialIcons name="close" size={14} color={colours.primary} />
+              <MaterialIcons name="close" size={14} color={theme.primary} />
             </TouchableOpacity>
           )}
           {searchParams.minPrice !== null && (
@@ -55,7 +60,7 @@ export default function ActiveSearchFilters() {
               <Text style={styles.activeChipText}>
                 From £{searchParams.minPrice}
               </Text>
-              <MaterialIcons name="close" size={14} color={colours.primary} />
+              <MaterialIcons name="close" size={14} color={theme.primary} />
             </TouchableOpacity>
           )}
           {searchParams.maxPrice !== null && (
@@ -66,7 +71,7 @@ export default function ActiveSearchFilters() {
               <Text style={styles.activeChipText}>
                 Up to £{searchParams.maxPrice}
               </Text>
-              <MaterialIcons name="close" size={14} color={colours.primary} />
+              <MaterialIcons name="close" size={14} color={theme.primary} />
             </TouchableOpacity>
           )}
           {searchParams.amenityIds.map((id) =>
@@ -79,10 +84,10 @@ export default function ActiveSearchFilters() {
                 <MaterialIcons
                   name={amenityMap[id].icon as any}
                   size={14}
-                  color={colours.primary}
+                  color={theme.primary}
                 />
                 <Text style={styles.activeChipText}>{amenityMap[id].name}</Text>
-                <MaterialIcons name="close" size={14} color={colours.primary} />
+                <MaterialIcons name="close" size={14} color={theme.primary} />
               </TouchableOpacity>
             ) : null,
           )}
@@ -92,26 +97,28 @@ export default function ActiveSearchFilters() {
   );
 }
 
-const styles = StyleSheet.create({
-  activeFiltersRow: {
-    flexDirection: "row",
-    gap: 8,
-    paddingRight: 8,
-  },
-  activeChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 11,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: colours.primaryLight,
-    borderWidth: 1,
-    borderColor: colours.primary + "40",
-  },
-  activeChipText: {
-    fontSize: 12,
-    color: colours.primary,
-    fontWeight: "600",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    activeFiltersRow: {
+      flexDirection: "row",
+      gap: 8,
+      paddingRight: 8,
+    },
+    activeChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      paddingHorizontal: 11,
+      paddingVertical: 6,
+      borderRadius: 16,
+      backgroundColor: t.primaryLight,
+      borderWidth: 1,
+      borderColor: t.primary + "40",
+    },
+    activeChipText: {
+      fontSize: 12,
+      color: t.primary,
+      fontWeight: "600",
+    },
+  });
+}

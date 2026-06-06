@@ -7,10 +7,10 @@ import { useSearch } from "@/context/SearchContext";
 import { geocodeLocation } from "@/utils/geocoding-utils";
 import { fetchCoverImageUrls } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { Property } from "@kiado/shared/types/property";
 import { Stack, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,10 +20,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const PAGE_SIZE = 20;
 
 export default function SearchResultsScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
   const { searchParams, buildSearchParams, updateSearchParams } = useSearch();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -222,7 +225,7 @@ export default function SearchResultsScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <MaterialIcons name="search-off" size={64} color={colours.muted} />
+      <MaterialIcons name="search-off" size={64} color={theme.muted} />
       <Text style={styles.emptyText}>No properties found</Text>
       <Text style={styles.emptySubtext}>
         Try adjusting your search criteria or expanding the radius
@@ -242,7 +245,7 @@ export default function SearchResultsScreen() {
       <SafeAreaView style={styles.container} edges={["bottom"]}>
         {(loading || geocoding) && !refreshing ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colours.primary} />
+            <ActivityIndicator size="large" color={theme.primary} />
             {geocoding && (
               <Text style={styles.geocodingText}>Locating area…</Text>
             )}
@@ -254,12 +257,13 @@ export default function SearchResultsScreen() {
                 <MaterialIcons
                   name="info-outline"
                   size={20}
-                  color={colours.warning}
+                  color={theme.warning}
                 />
                 <Text style={styles.fallbackText}>{fallbackMessage}</Text>
               </View>
             )}
             <FlatList
+              style={styles.container}
               data={properties}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
@@ -280,7 +284,7 @@ export default function SearchResultsScreen() {
                 loadingMore ? (
                   <ActivityIndicator
                     size="small"
-                    color={colours.primary}
+                    color={theme.primary}
                     style={{ paddingVertical: 16 }}
                   />
                 ) : null
@@ -289,7 +293,7 @@ export default function SearchResultsScreen() {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={onRefresh}
-                  tintColor={colours.primary}
+                  tintColor={theme.primary}
                 />
               }
             />
@@ -300,10 +304,11 @@ export default function SearchResultsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   loadingContainer: {
     flex: 1,
@@ -313,7 +318,7 @@ const styles = StyleSheet.create({
   },
   geocodingText: {
     fontSize: 14,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
   listContent: {
     padding: 16,
@@ -322,19 +327,19 @@ const styles = StyleSheet.create({
   fallbackBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colours.warning + "15",
+    backgroundColor: t.warning + "15",
     padding: 12,
     marginHorizontal: 16,
     marginTop: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colours.warning + "40",
+    borderColor: t.warning + "40",
     gap: 12,
   },
   fallbackText: {
     flex: 1,
     fontSize: 14,
-    color: colours.text,
+    color: t.text,
     lineHeight: 20,
   },
   // ── Header ────────────────────────────────────────────────────────────────
@@ -343,7 +348,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: colours.border,
+    borderBottomColor: t.border,
   },
   header: {
     flexDirection: "row",
@@ -363,12 +368,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
   },
   emptySubtext: {
     fontSize: 14,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginTop: 4,
     textAlign: "center",
   },
-});
+  });
+}

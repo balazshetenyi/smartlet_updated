@@ -1,7 +1,7 @@
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { Amenity } from "@kiado/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useMemo, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SearchParams } from "@/context/SearchContext";
 import RangeSlider from "react-native-fast-range-slider";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -54,6 +55,9 @@ export default function SearchFilters({
   onApply,
   onClose,
 }: Props) {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
 
@@ -166,7 +170,7 @@ export default function SearchFilters({
           </TouchableOpacity>
           <Text style={styles.title}>Filters</Text>
           <TouchableOpacity onPress={onClose}>
-            <MaterialIcons name="close" size={24} color={colours.text} />
+            <MaterialIcons name="close" size={24} color={theme.text} />
           </TouchableOpacity>
         </View>
 
@@ -229,13 +233,13 @@ export default function SearchFilters({
               width={SLIDER_WIDTH}
               thumbSize={28}
               trackHeight={4}
-              selectedTrackColor={colours.primary}
-              selectedTrackStyle={{ backgroundColor: colours.primary }}
-              unselectedTrackStyle={{ backgroundColor: colours.border }}
+              selectedTrackColor={theme.primary}
+              selectedTrackStyle={{ backgroundColor: theme.primary }}
+              unselectedTrackStyle={{ backgroundColor: theme.border }}
               thumbStyle={{
-                backgroundColor: colours.surface,
+                backgroundColor: theme.surface,
                 borderWidth: 2,
-                borderColor: colours.primary,
+                borderColor: theme.primary,
               }}
               pressedThumbStyle={{ transform: [{ scale: 1.15 }] }}
               showThumbLines={false}
@@ -260,7 +264,7 @@ export default function SearchFilters({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Amenities</Text>
             {loadingAmenities ? (
-              <ActivityIndicator color={colours.primary} />
+              <ActivityIndicator color={theme.primary} />
             ) : (
               <View style={styles.amenitiesGrid}>
                 {amenities.map((amenity) => {
@@ -278,7 +282,7 @@ export default function SearchFilters({
                         name={amenity.icon as any}
                         size={18}
                         color={
-                          isSelected ? colours.primary : colours.textSecondary
+                          isSelected ? theme.primary : theme.textSecondary
                         }
                       />
                       <Text
@@ -311,165 +315,167 @@ export default function SearchFilters({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
-  sheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: SHEET_HEIGHT,
-    backgroundColor: colours.background,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colours.border,
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: colours.text,
-  },
-  resetText: {
-    fontSize: 15,
-    color: colours.primary,
-    fontWeight: "500",
-  },
-  resetDisabled: {
-    color: colours.muted,
-  },
-  scrollContent: {
-    paddingBottom: 16,
-  },
-  section: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 14,
-  },
-  subLabel: {
-    fontSize: 13,
-    color: colours.textSecondary,
-    marginTop: 12,
-    marginBottom: 10,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colours.border,
-    marginHorizontal: 20,
-  },
-  // Bedroom badges
-  chipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  priceRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: colours.border,
-    backgroundColor: colours.surface,
-  },
-  chipSelected: {
-    borderColor: colours.primary,
-    backgroundColor: colours.primaryLight,
-  },
-  chipText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    fontWeight: "500",
-  },
-  chipTextSelected: {
-    color: colours.primary,
-    fontWeight: "600",
-  },
-  // Price sliders
-  priceHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  priceLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.textSecondary,
-  },
-  priceLabelActive: {
-    color: colours.primary,
-  },
-  sliderLegend: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 4,
-    paddingHorizontal: 4,
-  },
-  sliderLegendText: {
-    fontSize: 11,
-    color: colours.muted,
-  },
-  // Amenities
-  amenitiesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  amenityChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: colours.border,
-    backgroundColor: colours.surface,
-  },
-  amenityChipSelected: {
-    borderColor: colours.primary,
-    backgroundColor: colours.primaryLight,
-  },
-  amenityText: {
-    fontSize: 13,
-    color: colours.textSecondary,
-    fontWeight: "500",
-  },
-  amenityTextSelected: {
-    color: colours.primary,
-    fontWeight: "600",
-  },
-  applyButton: {
-    marginHorizontal: 20,
-    marginTop: 8,
-    backgroundColor: colours.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-  applyText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: "rgba(0,0,0,0.4)",
+    },
+    sheet: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: SHEET_HEIGHT,
+      backgroundColor: t.background,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    title: {
+      fontSize: 17,
+      fontWeight: "700",
+      color: t.text,
+    },
+    resetText: {
+      fontSize: 15,
+      color: t.primary,
+      fontWeight: "500",
+    },
+    resetDisabled: {
+      color: t.muted,
+    },
+    scrollContent: {
+      paddingBottom: 16,
+    },
+    section: {
+      paddingHorizontal: 20,
+      paddingVertical: 20,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 14,
+    },
+    subLabel: {
+      fontSize: 13,
+      color: t.textSecondary,
+      marginTop: 12,
+      marginBottom: 10,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: t.border,
+      marginHorizontal: 20,
+    },
+    // Bedroom badges
+    chipRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
+    priceRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
+    chip: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      borderWidth: 1.5,
+      borderColor: t.border,
+      backgroundColor: t.surface,
+    },
+    chipSelected: {
+      borderColor: t.primary,
+      backgroundColor: t.primaryLight,
+    },
+    chipText: {
+      fontSize: 14,
+      color: t.textSecondary,
+      fontWeight: "500",
+    },
+    chipTextSelected: {
+      color: t.primary,
+      fontWeight: "600",
+    },
+    // Price sliders
+    priceHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 8,
+    },
+    priceLabel: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.textSecondary,
+    },
+    priceLabelActive: {
+      color: t.primary,
+    },
+    sliderLegend: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 4,
+      paddingHorizontal: 4,
+    },
+    sliderLegendText: {
+      fontSize: 11,
+      color: t.muted,
+    },
+    // Amenities
+    amenitiesGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
+    amenityChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 20,
+      borderWidth: 1.5,
+      borderColor: t.border,
+      backgroundColor: t.surface,
+    },
+    amenityChipSelected: {
+      borderColor: t.primary,
+      backgroundColor: t.primaryLight,
+    },
+    amenityText: {
+      fontSize: 13,
+      color: t.textSecondary,
+      fontWeight: "500",
+    },
+    amenityTextSelected: {
+      color: t.primary,
+      fontWeight: "600",
+    },
+    applyButton: {
+      marginHorizontal: 20,
+      marginTop: 8,
+      backgroundColor: t.primary,
+      borderRadius: 12,
+      paddingVertical: 16,
+      alignItems: "center",
+    },
+    applyText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "700",
+    },
+  });
+}

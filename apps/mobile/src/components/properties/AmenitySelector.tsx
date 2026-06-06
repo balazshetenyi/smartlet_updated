@@ -1,7 +1,7 @@
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { Amenity } from "@kiado/shared/types/property";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 type AmenitySelectorProps = {
   selectedAmenities: string[];
@@ -22,6 +23,8 @@ export default function AmenitySelector({
   onChange,
   error,
 }: AmenitySelectorProps) {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +61,7 @@ export default function AmenitySelector({
       <View style={styles.container}>
         <Text style={styles.label}>Amenities</Text>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={colours.primary} />
+          <ActivityIndicator size="small" color={theme.primary} />
           <Text style={styles.loadingText}>Loading amenities...</Text>
         </View>
       </View>
@@ -93,7 +96,7 @@ export default function AmenitySelector({
               <MaterialIcons
                 name={amenity.icon as any}
                 size={24}
-                color={isSelected ? colours.primary : colours.textSecondary}
+                color={isSelected ? theme.primary : theme.textSecondary}
               />
               <Text
                 style={[
@@ -109,7 +112,7 @@ export default function AmenitySelector({
                   <MaterialIcons
                     name="check-circle"
                     size={20}
-                    color={colours.primary}
+                    color={theme.primary}
                   />
                 </View>
               )}
@@ -123,70 +126,72 @@ export default function AmenitySelector({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  loadingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 4,
-  },
-  hint: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginBottom: 12,
-  },
-  amenitiesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    // paddingVertical: 4,
-  },
-  amenityCard: {
-    width: "45%",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: colours.surface,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colours.border,
-    padding: 12,
-    justifyContent: "center",
-  },
-  amenityCardSelected: {
-    backgroundColor: colours.primaryLight,
-    borderColor: colours.primary,
-  },
-  amenityName: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: colours.textSecondary,
-    textAlign: "center",
-  },
-  amenityNameSelected: {
-    color: colours.primary,
-    fontWeight: "600",
-  },
-  checkmark: {
-    display: "none",
-  },
-  errorText: {
-    fontSize: 12,
-    color: colours.danger,
-    marginTop: 4,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      marginBottom: 16,
+    },
+    loadingContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 20,
+      gap: 12,
+    },
+    loadingText: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 4,
+    },
+    hint: {
+      fontSize: 12,
+      color: t.textSecondary,
+      marginBottom: 12,
+    },
+    amenitiesGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      // paddingVertical: 4,
+    },
+    amenityCard: {
+      width: "45%",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      backgroundColor: t.surface,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: t.border,
+      padding: 12,
+      justifyContent: "center",
+    },
+    amenityCardSelected: {
+      backgroundColor: t.primaryLight,
+      borderColor: t.primary,
+    },
+    amenityName: {
+      fontSize: 12,
+      fontWeight: "500",
+      color: t.textSecondary,
+      textAlign: "center",
+    },
+    amenityNameSelected: {
+      color: t.primary,
+      fontWeight: "600",
+    },
+    checkmark: {
+      display: "none",
+    },
+    errorText: {
+      fontSize: 12,
+      color: t.danger,
+      marginTop: 4,
+    },
+  });
+}

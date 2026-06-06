@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
-import { colours } from "@kiado/shared";
 import Markdown from "react-native-markdown-display";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PRIVACY_POLICY } from "@kiado/shared/content/privacy-policy";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function PrivacyPolicyScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -16,14 +18,16 @@ export default function PrivacyPolicyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colours.surface },
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   content: { padding: 20 },
   title: {
     fontSize: 22,
     fontWeight: "700",
-    color: colours.text,
+    color: t.text,
     marginBottom: 8,
   },
-  body: { color: colours.text, fontSize: 14, lineHeight: 20 },
-});
+  body: { color: t.text, fontSize: 14, lineHeight: 20 },
+  });
+}

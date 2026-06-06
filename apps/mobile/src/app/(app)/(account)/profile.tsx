@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@kiado/shared";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import {
   getRoleColor,
   getRoleIcon,
@@ -9,7 +9,7 @@ import {
 } from "@/utils/profile-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   RefreshControl,
@@ -23,6 +23,8 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 
 export default function ProfileScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { profile, signOut, signingOut, refreshProfile } = useAuthStore();
   const router = useRouter();
   const { keyboardOffset } = useKeyboardOffset();
@@ -132,17 +134,17 @@ export default function ProfileScreen() {
         <RefreshControl
           refreshing={loading}
           onRefresh={onRefresh}
-          tintColor={colours.primary}
-          colors={[colours.primary]}
+          tintColor={theme.primary}
+          colors={[theme.primary]}
         />
       }
     >
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <View
-            style={[styles.avatar, { backgroundColor: colours.primaryLight }]}
+            style={[styles.avatar, { backgroundColor: theme.primaryLight }]}
           >
-            <MaterialIcons name="person" size={48} color={colours.primary} />
+            <MaterialIcons name="person" size={48} color={theme.primary} />
           </View>
           <View
             style={[
@@ -175,7 +177,7 @@ export default function ProfileScreen() {
               onPress={() => setIsEditing(true)}
               style={styles.editButton}
             >
-              <MaterialIcons name="edit" size={20} color={colours.primary} />
+              <MaterialIcons name="edit" size={20} color={theme.primary} />
               <Text style={styles.editButtonText}>Edit</Text>
             </TouchableOpacity>
           )}
@@ -256,11 +258,11 @@ export default function ProfileScreen() {
             <MaterialIcons
               name="calendar-today"
               size={24}
-              color={colours.text}
+              color={theme.text}
             />
             <Text style={styles.menuItemText}>My Bookings</Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+          <MaterialIcons name="chevron-right" size={24} color={theme.muted} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -271,11 +273,11 @@ export default function ProfileScreen() {
             <MaterialIcons
               name="report-problem"
               size={24}
-              color={colours.text}
+              color={theme.text}
             />
             <Text style={styles.menuItemText}>My Reports</Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+          <MaterialIcons name="chevron-right" size={24} color={theme.muted} />
         </TouchableOpacity>
 
         {/* My Listings - Only for Landlords */}
@@ -286,13 +288,13 @@ export default function ProfileScreen() {
               onPress={() => router.push("/my-properties")}
             >
               <View style={styles.menuItemLeft}>
-                <MaterialIcons name="home" size={24} color={colours.text} />
+                <MaterialIcons name="home" size={24} color={theme.text} />
                 <Text style={styles.menuItemText}>My Properties</Text>
               </View>
               <MaterialIcons
                 name="chevron-right"
                 size={24}
-                color={colours.muted}
+                color={theme.muted}
               />
             </TouchableOpacity>
             <TouchableOpacity
@@ -303,14 +305,14 @@ export default function ProfileScreen() {
                 <MaterialIcons
                   name="bar-chart"
                   size={24}
-                  color={colours.text}
+                  color={theme.text}
                 />
                 <Text style={styles.menuItemText}>Earnings</Text>
               </View>
               <MaterialIcons
                 name="chevron-right"
                 size={24}
-                color={colours.muted}
+                color={theme.muted}
               />
             </TouchableOpacity>
             <TouchableOpacity
@@ -318,7 +320,7 @@ export default function ProfileScreen() {
               onPress={() => router.push("/payout-setup")}
             >
               <View style={styles.menuItemLeft}>
-                <MaterialIcons name="payments" size={24} color={colours.text} />
+                <MaterialIcons name="payments" size={24} color={theme.text} />
                 <Text style={styles.menuItemText}>
                   {profile?.stripe_account_id
                     ? "Manage Payouts"
@@ -328,7 +330,7 @@ export default function ProfileScreen() {
               <MaterialIcons
                 name="chevron-right"
                 size={24}
-                color={colours.muted}
+                color={theme.muted}
               />
             </TouchableOpacity>
             <TouchableOpacity
@@ -336,13 +338,13 @@ export default function ProfileScreen() {
               onPress={() => router.push("/booking-requests")}
             >
               <View style={styles.menuItemLeft}>
-                <MaterialIcons name="home" size={24} color={colours.text} />
+                <MaterialIcons name="home" size={24} color={theme.text} />
                 <Text style={styles.menuItemText}>Booking Requests</Text>
               </View>
               <MaterialIcons
                 name="chevron-right"
                 size={24}
-                color={colours.muted}
+                color={theme.muted}
               />
             </TouchableOpacity>
           </>
@@ -358,10 +360,10 @@ export default function ProfileScreen() {
           onPress={() => router.push("/change-password")}
         >
           <View style={styles.menuItemLeft}>
-            <MaterialIcons name="lock" size={24} color={colours.text} />
+            <MaterialIcons name="lock" size={24} color={theme.text} />
             <Text style={styles.menuItemText}>Change Password</Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+          <MaterialIcons name="chevron-right" size={24} color={theme.muted} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -372,11 +374,11 @@ export default function ProfileScreen() {
             <MaterialIcons
               name="notifications"
               size={24}
-              color={colours.text}
+              color={theme.text}
             />
             <Text style={styles.menuItemText}>Notifications</Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+          <MaterialIcons name="chevron-right" size={24} color={theme.muted} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -384,10 +386,10 @@ export default function ProfileScreen() {
           onPress={() => router.push("/terms-of-service")}
         >
           <View style={styles.menuItemLeft}>
-            <MaterialIcons name="gavel" size={24} color={colours.text} />
+            <MaterialIcons name="gavel" size={24} color={theme.text} />
             <Text style={styles.menuItemText}>Terms of Service</Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+          <MaterialIcons name="chevron-right" size={24} color={theme.muted} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -395,18 +397,18 @@ export default function ProfileScreen() {
           onPress={() => router.push("/privacy-policy")}
         >
           <View style={styles.menuItemLeft}>
-            <MaterialIcons name="privacy-tip" size={24} color={colours.text} />
+            <MaterialIcons name="privacy-tip" size={24} color={theme.text} />
             <Text style={styles.menuItemText}>Privacy Policy</Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+          <MaterialIcons name="chevron-right" size={24} color={theme.muted} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem}>
           <View style={styles.menuItemLeft}>
-            <MaterialIcons name="help" size={24} color={colours.text} />
+            <MaterialIcons name="help" size={24} color={theme.text} />
             <Text style={styles.menuItemText}>Help & Support</Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color={colours.muted} />
+          <MaterialIcons name="chevron-right" size={24} color={theme.muted} />
         </TouchableOpacity>
       </View>
 
@@ -417,7 +419,7 @@ export default function ProfileScreen() {
           onPress={signOut}
           disabled={signingOut}
         >
-          <MaterialIcons name="logout" size={20} color={colours.danger} />
+          <MaterialIcons name="logout" size={20} color={theme.danger} />
           <Text style={styles.signOutText}>
             {signingOut ? "Signing Out..." : "Sign Out"}
           </Text>
@@ -433,7 +435,7 @@ export default function ProfileScreen() {
           <MaterialIcons
             name="delete-forever"
             size={20}
-            color={colours.danger}
+            color={theme.danger}
           />
           <Text style={styles.deleteText}>Delete Account</Text>
         </TouchableOpacity>
@@ -442,209 +444,211 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  contentContainer: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  avatarContainer: {
-    position: "relative",
-    marginBottom: 16,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  roleBadge: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  roleText: {
-    color: "#FFFFFF",
-    fontSize: 10,
-    fontWeight: "600",
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: colours.text,
-    marginBottom: 4,
-  },
-  email: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  editButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  editButtonText: {
-    fontSize: 14,
-    color: colours.primary,
-    fontWeight: "500",
-  },
-  propertyWrapper: {
-    marginBottom: 12,
-  },
-  propertyActions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 8,
-  },
-  propertyActionButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: colours.surface,
-    borderWidth: 1,
-    borderColor: colours.border,
-  },
-  actionText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colours.primary,
-  },
-  dangerText: {
-    color: colours.danger,
-  },
-  viewAllButton: {
-    marginTop: 8,
-    borderColor: colours.primary,
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 32,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-    marginTop: 12,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    marginTop: 4,
-    textAlign: "center",
-  },
-  createButton: {
-    marginTop: 16,
-    minWidth: 200,
-  },
-  form: {
-    gap: 8,
-  },
-  input: {
-    backgroundColor: colours.surface,
-    borderColor: colours.border,
-    borderRadius: 12,
-  },
-  disabledInput: {
-    backgroundColor: colours.background,
-    opacity: 0.7,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 16,
-  },
-  cancelButton: {
-    flex: 1,
-    borderColor: colours.muted,
-  },
-  saveButton: {
-    flex: 1,
-    backgroundColor: colours.primary,
-  },
-  menuItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: colours.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  menuItemLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: colours.text,
-    fontWeight: "500",
-  },
-  signOutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: colours.surface,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colours.danger,
-  },
-  signOutText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.danger,
-  },
-  deleteSection: {
-    marginBottom: 40,
-  },
-  deleteButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-  },
-  deleteText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colours.danger,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    scrollView: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    contentContainer: {
+      padding: 20,
+      paddingBottom: 40,
+    },
+    header: {
+      alignItems: "center",
+      marginBottom: 32,
+    },
+    avatarContainer: {
+      position: "relative",
+      marginBottom: 16,
+    },
+    avatar: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    roleBadge: {
+      position: "absolute",
+      bottom: 0,
+      right: 0,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      gap: 4,
+    },
+    roleText: {
+      color: "#FFFFFF",
+      fontSize: 10,
+      fontWeight: "600",
+    },
+    name: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: t.text,
+      marginBottom: 4,
+    },
+    email: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    section: {
+      marginBottom: 32,
+    },
+    sectionHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: t.text,
+    },
+    editButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    editButtonText: {
+      fontSize: 14,
+      color: t.primary,
+      fontWeight: "500",
+    },
+    propertyWrapper: {
+      marginBottom: 12,
+    },
+    propertyActions: {
+      flexDirection: "row",
+      gap: 12,
+      marginTop: 8,
+    },
+    propertyActionButton: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 8,
+      backgroundColor: t.surface,
+      borderWidth: 1,
+      borderColor: t.border,
+    },
+    actionText: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: t.primary,
+    },
+    dangerText: {
+      color: t.danger,
+    },
+    viewAllButton: {
+      marginTop: 8,
+      borderColor: t.primary,
+    },
+    emptyState: {
+      alignItems: "center",
+      paddingVertical: 32,
+    },
+    emptyText: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+      marginTop: 12,
+    },
+    emptySubtext: {
+      fontSize: 14,
+      color: t.textSecondary,
+      marginTop: 4,
+      textAlign: "center",
+    },
+    createButton: {
+      marginTop: 16,
+      minWidth: 200,
+    },
+    form: {
+      gap: 8,
+    },
+    input: {
+      backgroundColor: t.surface,
+      borderColor: t.border,
+      borderRadius: 12,
+    },
+    disabledInput: {
+      backgroundColor: t.background,
+      opacity: 0.7,
+    },
+    buttonRow: {
+      flexDirection: "row",
+      gap: 12,
+      marginTop: 16,
+    },
+    cancelButton: {
+      flex: 1,
+      borderColor: t.muted,
+    },
+    saveButton: {
+      flex: 1,
+      backgroundColor: t.primary,
+    },
+    menuItem: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: t.surface,
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 12,
+    },
+    menuItemLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    menuItemText: {
+      fontSize: 16,
+      color: t.text,
+      fontWeight: "500",
+    },
+    signOutButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: t.surface,
+      paddingVertical: 14,
+      paddingHorizontal: 20,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: t.danger,
+    },
+    signOutText: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.danger,
+    },
+    deleteSection: {
+      marginBottom: 40,
+    },
+    deleteButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 14,
+      paddingHorizontal: 20,
+      borderRadius: 12,
+    },
+    deleteText: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: t.danger,
+    },
+  });
+}
