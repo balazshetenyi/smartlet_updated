@@ -1,12 +1,12 @@
 import PropertyRow from "@/components/properties/PropertyRow";
 import AppBar from "@/components/shared/AppBar";
 import SearchBar from "@/components/shared/SearchBar";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth-store";
 import { usePropertyStore } from "@/store/property-store";
-import { useTheme, type AppTheme } from "@/hooks/useTheme";
-import { useEffect, useMemo, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -17,7 +17,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as Sentry from "@sentry/react-native";
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -65,17 +64,6 @@ export default function HomeScreen() {
     );
   }
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-        <AppBar />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <AppBar />
@@ -100,23 +88,19 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.content}>
-          {/* Welcome Section */}
-          <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>
-              Hello, {profile?.first_name || "Guest"} 👋
-            </Text>
-            <Text style={styles.welcomeSubtitle}>
-              Where would you like to go?
-            </Text>
-          </View>
-
           {/* Search Bar */}
           <SearchBar />
 
-          {/* Popular Destinations / Recent */}
+          {/* Popular Holiday Rentals */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Popular Holiday Rentals</Text>
-            {holidayProperties.length > 0 ? (
+            {loading ? (
+              <ActivityIndicator
+                size="small"
+                color={theme.primary}
+                style={styles.sectionLoader}
+              />
+            ) : holidayProperties.length > 0 ? (
               <PropertyRow
                 title=""
                 properties={holidayProperties.slice(0, 5)}
@@ -127,27 +111,25 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Other rental types can be shown as secondary options */}
-          {shortTermProperties.length > 0 && (
+          {/* Short Term Rentals */}
+          {(loading || shortTermProperties.length > 0) && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Short Term Rentals</Text>
-              <PropertyRow
-                title=""
-                properties={shortTermProperties.slice(0, 5)}
-                rentalType="short-term"
-              />
+              {loading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={theme.primary}
+                  style={styles.sectionLoader}
+                />
+              ) : (
+                <PropertyRow
+                  title=""
+                  properties={shortTermProperties.slice(0, 5)}
+                  rentalType="short-term"
+                />
+              )}
             </View>
           )}
-          {/*{longTermProperties.length > 0 && (*/}
-          {/*    <View style={styles.section}>*/}
-          {/*        <Text style={styles.sectionTitle}>Long Term Rentals</Text>*/}
-          {/*        <PropertyRow*/}
-          {/*            title=""*/}
-          {/*            properties={longTermProperties.slice(0, 5)}*/}
-          {/*            rentalType="short-term"*/}
-          {/*        />*/}
-          {/*    </View>*/}
-          {/*)}*/}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -179,21 +161,11 @@ function createStyles(t: AppTheme) {
       justifyContent: "center",
       alignItems: "center",
     },
+    sectionLoader: {
+      marginVertical: 20,
+    },
     content: {
       padding: 20,
-    },
-    welcomeSection: {
-      marginBottom: 24,
-    },
-    welcomeTitle: {
-      fontSize: 28,
-      fontWeight: "700",
-      color: t.darkSlateBlue,
-      marginBottom: 4,
-    },
-    welcomeSubtitle: {
-      fontSize: 16,
-      color: t.textSecondary,
     },
     section: {
       marginBottom: 32,

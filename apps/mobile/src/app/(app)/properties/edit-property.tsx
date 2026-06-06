@@ -28,9 +28,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import SurveillanceDeclarationSection, {
-  DeclarationType,
-} from "@/components/properties/SurveillanceDeclarationSection";
+import SurveillanceDeclarationSection from "@/components/properties/SurveillanceDeclarationSection";
+import type { SurveillanceDeclarationType as DeclarationType } from "@kiado/shared/types/property";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function EditPropertyScreen() {
@@ -79,7 +78,7 @@ export default function EditPropertyScreen() {
       city: "",
       postcode: "",
       address: "",
-      rental_type: "long_term",
+      rental_type: "holiday",
       price: 0,
       bedrooms: 0,
       bathrooms: 0,
@@ -124,7 +123,7 @@ export default function EditPropertyScreen() {
         city: propertyData.city || "",
         postcode: propertyData.postcode || "",
         address: propertyData.address || "",
-        rental_type: propertyData.rental_type || "long_term",
+        rental_type: propertyData.rental_type || "holiday",
         price: propertyData.price || 0,
         bedrooms: propertyData.bedrooms || 0,
         bathrooms: propertyData.bathrooms || 0,

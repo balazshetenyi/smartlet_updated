@@ -10,7 +10,13 @@ const AuthLayout = () => {
       style={{ flex: 1, backgroundColor: theme.surface, padding: 16 }}
       edges={["top", "bottom"]}
     >
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="sign-in" />
+        <Stack.Screen name="select-role" />
+        <Stack.Screen name="sign-up" />
+        <Stack.Screen name="forgot-password" />
+        <Stack.Screen name="reset-password" />
+      </Stack>
     </SafeAreaView>
   );
 };

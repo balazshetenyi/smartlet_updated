@@ -1,28 +1,36 @@
+import { UserTypeSelector } from "@/components/auth/UserTypeSeclector";
+import Button from "@/components/shared/Button";
+import { HeaderBackButton } from "@/components/shared/HeaderBackButton";
+import Input from "@/components/shared/Input";
 import { signUpSchema } from "@/config/schemas";
+import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import { useAuthStore } from "@/store/auth-store";
 import {
   getPasswordStrength,
   getPasswordStrengthText,
 } from "@/utils/auth-utils";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Input from "@/components/shared/Input";
-import Button from "@/components/shared/Button";
-import { UserTypeSelector } from "@/components/auth/UserTypeSeclector";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { Toast } from "react-native-toast-notifications";
 import zod from "zod";
-import { useAuthStore } from "@/store/auth-store";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
-import { useMemo, useState } from "react";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const SignUp = () => {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
+  const { role: roleParam } = useLocalSearchParams<{ role?: string }>();
+  const presetRole =
+    roleParam === "landlord"
+      ? "landlord"
+      : roleParam === "tenant"
+        ? "tenant"
+        : null;
   const [consentGiven, setConsentGiven] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const { signUpWithEmail, loading, session } = useAuthStore();
@@ -36,7 +44,7 @@ const SignUp = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      user_type: "tenant" as "tenant" | "landlord",
+      user_type: (presetRole ?? "tenant") as "tenant" | "landlord",
     },
     mode: "onChange",
   });
@@ -46,7 +54,6 @@ const SignUp = () => {
   const email = watch("email");
   const firstName = watch("first_name");
   const lastName = watch("last_name");
-  const userType = watch("user_type");
 
   const isFormValid =
     formState.isValid &&
@@ -90,23 +97,37 @@ const SignUp = () => {
 
   return (
     <>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: "",
+          headerLeft: () => <HeaderBackButton />,
+          headerStyle: { backgroundColor: theme.surface },
+          headerShadowVisible: false,
+        }}
+      />
       <KeyboardAwareScrollView
         bottomOffset={keyboardOffset + 170}
         keyboardShouldPersistTaps="handled"
         style={styles.container}
       >
         <View style={styles.form}>
-          <Controller
-            control={control}
-            name="user_type"
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <UserTypeSelector
-                value={value}
-                onChange={onChange}
-                error={error?.message}
-              />
-            )}
-          />
+          {!presetRole && (
+            <Controller
+              control={control}
+              name="user_type"
+              render={({
+                field: { onChange, value },
+                fieldState: { error },
+              }) => (
+                <UserTypeSelector
+                  value={value}
+                  onChange={onChange}
+                  error={error?.message}
+                />
+              )}
+            />
+          )}
           <Controller
             control={control}
             name="first_name"
@@ -417,126 +438,127 @@ export default SignUp;
 
 function createStyles(t: AppTheme) {
   return StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: t.surface,
-    paddingHorizontal: 10,
-    paddingBottom: 24,
-  },
-  form: {
-    width: "100%",
-  },
-  input: {
-    color: t.text,
-  },
-  passwordStrength: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: -10,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  passwordMatch: {
-    marginTop: -10,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  matchText: {
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  strengthLabel: {
-    fontSize: 12,
-    color: t.muted,
-    marginRight: 8,
-  },
-  strengthText: {
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  passwordRequirements: {
-    marginTop: -10,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  requirementsTitle: {
-    fontSize: 12,
-    color: t.muted,
-    marginBottom: 5,
-    fontWeight: "bold",
-  },
-  requirement: {
-    fontSize: 11,
-    color: t.muted,
-    marginBottom: 2,
-  },
-  requirementMet: {
-    color: "#00aa00",
-  },
-  sliderContainer: {
-    marginVertical: 20,
-    paddingHorizontal: 10,
-  },
-  sliderLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: t.text,
-    textAlign: "center",
-  },
-  slider: {
-    width: "100%",
-    height: 40,
-  },
-  signUpButton: {
-    backgroundColor: t.primary,
-    marginTop: 20,
-    borderRadius: 8,
-    paddingVertical: 12,
-  },
-  signUpButtonDisabled: {
-    backgroundColor: t.muted,
-  },
-  signInContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-  },
-  signInText: {
-    color: t.muted,
-    fontSize: 14,
-  },
-  signInButtonText: {
-    color: t.primary,
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  bottomSection: {
-    paddingHorizontal: 10,
-    marginTop: 8,
-  },
-  consentContainer: {
-    paddingHorizontal: 10,
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  consentRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-  },
-  consentText: {
-    flex: 1,
-    fontSize: 13,
-    color: t.muted,
-    lineHeight: 20,
-  },
-  consentLink: {
-    fontSize: 13,
-    color: t.primary,
-    fontWeight: "600",
-    textDecorationLine: "underline",
-  },
+    container: {
+      flex: 1,
+      backgroundColor: t.surface,
+      paddingHorizontal: 10,
+      paddingTop: 12,
+      paddingBottom: 24,
+    },
+    form: {
+      width: "100%",
+    },
+    input: {
+      color: t.text,
+    },
+    passwordStrength: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: -10,
+      marginBottom: 10,
+      paddingHorizontal: 10,
+    },
+    passwordMatch: {
+      marginTop: -10,
+      marginBottom: 10,
+      paddingHorizontal: 10,
+    },
+    matchText: {
+      fontSize: 12,
+      fontWeight: "bold",
+    },
+    strengthLabel: {
+      fontSize: 12,
+      color: t.muted,
+      marginRight: 8,
+    },
+    strengthText: {
+      fontSize: 12,
+      fontWeight: "bold",
+    },
+    passwordRequirements: {
+      marginTop: -10,
+      marginBottom: 20,
+      paddingHorizontal: 10,
+    },
+    requirementsTitle: {
+      fontSize: 12,
+      color: t.muted,
+      marginBottom: 5,
+      fontWeight: "bold",
+    },
+    requirement: {
+      fontSize: 11,
+      color: t.muted,
+      marginBottom: 2,
+    },
+    requirementMet: {
+      color: "#00aa00",
+    },
+    sliderContainer: {
+      marginVertical: 20,
+      paddingHorizontal: 10,
+    },
+    sliderLabel: {
+      fontSize: 16,
+      fontWeight: "bold",
+      marginBottom: 10,
+      color: t.text,
+      textAlign: "center",
+    },
+    slider: {
+      width: "100%",
+      height: 40,
+    },
+    signUpButton: {
+      backgroundColor: t.primary,
+      marginTop: 20,
+      borderRadius: 8,
+      paddingVertical: 12,
+    },
+    signUpButtonDisabled: {
+      backgroundColor: t.muted,
+    },
+    signInContainer: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 20,
+    },
+    signInText: {
+      color: t.muted,
+      fontSize: 14,
+    },
+    signInButtonText: {
+      color: t.primary,
+      fontSize: 14,
+      fontWeight: "bold",
+    },
+    bottomSection: {
+      paddingHorizontal: 10,
+      marginTop: 8,
+    },
+    consentContainer: {
+      paddingHorizontal: 10,
+      marginTop: 4,
+      marginBottom: 8,
+    },
+    consentRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 8,
+    },
+    consentText: {
+      flex: 1,
+      fontSize: 13,
+      color: t.muted,
+      lineHeight: 20,
+    },
+    consentLink: {
+      fontSize: 13,
+      color: t.primary,
+      fontWeight: "600",
+      textDecorationLine: "underline",
+    },
   });
 }

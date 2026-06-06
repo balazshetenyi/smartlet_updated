@@ -4,13 +4,13 @@ import { signInSchema } from "@/config/schemas";
 import { useAuthStore } from "@/store/auth-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 import { Toast } from "react-native-toast-notifications";
-import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/hooks/useTheme";
 
 /**
  * Auth component for user authentication.
@@ -19,7 +19,6 @@ import { useTheme, type AppTheme } from "@/hooks/useTheme";
  */
 export default function SignIn() {
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
   const params = useLocalSearchParams();
   const { loading, signIn } = useAuthStore();
   const { keyboardOffset } = useKeyboardOffset();
@@ -159,7 +158,7 @@ export default function SignIn() {
             title="Sign up"
             disabled={formState.isSubmitting}
             loading={loading}
-            onPress={() => router.push("/sign-up")}
+            onPress={() => router.push("/select-role")}
             testID="sign-up-button"
             accessibilityLabel="Sign Up Button"
             accessibilityHint="Navigate to sign up page"
@@ -178,6 +177,3 @@ export default function SignIn() {
   );
 }
 
-function createStyles(t: AppTheme) {
-  return StyleSheet.create({});
-}
