@@ -369,7 +369,7 @@ export default function MyBookingsScreen() {
     <>
       <Stack.Screen
         options={{
-          title: "My Bookings",
+          title: profile?.user_role === "landlord" ? "My Travel Bookings" : "My Bookings",
           headerShown: true,
           headerLeft: () => <HeaderBackButton />,
         }}
@@ -384,7 +384,7 @@ export default function MyBookingsScreen() {
             </Text>
             <Button
               title="Browse Properties"
-              onPress={() => router.push("/(app)")}
+              onPress={() => router.push("/?guest=1")}
               buttonStyle={styles.browseButton}
             />
           </View>
