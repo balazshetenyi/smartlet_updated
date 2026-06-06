@@ -1,14 +1,16 @@
+import { PropertyImage } from "@/components/properties/PropertyImage";
 import Button from "@/components/shared/Button";
 import { Card } from "@/components/shared/Card";
-import { PropertyImage } from "@/components/properties/PropertyImage";
+import { showToastMessage } from "@/components/shared/ToastMessage";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth-store";
+import { fetchBookingRequests } from "@/utils/booking-utils";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { supabase } from "@kiado/shared";
 import { BookingWithTenant } from "@kiado/shared/types/bookings";
-import { fetchBookingRequests } from "@/utils/booking-utils";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,18 +22,28 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useActionSheet } from "@expo/react-native-action-sheet";
-import { showToastMessage } from "@/components/shared/ToastMessage";
 
 export default function BookingsTab() {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { profile } = useAuthStore();
   const { showActionSheetWithOptions } = useActionSheet();
   const listRef = useRef<FlatList<BookingWithTenant>>(null);
   const [bookings, setBookings] = useState<BookingWithTenant[]>([]);
+  const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
+  const [filter, setFilter] = useState<"all" | "pending" | "confirmed" | "past">(
+    filterParam === "pending" || filterParam === "confirmed" || filterParam === "past"
+      ? filterParam
+      : "all",
+  );
+
+  // Sync filter when navigating to this tab with a ?filter= param
+  useEffect(() => {
+    if (filterParam === "pending" || filterParam === "confirmed" || filterParam === "past") {
+      setFilter(filterParam);
+    }
+  }, [filterParam]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -57,18 +69,25 @@ export default function BookingsTab() {
   const isExpired = (b: BookingWithTenant) => {
     const now = new Date();
     if (now >= new Date(b.check_in)) return true;
-    const expiresAt = new Date(new Date(b.created_at!).getTime() + 48 * 60 * 60 * 1000);
+    const expiresAt = new Date(
+      new Date(b.created_at!).getTime() + 48 * 60 * 60 * 1000,
+    );
     return now >= expiresAt;
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "confirmed":  return theme.success;
-      case "pending":    return theme.warning;
+      case "confirmed":
+        return theme.success;
+      case "pending":
+        return theme.warning;
       case "declined":
-      case "cancelled":  return theme.danger;
-      case "completed":  return theme.muted;
-      default:           return theme.textSecondary;
+      case "cancelled":
+        return theme.danger;
+      case "completed":
+        return theme.muted;
+      default:
+        return theme.textSecondary;
     }
   };
 
@@ -83,14 +102,23 @@ export default function BookingsTab() {
       async (idx) => {
         if (idx !== 1) return;
         try {
-          const { error } = await supabase.functions.invoke("confirm-booking-manual", {
-            body: { bookingId },
-          });
+          const { error } = await supabase.functions.invoke(
+            "confirm-booking-manual",
+            {
+              body: { bookingId },
+            },
+          );
           if (error) throw error;
-          showToastMessage({ message: "Booking confirmed and payment processed", type: "success" });
+          showToastMessage({
+            message: "Booking confirmed and payment processed",
+            type: "success",
+          });
           load();
         } catch {
-          showToastMessage({ message: "Failed to confirm booking", type: "danger" });
+          showToastMessage({
+            message: "Failed to confirm booking",
+            type: "danger",
+          });
         }
       },
     );
@@ -115,23 +143,33 @@ export default function BookingsTab() {
           showToastMessage({ message: "Booking declined", type: "success" });
           load();
         } catch {
-          showToastMessage({ message: "Failed to decline booking", type: "danger" });
+          showToastMessage({
+            message: "Failed to decline booking",
+            type: "danger",
+          });
         }
       },
     );
   };
 
   const renderCard = ({ item }: { item: BookingWithTenant }) => {
-    const checkIn  = new Date(item.check_in);
+    const checkIn = new Date(item.check_in);
     const checkOut = new Date(item.check_out);
-    const nights   = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-    const expired  = isExpired(item);
+    const nights = Math.ceil(
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const expired = isExpired(item);
 
-    const paymentBadge = item.payment_status === "paid"
-      ? { icon: "check-circle" as const, color: theme.success, label: "Paid" }
-      : item.payment_status === "due"
-      ? { icon: "schedule" as const,     color: theme.warning, label: "Payment Due" }
-      : null;
+    const paymentBadge =
+      item.payment_status === "paid"
+        ? { icon: "check-circle" as const, color: theme.success, label: "Paid" }
+        : item.payment_status === "due"
+          ? {
+              icon: "schedule" as const,
+              color: theme.warning,
+              label: "Payment Due",
+            }
+          : null;
 
     return (
       <Card>
@@ -144,8 +182,18 @@ export default function BookingsTab() {
             <Text style={styles.propertyTitle} numberOfLines={1}>
               {item.property?.title}
             </Text>
-            <View style={[styles.badge, { backgroundColor: getStatusColor(item.status) + "22" }]}>
-              <Text style={[styles.badgeText, { color: getStatusColor(item.status) }]}>
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: getStatusColor(item.status) + "22" },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.badgeText,
+                  { color: getStatusColor(item.status) },
+                ]}
+              >
                 {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
               </Text>
             </View>
@@ -154,7 +202,10 @@ export default function BookingsTab() {
           {/* Guest */}
           <View style={styles.guestRow}>
             {item.tenant?.avatar_url ? (
-              <Image source={{ uri: item.tenant.avatar_url }} style={styles.avatar} />
+              <Image
+                source={{ uri: item.tenant.avatar_url }}
+                style={styles.avatar}
+              />
             ) : (
               <View style={[styles.avatar, styles.avatarPlaceholder]}>
                 <MaterialIcons name="person" size={20} color={theme.muted} />
@@ -175,7 +226,11 @@ export default function BookingsTab() {
               <View>
                 <Text style={styles.dateLabel}>Check-in</Text>
                 <Text style={styles.dateValue}>
-                  {checkIn.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
+                  {checkIn.toLocaleDateString("en-GB", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                  })}
                 </Text>
               </View>
             </View>
@@ -184,7 +239,11 @@ export default function BookingsTab() {
               <View>
                 <Text style={styles.dateLabel}>Check-out</Text>
                 <Text style={styles.dateValue}>
-                  {checkOut.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
+                  {checkOut.toLocaleDateString("en-GB", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                  })}
                 </Text>
               </View>
             </View>
@@ -193,11 +252,22 @@ export default function BookingsTab() {
           {/* Pricing */}
           <View style={styles.pricing}>
             <View style={styles.pricingTop}>
-              <Text style={styles.nights}>{nights} {nights === 1 ? "night" : "nights"}</Text>
+              <Text style={styles.nights}>
+                {nights} {nights === 1 ? "night" : "nights"}
+              </Text>
               {paymentBadge && (
                 <View style={styles.paymentBadge}>
-                  <MaterialIcons name={paymentBadge.icon} size={14} color={paymentBadge.color} />
-                  <Text style={[styles.paymentBadgeText, { color: paymentBadge.color }]}>
+                  <MaterialIcons
+                    name={paymentBadge.icon}
+                    size={14}
+                    color={paymentBadge.color}
+                  />
+                  <Text
+                    style={[
+                      styles.paymentBadgeText,
+                      { color: paymentBadge.color },
+                    ]}
+                  >
                     {paymentBadge.label}
                   </Text>
                 </View>
@@ -205,7 +275,9 @@ export default function BookingsTab() {
             </View>
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Booking total</Text>
-              <Text style={styles.priceValue}>£{item.total_price.toFixed(2)}</Text>
+              <Text style={styles.priceValue}>
+                £{item.total_price.toFixed(2)}
+              </Text>
             </View>
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Kiado fee (6%)</Text>
@@ -215,13 +287,15 @@ export default function BookingsTab() {
             </View>
             <View style={styles.payoutRow}>
               <Text style={styles.payoutLabel}>Your payout</Text>
-              <Text style={styles.payoutValue}>£{(item.total_price * 0.94).toFixed(2)}</Text>
+              <Text style={styles.payoutValue}>
+                £{(item.total_price * 0.94).toFixed(2)}
+              </Text>
             </View>
           </View>
 
           {/* Actions for pending */}
-          {item.status === "pending" && (
-            expired ? (
+          {item.status === "pending" &&
+            (expired ? (
               <View style={styles.expiredRow}>
                 <MaterialIcons name="schedule" size={15} color={theme.muted} />
                 <Text style={styles.expiredText}>
@@ -236,7 +310,10 @@ export default function BookingsTab() {
                   title="Decline"
                   type="outline"
                   onPress={() => handleDecline(item.id)}
-                  buttonStyle={[styles.actionBtn, { borderColor: theme.danger }]}
+                  buttonStyle={[
+                    styles.actionBtn,
+                    { borderColor: theme.danger },
+                  ]}
                 />
                 <Button
                   title="Confirm Booking"
@@ -244,56 +321,129 @@ export default function BookingsTab() {
                   buttonStyle={styles.actionBtn}
                 />
               </View>
-            )
-          )}
+            ))}
         </View>
       </Card>
     );
   };
+
+  const isPast = (b: BookingWithTenant) =>
+    b.status === "completed" ||
+    b.status === "cancelled" ||
+    (b.status === "pending" && isExpired(b));
+
+  const pendingCount = bookings.filter(
+    (b) => b.status === "pending" && !isExpired(b),
+  ).length;
+
+  const filteredBookings = useMemo(() => {
+    if (filter === "pending")
+      return bookings.filter((b) => b.status === "pending" && !isExpired(b));
+    if (filter === "confirmed")
+      return bookings.filter((b) => b.status === "confirmed");
+    if (filter === "past") return bookings.filter(isPast);
+    // "all" — active only, expired/past noise removed
+    return bookings.filter((b) => !isPast(b));
+  }, [bookings, filter]);
+
+  const FILTERS = [
+    { key: "all", label: "All" },
+    { key: "pending", label: "Pending", badge: pendingCount },
+    { key: "confirmed", label: "Confirmed" },
+    { key: "past", label: "Past" },
+  ] as const;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Bookings</Text>
-        <TouchableOpacity
-          style={styles.travelBtn}
-          onPress={() => router.push("/(account)/my-bookings")}
-          accessibilityLabel="My travel bookings"
-        >
-          <MaterialIcons name="luggage" size={20} color={theme.accent} />
-        </TouchableOpacity>
       </View>
+
+      {/* Filter pills */}
+      {!loading && bookings.length > 0 && (
+        <View style={styles.filterRow}>
+          {FILTERS.map((f) => {
+            const active = filter === f.key;
+            return (
+              <TouchableOpacity
+                key={f.key}
+                style={[styles.filterPill, active && styles.filterPillActive]}
+                onPress={() => setFilter(f.key)}
+              >
+                <Text
+                  style={[
+                    styles.filterLabel,
+                    active && styles.filterLabelActive,
+                  ]}
+                >
+                  {f.label}
+                </Text>
+                {"badge" in f && f.badge > 0 && (
+                  <View
+                    style={[
+                      styles.filterBadge,
+                      active && styles.filterBadgeActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.filterBadgeText,
+                        active && styles.filterBadgeTextActive,
+                      ]}
+                    >
+                      {f.badge}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
 
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.accent} />
         </View>
-      ) : bookings.length === 0 ? (
+      ) : filteredBookings.length === 0 ? (
         <View style={styles.centered}>
           <MaterialIcons name="inbox" size={56} color={theme.textMuted} />
-          <Text style={styles.emptyTitle}>No booking requests</Text>
+          <Text style={styles.emptyTitle}>
+            {bookings.length === 0
+              ? "No booking requests"
+              : `No ${filter} bookings`}
+          </Text>
           <Text style={styles.emptySubtitle}>
-            Booking requests from guests will appear here
+            {bookings.length === 0
+              ? "Booking requests from guests will appear here"
+              : "Try a different filter"}
           </Text>
         </View>
       ) : (
         <FlatList
           style={styles.list}
           ref={listRef}
-          data={bookings}
+          data={filteredBookings}
           renderItem={renderCard}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           onScrollToIndexFailed={(info) => {
             setTimeout(() => {
-              listRef.current?.scrollToIndex({ index: info.index, animated: true, viewPosition: 0.2 });
+              listRef.current?.scrollToIndex({
+                index: info.index,
+                animated: true,
+                viewPosition: 0.2,
+              });
             }, 300);
           }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={() => { setRefreshing(true); load(); }}
+              onRefresh={() => {
+                setRefreshing(true);
+                load();
+              }}
               tintColor={theme.accent}
             />
           }
@@ -322,15 +472,54 @@ function createStyles(t: AppTheme) {
       fontWeight: "700",
       color: t.text,
     },
-    travelBtn: {
-      width: 40,
-      height: 40,
+    filterRow: {
+      flexDirection: "row",
+      gap: 8,
+      paddingHorizontal: 20,
+      paddingBottom: 12,
+    },
+    filterPill: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 14,
+      paddingVertical: 7,
       borderRadius: 20,
       backgroundColor: t.card,
       borderWidth: 1,
       borderColor: t.border,
-      justifyContent: "center",
+    },
+    filterPillActive: {
+      backgroundColor: t.accent,
+      borderColor: t.accent,
+    },
+    filterLabel: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: t.textSub,
+    },
+    filterLabelActive: {
+      color: "#FFFFFF",
+    },
+    filterBadge: {
+      minWidth: 18,
+      height: 18,
+      borderRadius: 9,
+      backgroundColor: t.border,
       alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 4,
+    },
+    filterBadgeActive: {
+      backgroundColor: "rgba(255,255,255,0.3)",
+    },
+    filterBadgeText: {
+      fontSize: 11,
+      fontWeight: "700",
+      color: t.textSub,
+    },
+    filterBadgeTextActive: {
+      color: "#FFFFFF",
     },
     centered: {
       flex: 1,
