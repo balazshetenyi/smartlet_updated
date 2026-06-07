@@ -11,6 +11,9 @@ import * as zod from "zod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import { Image } from "expo-image";
+
+const logoImg = require("@kiado/shared/assets/images/kiado-logo.png");
 
 const forgotPasswordSchema = zod.object({
   email: zod.string().email({ message: "Invalid email address" }),
@@ -67,6 +70,12 @@ export default function ForgotPasswordScreen() {
       contentContainerStyle={styles.container}
     >
       <View style={styles.header}>
+        <Image
+          source={logoImg}
+          style={styles.logo}
+          contentFit="contain"
+          tintColor={theme.text}
+        />
         <Text style={styles.title}>Reset Password</Text>
         <Text style={styles.subtitle}>
           Enter your email address and we&aposll send you a link to reset your
@@ -142,6 +151,11 @@ function createStyles(t: AppTheme) {
   header: {
     marginBottom: 40,
     alignItems: "center",
+  },
+  logo: {
+    width: 140,
+    height: 38,
+    marginBottom: 28,
   },
   title: {
     fontSize: 24,

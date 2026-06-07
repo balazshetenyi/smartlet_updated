@@ -31,7 +31,8 @@ export default function BookingsTab() {
   const { showActionSheetWithOptions } = useActionSheet();
   const listRef = useRef<FlatList<BookingWithTenant>>(null);
   const [bookings, setBookings] = useState<BookingWithTenant[]>([]);
-  const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
+  const { filter: filterParam, bookingId: targetId } =
+    useLocalSearchParams<{ filter?: string; bookingId?: string }>();
   const [filter, setFilter] = useState<"all" | "pending" | "confirmed" | "past">(
     filterParam === "pending" || filterParam === "confirmed" || filterParam === "past"
       ? filterParam
@@ -329,31 +330,58 @@ export default function BookingsTab() {
     );
   };
 
+  const now = new Date();
+
   const isPast = (b: BookingWithTenant) =>
     b.status === "completed" ||
     b.status === "cancelled" ||
-    (b.status === "pending" && isExpired(b));
+    (b.status === "pending"   && isExpired(b)) ||
+    (b.status === "confirmed" && new Date(b.check_out) < now);
 
   const pendingCount = bookings.filter(
     (b) => b.status === "pending" && !isExpired(b),
   ).length;
 
+  const confirmedCount = bookings.filter(
+    (b) => b.status === "confirmed",
+  ).length;
+
+  const byCheckIn = (a: BookingWithTenant, b: BookingWithTenant) =>
+    new Date(a.check_in).getTime() - new Date(b.check_in).getTime();
+
   const filteredBookings = useMemo(() => {
     if (filter === "pending")
-      return bookings.filter((b) => b.status === "pending" && !isExpired(b));
+      return bookings.filter((b) => b.status === "pending" && !isExpired(b)).sort(byCheckIn);
     if (filter === "confirmed")
-      return bookings.filter((b) => b.status === "confirmed");
-    if (filter === "past") return bookings.filter(isPast);
+      return bookings.filter((b) => b.status === "confirmed").sort(byCheckIn);
+    if (filter === "past")
+      return bookings.filter(isPast).sort((a, b) => byCheckIn(b, a));
     // "all" — active only, expired/past noise removed
-    return bookings.filter((b) => !isPast(b));
+    return bookings.filter((b) => !isPast(b)).sort(byCheckIn);
   }, [bookings, filter]);
 
-  const FILTERS = [
-    { key: "all", label: "All" },
-    { key: "pending", label: "Pending", badge: pendingCount },
-    { key: "confirmed", label: "Confirmed" },
-    { key: "past", label: "Past" },
-  ] as const;
+  // Scroll to a specific booking when arriving from the activity feed.
+  // scrolledToId prevents re-firing when the user changes filters while
+  // the bookingId param is still in the URL.
+  const scrolledToId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!targetId || filteredBookings.length === 0) return;
+    if (scrolledToId.current === targetId) return;
+    const index = filteredBookings.findIndex((b) => b.id === targetId);
+    if (index === -1) return;
+    scrolledToId.current = targetId;
+    setTimeout(() => {
+      listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.15 });
+    }, 350);
+  }, [filteredBookings, targetId]);
+
+  const FILTERS: { key: "all" | "pending" | "confirmed" | "past"; label: string; badge?: number }[] = [
+    { key: "all",       label: "All" },
+    { key: "pending",   label: "Pending",   badge: pendingCount   },
+    { key: "confirmed", label: "Confirmed", badge: confirmedCount },
+    { key: "past",      label: "Past" },
+  ];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -381,7 +409,7 @@ export default function BookingsTab() {
                 >
                   {f.label}
                 </Text>
-                {"badge" in f && f.badge > 0 && (
+                {f.badge !== undefined && f.badge > 0 && (
                   <View
                     style={[
                       styles.filterBadge,
