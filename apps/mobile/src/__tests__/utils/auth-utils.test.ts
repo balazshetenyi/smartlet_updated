@@ -6,14 +6,14 @@ describe("getPasswordStrength", () => {
   });
 
   it("returns 5 for a fully strong password", () => {
-    expect(getPasswordStrength("Str0ng!Pass")).toBe(5);
+    expect(getPasswordStrength("Str0ng!Pass")).toBe(5); // pragma: allowlist secret
   });
 
   it("increments for each satisfied criterion", () => {
     expect(getPasswordStrength("abcdefgh")).toBe(2);  // length + lowercase
     expect(getPasswordStrength("Abcdefgh")).toBe(3);  // + uppercase
     expect(getPasswordStrength("Abcdef1h")).toBe(4);  // + digit
-    expect(getPasswordStrength("Abcdef1!")).toBe(5);  // + special
+    expect(getPasswordStrength("Abcdef1!")).toBe(5);  // + special // pragma: allowlist secret
   });
 });
 
