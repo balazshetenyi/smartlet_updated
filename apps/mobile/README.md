@@ -1,255 +1,131 @@
-# Kiado - Property Rental Platform
+# Kiado — Mobile App
 
-Kiado is a modern property rental platform built with React Native and Expo, connecting landlords with tenants for
-long-term, short-term, and holiday rentals.
+React Native / Expo application for the Kiado property rental platform, supporting holiday lets and short-term rentals.
 
-## Features
-
-- 🏠 **Property Listings** - Browse and search properties by type (long-term, short-term, holiday)
-- 📅 **Booking Management** - Complete booking flow with date selection and availability management
-- 💳 **Secure Payments** - Integrated Stripe payment processing
-- 💬 **Messaging** - Direct communication between landlords and tenants
-- 🔐 **Authentication** - Secure user authentication with Supabase
-- 📱 **Cross-Platform** - Runs on iOS, Android, and web
-- 🌐 **Real-time Updates** - Live data synchronization with Supabase
-- 🔍 **Advanced Search** - Search properties by location, type, and availability
-
-## Tech Stack
-
-- **Frontend**: React Native with Expo
-- **Navigation**: Expo Router
-- **Backend**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Storage**: Supabase Storage
-- **Payments**: Stripe
-- **State Management**: Zustand
-- **Forms**: React Hook Form + Zod
-- **Styling**: NativeWind (Tailwind CSS)
-- **Error Tracking**: Sentry (production)
-
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js 18+
-- npm or yarn
-- iOS Simulator (for iOS development) or Android Studio (for Android development)
-- Expo Go app (for quick testing)
+- pnpm 10+ (this repo uses pnpm workspaces — do not use npm or yarn)
+- Xcode (iOS development)
+- Android Studio (Android development)
 
-### Installation
+## Getting started
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd Kiado
-   ```
+Install from the repository root, not from this directory:
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-
-   Fill in the required values in `.env`:
-    - Supabase credentials
-    - Stripe API keys
-    - OpenCage API key
-    - Other service credentials
-
-4. **Start the development server**
-   ```bash
-   npm start
-   ```
-
-5. **Run on your device**
-    - Press `i` for iOS simulator
-    - Press `a` for Android emulator
-    - Scan QR code with Expo Go app for physical device
-
-## Project Structure
-
-```
-Kiado/
-├── src/
-│   ├── app/                 # Expo Router pages
-│   │   ├── (app)/          # Main app screens
-│   │   └── (auth)/         # Authentication screens
-│   ├── components/          # Reusable components
-│   │   ├── auth/           # Authentication components
-│   │   ├── properties/     # Property-related components
-│   │   └── shared/         # Shared UI components
-│   ├── config/             # Configuration files
-│   │   ├── env.ts          # Environment validation
-│   │   ├── sentry.ts       # Error tracking config
-│   │   └── schemas.ts      # Validation schemas
-│   ├── context/            # React Context providers
-│   ├── lib/                # Third-party library configs
-│   ├── store/              # Zustand state management
-│   ├── styles/             # Style constants
-│   ├── types/              # TypeScript type definitions
-│   └── utils/              # Utility functions
-├── supabase/               # Supabase configuration
-│   └── functions/          # Edge functions
-├── .env.example            # Environment variables template
-├── app.json                # Expo configuration
-├── eas.json                # EAS Build configuration
-└── package.json
+```bash
+cd ../..
+pnpm install
 ```
 
-## Environment Variables
+Then start the app:
 
-See `.env.example` for all required environment variables:
+```bash
+pnpm dev          # iOS simulator with cache clear
+pnpm start        # Expo dev server
+pnpm ios          # Build and run on iOS
+pnpm android      # Build and run on Android
+```
 
-- `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` - Supabase public key
-- `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe public key
-- `STRIPE_SECRET_KEY` - Stripe secret key (server-side)
-- `OPENCAGE_API_KEY` - OpenCage geocoding API key
-- `EXPO_PUBLIC_ENVIRONMENT` - Environment (development/staging/production)
-- `EXPO_PUBLIC_SENTRY_DSN` - Sentry DSN for error tracking (optional)
+## Environment variables
+
+Copy `.env.example` to `.env` and fill in the values:
+
+```bash
+cp .env.example .env
+```
+
+## Project structure
+
+```
+src/
+  app/
+    (auth)/           Sign-in, sign-up, select-role, forgot/reset password
+    (app)/
+      index.tsx       Entry-point router — redirects to /landlord or /tenant
+      landlord/       Landlord tab navigator (Dashboard, Bookings, Messages, Properties, More)
+      tenant/         Tenant tab navigator (Explore, Bookings, Messages, More)
+      (account)/      Shared account screens (profile, bookings, messages, earnings, etc.)
+      properties/     Property detail, search, create, edit
+      book-property/  Payment and booking success screens
+  components/
+    shared/           AppBar, Button, Input, Card, SearchBar, etc.
+    properties/       PropertyCard, BookingModal, etc.
+    messages/         ConversationList
+    search/           Search filters and autocomplete
+    auth/             UserTypeSelector
+  hooks/
+    useTheme.ts       Returns lightTheme or darkTheme based on system colour scheme
+  store/              Zustand stores (auth, property, messages)
+  utils/              Supabase query helpers (booking, property, message, auth)
+  context/            SearchContext
+  config/             Zod schemas, Sentry, environment
+  test/               Jest setup, mocks, test utilities
+  __tests__/          Unit and component tests
+```
+
+## Architecture
+
+### Navigation
+
+The app uses Expo Router with two separate tab navigators based on user role.
+
+`app/(app)/index.tsx` is a pure router — it reads `profile.user_role` from the auth store and redirects:
+
+- Landlords go to `/landlord` (Dashboard, Bookings, Messages, Properties, More)
+- Tenants go to `/tenant` (Explore, Bookings, Messages, More)
+- Landlords can browse as guests via `/tenant?guest=1`
+
+### Theme system
+
+`useTheme()` from `src/hooks/useTheme.ts` returns the correct theme object based on `useColorScheme()`. Both themes (`lightTheme` / `darkTheme`) are defined in `packages/shared/styles/colours.ts` and share identical property names so components require no conditional logic.
+
+All components follow the same pattern:
+
+```tsx
+const theme = useTheme();
+const styles = useMemo(() => createStyles(theme), [theme]);
+```
+
+### Payments
+
+Card registration uses Stripe's Mobile Payment Element (`usePaymentSheet`) rather than the deprecated `CardField`. The flow creates a Supabase `SetupIntent` server-side, presents the native payment sheet, then saves the payment method ID to the booking. Payment is charged automatically 48 hours before check-in via the `charge-due-bookings` edge function.
 
 ## Development
 
-### Available Scripts
-
-- `npm start` - Start Expo development server
-- `npm run android` - Run on Android
-- `npm run ios` - Run on iOS
-- `npm run web` - Run on web
-- `npm run lint` - Run ESLint
-
-### Database Setup
-
-1. Create a Supabase project at https://supabase.com
-2. Run the database migrations (located in `supabase/migrations/`)
-3. Set up Row Level Security (RLS) policies
-4. Configure storage buckets for property images
-
-### Supabase Edge Functions
-
-Deploy the payment intent function:
+### Type checking
 
 ```bash
-cd supabase/functions/create-payment-intent
-supabase functions deploy create-payment-intent
+pnpm typecheck
 ```
 
-## Production Deployment
-
-### Prerequisites
-
-Before deploying to production, complete the production checklist:
-
-1. **Review Documentation**
-    - Read `PRODUCTION_GUIDE.md` for detailed deployment instructions
-    - Use `PRODUCTION_CHECKLIST.md` to track progress
-    - Update `PRIVACY_POLICY.md` and `TERMS_OF_SERVICE.md` with your information
-
-2. **Set Up Services**
-    - Configure production Supabase project
-    - Set up production Stripe account
-    - Create Sentry account for error tracking
-    - Obtain app store developer accounts
-
-3. **Configure App**
-    - Update `app.json` with your bundle identifiers
-    - Create production environment variables
-    - Set up EAS Build
-
-### Building for Production
-
-Install EAS CLI:
+### Tests
 
 ```bash
-npm install -g eas-cli
-eas login
+pnpm test              # Run all tests once
+pnpm test:watch        # Watch mode
+pnpm test:coverage     # With coverage report
 ```
 
-Build for iOS:
+Tests use `jest-expo` with `@testing-library/react-native` v14. Note that `render()` is async in RNTL v14 — always `await` it.
+
+### Linting
 
 ```bash
+pnpm lint
+```
+
+## Production build
+
+```bash
+# Install EAS CLI
+pnpm dlx eas-cli
+
+# Build
 eas build --platform ios --profile production
-```
-
-Build for Android:
-
-```bash
 eas build --platform android --profile production
-```
 
-Submit to stores:
-
-```bash
-eas build --platform ios --profile production --auto-submit
+# Submit
 eas submit --platform ios --profile production
 eas submit --platform android --profile production
 ```
-
-## Features by User Type
-
-### Landlords
-
-- List properties with photos and details
-- Set pricing for different rental types
-- Manage property availability
-- Block specific dates
-- Review and approve booking requests
-- Communicate with potential tenants
-
-### Tenants
-
-- Browse available properties
-- Search by location and rental type
-- View property details and photos
-- Book properties
-- Make secure payments via Stripe
-- Message landlords
-
-## Security
-
-- Secure authentication with Supabase Auth
-- Row Level Security (RLS) on all database tables
-- Encrypted storage for sensitive data
-- HTTPS for all API communications
-- Secure payment processing via Stripe
-- Environment-based configuration
-- Error tracking without exposing sensitive data
-
-## Error Tracking
-
-The app uses Sentry for production error tracking:
-
-- Automatic error capture
-- User context tracking
-- Release tracking
-- Performance monitoring
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-[Your License Here]
-
-## Support
-
-For issues or questions:
-
-- Email: [YOUR SUPPORT EMAIL]
-- GitHub Issues: [YOUR REPO URL]
-
-## Acknowledgments
-
-- Built with [Expo](https://expo.dev)
-- Backend powered by [Supabase](https://supabase.com)
-- Payments by [Stripe](https://stripe.com)
-- Error tracking by [Sentry](https://sentry.io)
