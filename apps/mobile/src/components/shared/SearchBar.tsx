@@ -1,9 +1,9 @@
-import { useSearch } from "@/context/SearchContext";
 import LocationAutocomplete from "@/components/search/LocationAutocomplete";
+import { useSearch } from "@/context/SearchContext";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colours } from "@kiado/shared";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Modal,
   ScrollView,
@@ -13,12 +13,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Calendar } from "react-native-calendars";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 const RADIUS_OPTIONS = [5, 15, 30, 50, 100] as const;
 
 export default function SearchBar() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const { searchParams, updateSearchParams } = useSearch();
   const router = useRouter();
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -109,7 +112,7 @@ export default function SearchBar() {
     if (tempDates.checkIn) {
       marked[tempDates.checkIn] = {
         startingDay: true,
-        color: colours.primary,
+        color: theme.primary,
         textColor: "white",
       };
 
@@ -124,13 +127,13 @@ export default function SearchBar() {
           if (dateString === tempDates.checkOut) {
             marked[dateString] = {
               endingDay: true,
-              color: colours.primary,
+              color: theme.primary,
               textColor: "white",
             };
           } else {
             marked[dateString] = {
-              color: colours.primaryLight,
-              textColor: colours.primary,
+              color: theme.primaryLight,
+              textColor: theme.primary,
             };
           }
         }
@@ -207,7 +210,7 @@ export default function SearchBar() {
               color={
                 searchParams.rentalType !== "short_term"
                   ? "white"
-                  : colours.textSecondary
+                  : theme.textSecondary
               }
             />
             <View>
@@ -246,7 +249,7 @@ export default function SearchBar() {
               color={
                 searchParams.rentalType === "short_term"
                   ? "white"
-                  : colours.textSecondary
+                  : theme.textSecondary
               }
             />
             <View>
@@ -296,7 +299,7 @@ export default function SearchBar() {
           style={styles.searchRow}
           onPress={() => setShowRadiusPicker(true)}
         >
-          <MaterialIcons name="radar" size={22} color={colours.darkSlateBlue} />
+          <MaterialIcons name="radar" size={22} color={theme.darkSlateBlue} />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Radius</Text>
             <Text style={styles.searchValue}>{searchParams.radiusKm} km</Text>
@@ -313,7 +316,7 @@ export default function SearchBar() {
           <MaterialIcons
             name="calendar-today"
             size={22}
-            color={colours.darkSlateBlue}
+            color={theme.darkSlateBlue}
           />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>When</Text>
@@ -335,11 +338,7 @@ export default function SearchBar() {
           style={styles.searchRow}
           onPress={() => setShowGuestPicker(true)}
         >
-          <MaterialIcons
-            name="person"
-            size={24}
-            color={colours.darkSlateBlue}
-          />
+          <MaterialIcons name="person" size={24} color={theme.darkSlateBlue} />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Who</Text>
             <Text style={styles.searchValue}>
@@ -359,7 +358,7 @@ export default function SearchBar() {
           <MaterialIcons
             name="currency-pound"
             size={24}
-            color={colours.darkSlateBlue}
+            color={theme.darkSlateBlue}
           />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Price</Text>
@@ -407,7 +406,7 @@ export default function SearchBar() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Search Radius</Text>
               <TouchableOpacity onPress={() => setShowRadiusPicker(false)}>
-                <MaterialIcons name="close" size={24} color={colours.text} />
+                <MaterialIcons name="close" size={24} color={theme.text} />
               </TouchableOpacity>
             </View>
 
@@ -484,7 +483,7 @@ export default function SearchBar() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Select Dates</Text>
                 <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                  <MaterialIcons name="close" size={24} color={colours.text} />
+                  <MaterialIcons name="close" size={24} color={theme.text} />
                 </TouchableOpacity>
               </View>
 
@@ -526,7 +525,7 @@ export default function SearchBar() {
                 <MaterialIcons
                   name="arrow-forward"
                   size={16}
-                  color={colours.textSecondary}
+                  color={theme.textSecondary}
                 />
                 <View style={styles.dateChip}>
                   <Text style={styles.dateChipLabel}>
@@ -561,16 +560,16 @@ export default function SearchBar() {
                   minDate={new Date().toISOString().split("T")[0]}
                   style={styles.monthCalendar}
                   theme={{
-                    backgroundColor: colours.cardBackground,
-                    calendarBackground: colours.cardBackground,
-                    textSectionTitleColor: colours.text,
-                    selectedDayBackgroundColor: colours.primary,
+                    backgroundColor: theme.cardBackground,
+                    calendarBackground: theme.cardBackground,
+                    textSectionTitleColor: theme.text,
+                    selectedDayBackgroundColor: theme.primary,
                     selectedDayTextColor: "white",
-                    todayTextColor: colours.primary,
-                    dayTextColor: colours.text,
-                    textDisabledColor: colours.textSecondary,
-                    monthTextColor: colours.text,
-                    arrowColor: colours.primary,
+                    todayTextColor: theme.primary,
+                    dayTextColor: theme.text,
+                    textDisabledColor: theme.textSecondary,
+                    monthTextColor: theme.text,
+                    arrowColor: theme.primary,
                   }}
                 />
               ))}
@@ -612,7 +611,7 @@ export default function SearchBar() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Number of Guests</Text>
               <TouchableOpacity onPress={() => setShowGuestPicker(false)}>
-                <MaterialIcons name="close" size={24} color={colours.text} />
+                <MaterialIcons name="close" size={24} color={theme.text} />
               </TouchableOpacity>
             </View>
 
@@ -628,7 +627,7 @@ export default function SearchBar() {
                 <MaterialIcons
                   name="remove"
                   size={24}
-                  color={tempGuests <= 1 ? colours.muted : colours.primary}
+                  color={tempGuests <= 1 ? theme.muted : theme.primary}
                 />
               </TouchableOpacity>
 
@@ -645,7 +644,7 @@ export default function SearchBar() {
                 <MaterialIcons
                   name="add"
                   size={24}
-                  color={tempGuests >= 10 ? colours.muted : colours.primary}
+                  color={tempGuests >= 10 ? theme.muted : theme.primary}
                 />
               </TouchableOpacity>
             </View>
@@ -670,7 +669,7 @@ export default function SearchBar() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Price Range</Text>
                 <TouchableOpacity onPress={() => setShowPricePicker(false)}>
-                  <MaterialIcons name="close" size={24} color={colours.text} />
+                  <MaterialIcons name="close" size={24} color={theme.text} />
                 </TouchableOpacity>
               </View>
 
@@ -680,7 +679,7 @@ export default function SearchBar() {
                   <TextInput
                     style={styles.priceInput}
                     placeholder="0"
-                    placeholderTextColor={colours.textSecondary}
+                    placeholderTextColor={theme.textSecondary}
                     keyboardType="numeric"
                     value={tempMinPrice}
                     onChangeText={setTempMinPrice}
@@ -692,7 +691,7 @@ export default function SearchBar() {
                   <TextInput
                     style={styles.priceInput}
                     placeholder="Any"
-                    placeholderTextColor={colours.textSecondary}
+                    placeholderTextColor={theme.textSecondary}
                     keyboardType="numeric"
                     value={tempMaxPrice}
                     onChangeText={setTempMaxPrice}
@@ -725,311 +724,318 @@ export default function SearchBar() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 32,
-  },
-  searchCard: {
-    backgroundColor: colours.surface,
-    borderRadius: 16,
-    padding: 8,
-    elevation: 4,
-    shadowColor: colours.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    borderWidth: 1,
-    borderColor: colours.border,
-  },
-  modeToggleContainer: {
-    flexDirection: "row",
-    gap: 8,
-    paddingTop: 4,
-    paddingBottom: 4,
-  },
-  modeButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: colours.border,
-    backgroundColor: colours.surface,
-  },
-  modeButtonActive: {
-    borderColor: colours.primary,
-    backgroundColor: colours.primary,
-  },
-  modeButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.textSecondary,
-  },
-  modeButtonTextActive: {
-    color: "white",
-  },
-  modeButtonSubText: {
-    fontSize: 11,
-    color: colours.muted,
-  },
-  modeButtonSubTextActive: {
-    color: "rgba(255,255,255,0.75)",
-  },
-  searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    gap: 12,
-  },
-  locationInput: {
-    flex: 1,
-    fontSize: 16,
-    color: colours.text,
-  },
-  searchContent: {
-    flex: 1,
-  },
-  searchLabel: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginBottom: 2,
-  },
-  searchValue: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  searchPlaceholder: {
-    color: colours.textSecondary,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colours.border,
-    marginHorizontal: 12,
-  },
-  searchButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colours.primary,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 12,
-    gap: 8,
-  },
-  searchButtonDisabled: {
-    backgroundColor: colours.muted,
-  },
-  searchButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: colours.cardBackground,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    maxHeight: "85%",
-  },
-  guestModalContent: {
-    maxHeight: 280,
-  },
-  priceModalContent: {
-    maxHeight: 320,
-  },
-  radiusModalContent: {
-    maxHeight: 280,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colours.text,
-  },
-  modalHint: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  modalActions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 16,
-  },
-  clearButton: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colours.border,
-    alignItems: "center",
-  },
-  clearButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colours.primary,
-  },
-  saveButton: {
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: colours.primary,
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  saveButtonDisabled: {
-    backgroundColor: colours.muted,
-  },
-  saveButtonText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "white",
-  },
-  guestSelector: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    gap: 24,
-  },
-  guestButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colours.primaryLight,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  guestButtonDisabled: {
-    backgroundColor: colours.surface,
-  },
-  guestCount: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: colours.text,
-    minWidth: 40,
-    textAlign: "center",
-  },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 8,
-  },
-  priceInputWrapper: {
-    flex: 1,
-  },
-  priceInputLabel: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginBottom: 6,
-  },
-  priceInput: {
-    borderWidth: 1,
-    borderColor: colours.border,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 15,
-    color: colours.text,
-    backgroundColor: colours.surface,
-  },
-  priceSeparator: {
-    fontSize: 20,
-    color: colours.textSecondary,
-    marginTop: 20,
-  },
-  radiusOptions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "center",
-    paddingVertical: 8,
-  },
-  radiusChip: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: colours.border,
-    backgroundColor: colours.surface,
-  },
-  radiusChipSelected: {
-    borderColor: colours.primary,
-    backgroundColor: colours.primaryLight,
-  },
-  radiusChipText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colours.textSecondary,
-  },
-  radiusChipTextSelected: {
-    color: colours.primary,
-  },
-  datePickerContent: {
-    backgroundColor: colours.cardBackground,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: "90%",
-  },
-  datePickerPinnedTop: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colours.border,
-  },
-  calendarScrollContent: {
-    paddingHorizontal: 4,
-    paddingVertical: 8,
-  },
-  monthCalendar: {
-    marginBottom: 8,
-  },
-  datePickerPinnedBottom: {
-    flexDirection: "row",
-    gap: 12,
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 32,
-    borderTopWidth: 1,
-    borderTopColor: colours.border,
-    backgroundColor: colours.cardBackground,
-  },
-  selectedDatesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: colours.background,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colours.border,
-  },
-  dateChip: {
-    flex: 1,
-  },
-  dateChipLabel: {
-    fontSize: 11,
-    color: colours.textSecondary,
-    marginBottom: 2,
-  },
-  dateChipValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.text,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      marginBottom: 32,
+    },
+    searchCard: {
+      backgroundColor: t.surface,
+      borderRadius: 16,
+      padding: 8,
+      elevation: 4,
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 6,
+      borderWidth: 1,
+      borderColor: t.border,
+    },
+    modeToggleContainer: {
+      flexDirection: "row",
+      gap: 8,
+      paddingTop: 4,
+      paddingBottom: 4,
+    },
+    modeButton: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 12,
+      borderRadius: 10,
+      borderWidth: 1.5,
+      borderColor: t.border,
+      backgroundColor: t.surface,
+    },
+    modeButtonActive: {
+      borderColor: t.primary,
+      backgroundColor: t.primary,
+    },
+    modeButtonText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.textSecondary,
+    },
+    modeButtonTextActive: {
+      color: "white",
+    },
+    modeButtonSubText: {
+      fontSize: 11,
+      color: t.muted,
+    },
+    modeButtonSubTextActive: {
+      color: "rgba(255,255,255,0.75)",
+    },
+    searchRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 12,
+      gap: 12,
+    },
+    locationInput: {
+      flex: 1,
+      fontSize: 16,
+      color: t.text,
+    },
+    searchContent: {
+      flex: 1,
+    },
+    searchLabel: {
+      fontSize: 12,
+      color: t.textSecondary,
+      marginBottom: 2,
+    },
+    searchValue: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: t.text,
+    },
+    searchPlaceholder: {
+      color: t.textSecondary,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: t.border,
+      marginHorizontal: 12,
+    },
+    searchButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: t.primary,
+      borderRadius: 12,
+      padding: 16,
+      marginTop: 12,
+      gap: 8,
+      elevation: 2,
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+    },
+    searchButtonDisabled: {
+      backgroundColor: t.muted,
+    },
+    searchButtonText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "flex-end",
+    },
+    modalContent: {
+      backgroundColor: t.cardBackground,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 24,
+      maxHeight: "85%",
+    },
+    guestModalContent: {
+      maxHeight: 280,
+    },
+    priceModalContent: {
+      maxHeight: 320,
+    },
+    radiusModalContent: {
+      maxHeight: 280,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: t.text,
+    },
+    modalHint: {
+      fontSize: 14,
+      color: t.textSecondary,
+      marginBottom: 16,
+      textAlign: "center",
+    },
+    modalActions: {
+      flexDirection: "row",
+      gap: 12,
+      marginTop: 16,
+    },
+    clearButton: {
+      flex: 1,
+      padding: 14,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: t.border,
+      alignItems: "center",
+    },
+    clearButtonText: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: t.primary,
+    },
+    saveButton: {
+      padding: 14,
+      borderRadius: 12,
+      backgroundColor: t.primary,
+      alignItems: "center",
+      marginBottom: 8,
+    },
+    saveButtonDisabled: {
+      backgroundColor: t.muted,
+    },
+    saveButtonText: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: "white",
+    },
+    guestSelector: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 12,
+      gap: 24,
+    },
+    guestButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: t.primaryLight,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    guestButtonDisabled: {
+      backgroundColor: t.surface,
+    },
+    guestCount: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: t.text,
+      minWidth: 40,
+      textAlign: "center",
+    },
+    priceRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingVertical: 8,
+    },
+    priceInputWrapper: {
+      flex: 1,
+    },
+    priceInputLabel: {
+      fontSize: 12,
+      color: t.textSecondary,
+      marginBottom: 6,
+    },
+    priceInput: {
+      borderWidth: 1,
+      borderColor: t.border,
+      borderRadius: 8,
+      padding: 12,
+      fontSize: 15,
+      color: t.text,
+      backgroundColor: t.surface,
+    },
+    priceSeparator: {
+      fontSize: 20,
+      color: t.textSecondary,
+      marginTop: 20,
+    },
+    radiusOptions: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      justifyContent: "center",
+      paddingVertical: 8,
+    },
+    radiusChip: {
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 24,
+      borderWidth: 1.5,
+      borderColor: t.border,
+      backgroundColor: t.surface,
+    },
+    radiusChipSelected: {
+      borderColor: t.primary,
+      backgroundColor: t.primaryLight,
+    },
+    radiusChipText: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: t.textSecondary,
+    },
+    radiusChipTextSelected: {
+      color: t.primary,
+    },
+    datePickerContent: {
+      backgroundColor: t.cardBackground,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      maxHeight: "90%",
+    },
+    datePickerPinnedTop: {
+      paddingHorizontal: 24,
+      paddingTop: 24,
+      paddingBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    calendarScrollContent: {
+      paddingHorizontal: 4,
+      paddingVertical: 8,
+    },
+    monthCalendar: {
+      marginBottom: 8,
+    },
+    datePickerPinnedBottom: {
+      flexDirection: "row",
+      gap: 12,
+      paddingHorizontal: 24,
+      paddingTop: 12,
+      paddingBottom: 32,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      backgroundColor: t.cardBackground,
+    },
+    selectedDatesRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: t.background,
+      padding: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: t.border,
+    },
+    dateChip: {
+      flex: 1,
+    },
+    dateChipLabel: {
+      fontSize: 11,
+      color: t.textSecondary,
+      marginBottom: 2,
+    },
+    dateChipValue: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.text,
+    },
+  });
+}

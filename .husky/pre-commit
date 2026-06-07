@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo "⏳ Running type checks..."
+pnpm typecheck
+if [ $? -ne 0 ]; then
+  echo "❌ Type check failed. Fix errors before committing."
+  exit 1
+fi
+
+echo "⏳ Running tests..."
+pnpm test
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Fix failures before committing."
+  exit 1
+fi
+
+echo "✅ All checks passed."

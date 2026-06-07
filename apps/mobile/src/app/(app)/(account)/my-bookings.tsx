@@ -1,6 +1,6 @@
 import Button from "@/components/shared/Button";
 import { useAuthStore } from "@/store/auth-store";
-import { colours } from "@kiado/shared";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { BookingWithProperty } from "@kiado/shared/types/bookings";
 import {
   cancelBooking,
@@ -9,7 +9,7 @@ import {
 } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -27,6 +27,8 @@ import { useActionSheet } from "@expo/react-native-action-sheet";
 import { showToastMessage } from "@/components/shared/ToastMessage";
 
 export default function MyBookingsScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
   const { profile } = useAuthStore();
   const { showActionSheetWithOptions } = useActionSheet();
@@ -174,15 +176,15 @@ export default function MyBookingsScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
-        return colours.success;
+        return theme.success;
       case "pending":
-        return colours.warning;
+        return theme.warning;
       case "cancelled":
-        return colours.danger;
+        return theme.danger;
       case "completed":
-        return colours.muted;
+        return theme.muted;
       default:
-        return colours.textSecondary;
+        return theme.textSecondary;
     }
   };
 
@@ -228,7 +230,7 @@ export default function MyBookingsScreen() {
                   <MaterialIcons
                     name="location-on"
                     size={14}
-                    color={colours.textSecondary}
+                    color={theme.textSecondary}
                   />
                   <Text style={styles.locationText}>{item.property.city}</Text>
                 </View>
@@ -268,7 +270,7 @@ export default function MyBookingsScreen() {
               </View>
 
               <View style={styles.nightsIndicator}>
-                <MaterialIcons name="hotel" size={16} color={colours.muted} />
+                <MaterialIcons name="hotel" size={16} color={theme.muted} />
                 <Text style={styles.nightsText}>
                   {nights} {nights === 1 ? "night" : "nights"}
                 </Text>
@@ -308,10 +310,10 @@ export default function MyBookingsScreen() {
                       size={16}
                       color={
                         item.payment_status === "paid"
-                          ? colours.success
+                          ? theme.success
                           : item.payment_status === "due"
-                            ? colours.warning
-                            : colours.textSecondary
+                            ? theme.warning
+                            : theme.textSecondary
                       }
                     />
                     <Text style={styles.paymentStatusLabel}>
@@ -358,7 +360,7 @@ export default function MyBookingsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colours.primary} />
+        <ActivityIndicator size="large" color={theme.primary} />
       </SafeAreaView>
     );
   }
@@ -367,7 +369,7 @@ export default function MyBookingsScreen() {
     <>
       <Stack.Screen
         options={{
-          title: "My Bookings",
+          title: profile?.user_role === "landlord" ? "My Travel Bookings" : "My Bookings",
           headerShown: true,
           headerLeft: () => <HeaderBackButton />,
         }}
@@ -375,14 +377,14 @@ export default function MyBookingsScreen() {
       <SafeAreaView style={styles.container} edges={["bottom"]}>
         {bookings.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="event-busy" size={64} color={colours.muted} />
+            <MaterialIcons name="event-busy" size={64} color={theme.muted} />
             <Text style={styles.emptyTitle}>No bookings yet</Text>
             <Text style={styles.emptyText}>
               Your holiday rental bookings will appear here
             </Text>
             <Button
               title="Browse Properties"
-              onPress={() => router.push("/(app)")}
+              onPress={() => router.push("/tenant?guest=1")}
               buttonStyle={styles.browseButton}
             />
           </View>
@@ -421,6 +423,7 @@ export default function MyBookingsScreen() {
             </View>
 
             <FlatList
+              style={styles.container}
               data={activeTab === "upcoming" ? upcomingBookings : pastBookings}
               renderItem={renderBookingCard}
               keyExtractor={(item) => item.id}
@@ -429,7 +432,7 @@ export default function MyBookingsScreen() {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={onRefresh}
-                  tintColor={colours.primary}
+                  tintColor={theme.primary}
                 />
               }
               ListEmptyComponent={
@@ -439,7 +442,7 @@ export default function MyBookingsScreen() {
                       activeTab === "upcoming" ? "event-available" : "history"
                     }
                     size={48}
-                    color={colours.muted}
+                    color={theme.muted}
                   />
                   <Text style={styles.emptyTabText}>
                     {activeTab === "upcoming"
@@ -456,193 +459,195 @@ export default function MyBookingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colours.background,
-  },
-  listContent: {
-    padding: 16,
-  },
-  bookingContent: {
-    padding: 16,
-  },
-  bookingHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  bookingTitleContainer: {
-    flex: 1,
-    marginRight: 12,
-  },
-  propertyTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colours.text,
-    marginBottom: 4,
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  locationText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  datesContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colours.border,
-    marginBottom: 16,
-  },
-  dateColumn: {
-    alignItems: "center",
-  },
-  dateLabel: {
-    fontSize: 12,
-    color: colours.textSecondary,
-    marginBottom: 4,
-  },
-  dateValue: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  nightsIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: colours.background,
-    borderRadius: 8,
-  },
-  nightsText: {
-    fontSize: 12,
-    color: colours.muted,
-  },
-  paymentStatusContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  paymentStatusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  paymentStatusLabel: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: colours.text,
-  },
-  paymentDueText: {
-    fontSize: 12,
-    color: colours.warning,
-    fontWeight: "600",
-  },
-  bookingFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  priceContainer: {},
-  priceLabel: {
-    fontSize: 12,
-    color: colours.textSecondary,
-  },
-  priceValue: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.primary,
-  },
-  actionsContainer: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colours.border,
-  },
-  cancelButton: {
-    borderColor: colours.danger,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 32,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  browseButton: {
-    minWidth: 200,
-  },
-  tabContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    gap: 8,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
-  },
-  activeTab: {
-    borderBottomColor: colours.primary,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.textSecondary,
-  },
-  activeTabText: {
-    color: colours.primary,
-  },
-  emptyTabContainer: {
-    paddingVertical: 64,
-    alignItems: "center",
-  },
-  emptyTabText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    marginTop: 12,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: t.background,
+    },
+    listContent: {
+      padding: 16,
+    },
+    bookingContent: {
+      padding: 16,
+    },
+    bookingHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 16,
+    },
+    bookingTitleContainer: {
+      flex: 1,
+      marginRight: 12,
+    },
+    propertyTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: t.text,
+      marginBottom: 4,
+    },
+    locationRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 2,
+    },
+    locationText: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    statusBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 12,
+    },
+    statusText: {
+      fontSize: 12,
+      fontWeight: "600",
+    },
+    datesContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 16,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: t.border,
+      marginBottom: 16,
+    },
+    dateColumn: {
+      alignItems: "center",
+    },
+    dateLabel: {
+      fontSize: 12,
+      color: t.textSecondary,
+      marginBottom: 4,
+    },
+    dateValue: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+    },
+    nightsIndicator: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: t.background,
+      borderRadius: 8,
+    },
+    nightsText: {
+      fontSize: 12,
+      color: t.muted,
+    },
+    paymentStatusContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    paymentStatusRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    paymentStatusLabel: {
+      fontSize: 13,
+      fontWeight: "500",
+      color: t.text,
+    },
+    paymentDueText: {
+      fontSize: 12,
+      color: t.warning,
+      fontWeight: "600",
+    },
+    bookingFooter: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    priceContainer: {},
+    priceLabel: {
+      fontSize: 12,
+      color: t.textSecondary,
+    },
+    priceValue: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: t.primary,
+    },
+    actionsContainer: {
+      marginTop: 16,
+      paddingTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+    },
+    cancelButton: {
+      borderColor: t.danger,
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 32,
+    },
+    emptyTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: t.text,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptyText: {
+      fontSize: 14,
+      color: t.textSecondary,
+      textAlign: "center",
+      marginBottom: 24,
+    },
+    browseButton: {
+      minWidth: 200,
+    },
+    tabContainer: {
+      flexDirection: "row",
+      paddingHorizontal: 16,
+      paddingTop: 8,
+      gap: 8,
+    },
+    tab: {
+      flex: 1,
+      paddingVertical: 12,
+      alignItems: "center",
+      borderBottomWidth: 2,
+      borderBottomColor: "transparent",
+    },
+    activeTab: {
+      borderBottomColor: t.primary,
+    },
+    tabText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.textSecondary,
+    },
+    activeTabText: {
+      color: t.primary,
+    },
+    emptyTabContainer: {
+      paddingVertical: 64,
+      alignItems: "center",
+    },
+    emptyTabText: {
+      fontSize: 14,
+      color: t.textSecondary,
+      marginTop: 12,
+    },
+  });
+}

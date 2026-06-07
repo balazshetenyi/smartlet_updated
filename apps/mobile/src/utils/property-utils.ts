@@ -239,7 +239,6 @@ export const deleteProperty = async (id: string): Promise<void> => {
         `Error deleting property with ID ${id}: ${error.message}`,
       );
     }
-    return data;
   } catch (error) {
     console.error("Error deleting property:", error);
     throw error;

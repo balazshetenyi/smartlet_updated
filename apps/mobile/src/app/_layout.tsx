@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/store/auth-store";
-import { colours, supabase } from "@kiado/shared";
+import { useTheme } from "@/hooks/useTheme";
+import { supabase } from "@kiado/shared";
 import "@/styles/global.css";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -84,7 +85,7 @@ function Providers({
                   process.env.EXPO_PUBLIC_APPLE_MERCHANT_ID || ""
                 }
               >
-                <StatusBar style={colorScheme === "dark" ? "dark" : "dark"} />
+                <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
                 <PendingBookingsPrompt
                   pendingCount={pendingCount}
                   onDismiss={onDismiss}
@@ -101,6 +102,7 @@ function Providers({
 
 function RootLayout() {
   const { isLoggedIn, loading, setSession, loadProfile } = useAuthStore();
+  const theme = useTheme();
   const [pendingCount, setPendingCount] = useState(0);
   useNotifications();
 
@@ -171,21 +173,21 @@ function RootLayout() {
         pendingCount={pendingCount}
         onDismiss={() => setPendingCount(0)}
       >
-        <SafeAreaView className="flex-1 bg-white" />
+        <SafeAreaView style={{ flex: 1, backgroundColor: theme.surface }} />
       </Providers>
     );
   }
 
   return (
     <Providers pendingCount={pendingCount} onDismiss={() => setPendingCount(0)}>
-      <View style={{ flex: 1, backgroundColor: colours.cardBackground }}>
+      <View style={{ flex: 1, backgroundColor: theme.cardBackground }}>
         <Stack
           screenOptions={{
             headerStyle: {
-              backgroundColor: colours.surface,
+              backgroundColor: theme.surface,
             },
             headerLeft: () => <HeaderBackButton />,
-            headerTintColor: colours.primary,
+            headerTintColor: theme.primary,
             headerTitleStyle: {
               fontWeight: "700",
             },

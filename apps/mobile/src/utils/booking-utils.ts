@@ -66,24 +66,34 @@ export const calculateBookingPrice = (
  */
 export const createBooking = async (
   bookingData: CreateBookingData,
-): Promise<Booking | null> => {
-  try {
-    const { data, error } = await supabase
-      .from("bookings")
-      .insert({
-        ...bookingData,
-        status: bookingData.status || "pending",
-        payment_status: "pending",
-      })
-      .select()
-      .single();
+): Promise<Booking> => {
+  // Reject if any active booking already occupies an overlapping date range.
+  // Overlap condition: existing.check_in < new.check_out AND existing.check_out > new.check_in
+  const { data: conflicts, error: conflictError } = await supabase
+    .from("bookings")
+    .select("id")
+    .eq("property_id", bookingData.property_id)
+    .in("status", ["pending", "confirmed"])
+    .lt("check_in", bookingData.check_out)
+    .gt("check_out", bookingData.check_in);
 
-    if (error) throw error;
-    return data as Booking;
-  } catch (error) {
-    console.error("Error creating booking:", error);
-    return null;
+  if (conflictError) throw new Error("Failed to check availability. Please try again.");
+  if (conflicts && conflicts.length > 0) {
+    throw new Error("These dates are already booked. Please choose different dates.");
   }
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .insert({
+      ...bookingData,
+      status: bookingData.status || "pending",
+      payment_status: "pending",
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error("Failed to create booking. Please try again.");
+  return data as Booking;
 };
 
 /**

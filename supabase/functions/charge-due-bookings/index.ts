@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
-import Stripe from "https://esm.sh/stripe@14.21.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import Stripe from "npm:stripe@14";
 
 Deno.serve(async (req: Request) => {
   // Satisfy pg_net by reading any potential body immediately

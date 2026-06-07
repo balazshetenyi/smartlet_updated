@@ -1,5 +1,4 @@
 import Button from "@/components/shared/Button";
-import { colours } from "@kiado/shared";
 import { PropertyUnavailableDate } from "@kiado/shared/types/property";
 import {
   addUnavailableDates,
@@ -8,7 +7,7 @@ import {
 } from "@/utils/booking-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -19,6 +18,7 @@ import {
 } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 interface UnavailableDatesManagerProps {
   propertyId: string;
@@ -28,6 +28,8 @@ export default function UnavailableDatesManager({
   propertyId,
 }: UnavailableDatesManagerProps) {
   const router = useRouter();
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [ranges, setRanges] = useState<PropertyUnavailableDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDates, setSelectedDates] = useState<{
@@ -88,18 +90,18 @@ export default function UnavailableDatesManager({
         if (dateStr === range.start_date) {
           marked[dateStr] = {
             startingDay: true,
-            color: colours.danger,
+            color: theme.danger,
             textColor: "white",
           };
         } else if (dateStr === range.end_date) {
           marked[dateStr] = {
             endingDay: true,
-            color: colours.danger,
+            color: theme.danger,
             textColor: "white",
           };
         } else {
           marked[dateStr] = {
-            color: colours.danger,
+            color: theme.danger,
             textColor: "white",
           };
         }
@@ -110,7 +112,7 @@ export default function UnavailableDatesManager({
     if (selectedDates.start) {
       marked[selectedDates.start] = {
         startingDay: true,
-        color: colours.primary,
+        color: theme.primary,
         textColor: "white",
       };
 
@@ -124,13 +126,13 @@ export default function UnavailableDatesManager({
           if (dateStr === selectedDates.end) {
             marked[dateStr] = {
               endingDay: true,
-              color: colours.primary,
+              color: theme.primary,
               textColor: "white",
             };
           } else {
             marked[dateStr] = {
-              color: colours.primaryLight,
-              textColor: colours.primary,
+              color: theme.primaryLight,
+              textColor: theme.primary,
             };
           }
         }
@@ -209,9 +211,9 @@ export default function UnavailableDatesManager({
             markingType="period"
             minDate={new Date().toISOString().split("T")[0]}
             theme={{
-              selectedDayBackgroundColor: colours.primary,
-              todayTextColor: colours.primary,
-              arrowColor: colours.primary,
+              selectedDayBackgroundColor: theme.primary,
+              todayTextColor: theme.primary,
+              arrowColor: theme.primary,
             }}
           />
 
@@ -251,7 +253,7 @@ export default function UnavailableDatesManager({
                     <MaterialIcons
                       name="delete"
                       size={20}
-                      color={colours.danger}
+                      color={theme.danger}
                     />
                   </TouchableOpacity>
                 </View>
@@ -264,81 +266,83 @@ export default function UnavailableDatesManager({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: colours.text,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    marginBottom: 24,
-  },
-  selectedRange: {
-    backgroundColor: colours.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 24,
-    marginBottom: 24,
-  },
-  selectedRangeLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 4,
-  },
-  selectedRangeText: {
-    fontSize: 16,
-    color: colours.textSecondary,
-    marginBottom: 16,
-  },
-  addButton: {
-    backgroundColor: colours.primary,
-  },
-  rangesSection: {
-    marginTop: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 16,
-  },
-  rangeCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: colours.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  rangeInfo: {
-    flex: 1,
-  },
-  rangeDates: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 4,
-  },
-  rangeReason: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  removeButton: {
-    padding: 8,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    content: {
+      padding: 20,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: t.text,
+      marginBottom: 8,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: t.textSecondary,
+      marginBottom: 24,
+    },
+    selectedRange: {
+      backgroundColor: t.surface,
+      padding: 16,
+      borderRadius: 12,
+      marginTop: 24,
+      marginBottom: 24,
+    },
+    selectedRangeLabel: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 4,
+    },
+    selectedRangeText: {
+      fontSize: 16,
+      color: t.textSecondary,
+      marginBottom: 16,
+    },
+    addButton: {
+      backgroundColor: t.primary,
+    },
+    rangesSection: {
+      marginTop: 24,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 16,
+    },
+    rangeCard: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: t.surface,
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 12,
+    },
+    rangeInfo: {
+      flex: 1,
+    },
+    rangeDates: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 4,
+    },
+    rangeReason: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    removeButton: {
+      padding: 8,
+    },
+  });
+}

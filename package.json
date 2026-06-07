@@ -9,10 +9,14 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test --filter=kiado",
+    "prepare": "husky"
   },
   "packageManager": "pnpm@10.30.1",
   "devDependencies": {
+    "husky": "^9.1.7",
     "turbo": "^2.8.9"
   },
   "pnpm": {

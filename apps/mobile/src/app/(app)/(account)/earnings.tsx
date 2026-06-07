@@ -1,7 +1,7 @@
 import Button from "@/components/shared/Button";
 import { Card } from "@/components/shared/Card";
 import { useAuthStore } from "@/store/auth-store";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { BookingWithTenant } from "@kiado/shared/types/bookings";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -18,10 +18,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as WebBrowser from "expo-web-browser";
 import { showToastMessage } from "@/components/shared/ToastMessage";
 import { useRouter } from "expo-router";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const PLATFORM_FEE_RATE = 0.06;
 
 export default function EarningsScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
   const { profile } = useAuthStore();
   const [bookings, setBookings] = useState<BookingWithTenant[]>([]);
@@ -119,7 +122,7 @@ export default function EarningsScreen() {
     if (booking.status === "pending") {
       return {
         label: "Pending",
-        color: colours.warning,
+        color: theme.warning,
         icon: "schedule" as const,
       };
     }
@@ -127,7 +130,7 @@ export default function EarningsScreen() {
     if (booking.status === "cancelled") {
       return {
         label: "Cancelled",
-        color: colours.danger,
+        color: theme.danger,
         icon: "cancel" as const,
       };
     }
@@ -135,7 +138,7 @@ export default function EarningsScreen() {
     if (booking.payment_status === "paid") {
       return {
         label: "Paid",
-        color: colours.success,
+        color: theme.success,
         icon: "check-circle" as const,
       };
     }
@@ -143,14 +146,14 @@ export default function EarningsScreen() {
     if (booking.payment_status === "due") {
       return {
         label: "Payment Due",
-        color: colours.warning,
+        color: theme.warning,
         icon: "payments" as const,
       };
     }
 
     return {
       label: booking.status,
-      color: colours.textSecondary,
+      color: theme.textSecondary,
       icon: "info" as const,
     };
   };
@@ -315,7 +318,7 @@ export default function EarningsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer} edges={["bottom"]}>
-        <ActivityIndicator size="large" color={colours.primary} />
+        <ActivityIndicator size="large" color={theme.primary} />
       </SafeAreaView>
     );
   }
@@ -323,6 +326,7 @@ export default function EarningsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <FlatList
+        style={styles.container}
         data={bookings}
         keyExtractor={(item) => item.id}
         renderItem={renderBooking}
@@ -331,7 +335,7 @@ export default function EarningsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colours.primary}
+            tintColor={theme.primary}
           />
         }
         ListHeaderComponent={
@@ -341,19 +345,19 @@ export default function EarningsScreen() {
                 "Total earned",
                 `£${summary.totalEarned.toFixed(2)}`,
                 "savings",
-                colours.success,
+                theme.success,
               )}
               {renderSummaryCard(
                 "Upcoming payouts",
                 `£${summary.upcomingPayouts.toFixed(2)}`,
                 "payments",
-                colours.primary,
+                theme.primary,
               )}
               {renderSummaryCard(
                 "Pending requests",
                 `${summary.pendingRequests}`,
                 "schedule",
-                colours.warning,
+                theme.warning,
                 () => router.push("/booking-requests"),
               )}
 
@@ -361,7 +365,7 @@ export default function EarningsScreen() {
                 "This month",
                 `£${summary.thisMonth.toFixed(2)}`,
                 "bar-chart",
-                colours.text,
+                theme.text,
               )}
             </View>
 
@@ -375,7 +379,7 @@ export default function EarningsScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <MaterialIcons name="payments" size={64} color={colours.muted} />
+            <MaterialIcons name="payments" size={64} color={theme.muted} />
             <Text style={styles.emptyTitle}>No earnings yet</Text>
             <Text style={styles.emptyText}>
               Confirmed and paid bookings will appear here.
@@ -400,174 +404,176 @@ export default function EarningsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colours.background,
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  summaryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 24,
-  },
-  summaryCard: {
-    width: "48%",
-    backgroundColor: colours.surface,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colours.border,
-    padding: 16,
-  },
-  summaryIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  summaryTitle: {
-    fontSize: 13,
-    color: colours.textSecondary,
-    marginBottom: 6,
-  },
-  summaryValue: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.text,
-  },
-  sectionHeader: {
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: colours.text,
-    marginBottom: 4,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  bookingContent: {
-    padding: 16,
-  },
-  bookingHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 12,
-    marginBottom: 12,
-  },
-  propertyTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: colours.text,
-    marginBottom: 4,
-  },
-  guestText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  dateRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  dateLabel: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  dateValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  breakdownRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  breakdownLabel: {
-    fontSize: 14,
-    color: colours.textSecondary,
-  },
-  breakdownValue: {
-    fontSize: 14,
-    color: colours.text,
-  },
-  feeValue: {
-    fontSize: 14,
-    color: colours.danger,
-  },
-  payoutRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: colours.border,
-    paddingTop: 10,
-    marginTop: 6,
-  },
-  payoutLabel: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: colours.text,
-  },
-  payoutValue: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colours.success,
-  },
-  metaText: {
-    marginTop: 10,
-    fontSize: 13,
-    color: colours.textSecondary,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 48,
-    paddingHorizontal: 24,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colours.text,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    textAlign: "center",
-  },
-  footer: {
-    marginTop: 8,
-  },
-  footerButton: {
-    marginTop: 8,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: t.background,
+    },
+    listContent: {
+      padding: 16,
+      paddingBottom: 32,
+    },
+    summaryGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      marginBottom: 24,
+    },
+    summaryCard: {
+      width: "48%",
+      backgroundColor: t.surface,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: t.border,
+      padding: 16,
+    },
+    summaryIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 12,
+    },
+    summaryTitle: {
+      fontSize: 13,
+      color: t.textSecondary,
+      marginBottom: 6,
+    },
+    summaryValue: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: t.text,
+    },
+    sectionHeader: {
+      marginBottom: 12,
+    },
+    sectionTitle: {
+      fontSize: 22,
+      fontWeight: "700",
+      color: t.text,
+      marginBottom: 4,
+    },
+    sectionSubtitle: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    bookingContent: {
+      padding: 16,
+    },
+    bookingHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 12,
+      marginBottom: 12,
+    },
+    propertyTitle: {
+      fontSize: 17,
+      fontWeight: "700",
+      color: t.text,
+      marginBottom: 4,
+    },
+    guestText: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    statusBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 999,
+    },
+    statusText: {
+      fontSize: 12,
+      fontWeight: "600",
+    },
+    dateRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 12,
+    },
+    dateLabel: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    dateValue: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.text,
+    },
+    breakdownRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 8,
+    },
+    breakdownLabel: {
+      fontSize: 14,
+      color: t.textSecondary,
+    },
+    breakdownValue: {
+      fontSize: 14,
+      color: t.text,
+    },
+    feeValue: {
+      fontSize: 14,
+      color: t.danger,
+    },
+    payoutRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      paddingTop: 10,
+      marginTop: 6,
+    },
+    payoutLabel: {
+      fontSize: 16,
+      fontWeight: "700",
+      color: t.text,
+    },
+    payoutValue: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: t.success,
+    },
+    metaText: {
+      marginTop: 10,
+      fontSize: 13,
+      color: t.textSecondary,
+    },
+    emptyContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 48,
+      paddingHorizontal: 24,
+    },
+    emptyTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: t.text,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    emptyText: {
+      fontSize: 14,
+      color: t.textSecondary,
+      textAlign: "center",
+    },
+    footer: {
+      marginTop: 8,
+    },
+    footerButton: {
+      marginTop: 8,
+    },
+  });
+}

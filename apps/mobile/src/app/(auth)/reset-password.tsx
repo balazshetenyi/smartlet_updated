@@ -1,15 +1,16 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase, colours } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { Toast } from "react-native-toast-notifications";
 import * as zod from "zod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 const resetPasswordSchema = zod
   .object({
@@ -24,6 +25,8 @@ const resetPasswordSchema = zod
   });
 
 export default function ResetPasswordScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { keyboardOffset } = useKeyboardOffset();
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(resetPasswordSchema),
@@ -102,7 +105,7 @@ export default function ResetPasswordScreen() {
               leftIcon={{
                 type: "font-awesome",
                 name: "lock",
-                color: colours.muted,
+                color: theme.muted,
               }}
               onChangeText={onChange}
               value={value}
@@ -128,7 +131,7 @@ export default function ResetPasswordScreen() {
               leftIcon={{
                 type: "font-awesome",
                 name: "lock",
-                color: colours.muted,
+                color: theme.muted,
               }}
               onChangeText={onChange}
               value={value}
@@ -150,7 +153,7 @@ export default function ResetPasswordScreen() {
             loading={loading}
             buttonStyle={[
               styles.updateButton,
-              { backgroundColor: colours.primary },
+              { backgroundColor: theme.primary },
             ]}
             titleStyle={styles.updateButtonText}
           />
@@ -160,11 +163,12 @@ export default function ResetPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     justifyContent: "center",
   },
   header: {
@@ -176,11 +180,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
     textAlign: "center",
-    color: colours.text,
+    color: t.text,
   },
   subtitle: {
     fontSize: 16,
-    color: colours.muted,
+    color: t.muted,
     textAlign: "center",
     lineHeight: 22,
   },
@@ -198,4 +202,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-});
+  });
+}

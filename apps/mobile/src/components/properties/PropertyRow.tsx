@@ -1,9 +1,9 @@
-import { colours } from "@kiado/shared";
 import { Property } from "@kiado/shared/types/property";
 import { Link, useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text, View } from "react-native";
 import PropertyCard from "@/components/properties/PropertyCard";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 interface PropertyRowProps {
   title: string;
@@ -17,6 +17,8 @@ const CARD_MARGIN = 12;
 
 const PropertyRow = ({ title, properties, rentalType }: PropertyRowProps) => {
   const router = useRouter();
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const handlePropertyPress = (propertyId: string) => {
     router.push(`/properties/${propertyId}`);
@@ -63,34 +65,36 @@ const PropertyRow = ({ title, properties, rentalType }: PropertyRowProps) => {
 
 export default PropertyRow;
 
-const styles = StyleSheet.create({
-  categorySection: {
-    marginBottom: 32,
-  },
-  categoryHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  categoryTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  viewAllText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colours.primary,
-  },
-  horizontalScroll: {
-    paddingRight: 8,
-  },
-  horizontalCard: {
-    marginRight: CARD_MARGIN,
-  },
-  lastCard: {
-    marginRight: 0,
-    paddingRight: 20,
-  },
-});
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    categorySection: {
+      marginBottom: 32,
+    },
+    categoryHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    categoryTitle: {
+      fontSize: 20,
+      fontWeight: "600",
+      color: t.text,
+    },
+    viewAllText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: t.primary,
+    },
+    horizontalScroll: {
+      paddingRight: 8,
+    },
+    horizontalCard: {
+      marginRight: CARD_MARGIN,
+    },
+    lastCard: {
+      marginRight: 0,
+      paddingRight: 20,
+    },
+  });
+}

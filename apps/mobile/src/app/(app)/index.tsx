@@ -1,169 +1,36 @@
-import PropertyRow from "@/components/properties/PropertyRow";
-import AppBar from "@/components/shared/AppBar";
-import SearchBar from "@/components/shared/SearchBar";
+import { useTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth-store";
-import { usePropertyStore } from "@/store/property-store";
-import { colours } from "@kiado/shared";
-import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Button,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import * as Sentry from "@sentry/react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 
-export default function HomeScreen() {
-  const {
-    longTermProperties,
-    shortTermProperties,
-    holidayProperties,
-    loadProperties,
-    loading,
-  } = usePropertyStore();
-  const [refreshing, setRefreshing] = useState(false);
+/**
+ * Entry-point router. Sends every authenticated user to their tab group:
+ *   - landlord  →  /landlord  (unless ?guest=1, then /tenant?guest=1)
+ *   - tenant    →  /tenant
+ * Waits for the profile to load before redirecting so there is no flash.
+ */
+export default function AppIndex() {
+  const theme = useTheme();
   const { profile } = useAuthStore();
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadProperties();
-  };
+  const router = useRouter();
+  const { guest } = useLocalSearchParams<{ guest?: string }>();
+  const isGuestMode = guest === "1";
 
   useEffect(() => {
-    loadProperties();
-  }, [loadProperties, profile?.id]);
+    if (!profile) return;
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-        <AppBar />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colours.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+    if (profile.user_role === "landlord" && !isGuestMode) {
+      router.replace("/landlord");
+    } else {
+      router.replace(isGuestMode ? "/tenant?guest=1" : "/tenant");
+    }
+  }, [profile?.user_role, isGuestMode]);
 
+  // Neutral spinner while the profile loads or redirect is in flight
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <AppBar />
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colours.primary}
-          />
-        }
-      >
-        <View style={styles.content}>
-          {/* Welcome Section */}
-          <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>
-              Hello, {profile?.first_name || "Guest"} 👋
-            </Text>
-            <Text style={styles.welcomeSubtitle}>
-              Where would you like to go?
-            </Text>
-          </View>
-
-          {/* Search Bar */}
-          <SearchBar />
-
-          {/* Popular Destinations / Recent */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Popular Holiday Rentals</Text>
-            {holidayProperties.length > 0 ? (
-              <PropertyRow
-                title=""
-                properties={holidayProperties.slice(0, 5)}
-                rentalType="holiday"
-              />
-            ) : (
-              <Text style={styles.emptyText}>No holiday rentals available</Text>
-            )}
-          </View>
-
-          {/* Other rental types can be shown as secondary options */}
-          {shortTermProperties.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Short Term Rentals</Text>
-              <PropertyRow
-                title=""
-                properties={shortTermProperties.slice(0, 5)}
-                rentalType="short-term"
-              />
-            </View>
-          )}
-          {/*{longTermProperties.length > 0 && (*/}
-          {/*    <View style={styles.section}>*/}
-          {/*        <Text style={styles.sectionTitle}>Long Term Rentals</Text>*/}
-          {/*        <PropertyRow*/}
-          {/*            title=""*/}
-          {/*            properties={longTermProperties.slice(0, 5)}*/}
-          {/*            rentalType="short-term"*/}
-          {/*        />*/}
-          {/*    </View>*/}
-          {/*)}*/}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <View style={{ flex: 1, backgroundColor: theme.background, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" color={theme.primary} />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.surface,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
-    padding: 20,
-  },
-  welcomeSection: {
-    marginBottom: 24,
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: colours.darkSlateBlue,
-    marginBottom: 4,
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: colours.textSecondary,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: colours.text,
-    marginBottom: 16,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-  },
-  emptyText: {
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: "600",
-    color: colours.text,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colours.textSecondary,
-    marginTop: 4,
-  },
-});

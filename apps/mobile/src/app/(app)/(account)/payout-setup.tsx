@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -9,14 +9,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { colours, supabase } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import * as WebBrowser from "expo-web-browser";
 import { useAuthStore } from "@/store/auth-store";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function PayoutSetupScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [loading, setLoading] = useState(false);
   const [manualAccountId, setManualAccountId] = useState("");
   const [showManualInput, setShowManualInput] = useState(false);
@@ -62,7 +65,7 @@ export default function PayoutSetupScreen() {
     >
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.iconContainer}>
-          <MaterialIcons name="payments" size={64} color={colours.primary} />
+          <MaterialIcons name="payments" size={64} color={theme.primary} />
         </View>
 
         <Text style={styles.title}>
@@ -136,73 +139,76 @@ export default function PayoutSetupScreen() {
     </KeyboardAvoidingView>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colours.background,
-    padding: 24,
-    paddingBottom: 100,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colours.primaryLight,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: colours.text,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  description: {
-    fontSize: 16,
-    color: colours.textSecondary,
-    textAlign: "center",
-    lineHeight: 24,
-    marginBottom: 32,
-  },
-  button: {
-    width: "100%",
-    backgroundColor: colours.primary,
-  },
-  footerText: {
-    marginTop: 24,
-    fontSize: 12,
-    color: colours.muted,
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 20,
-    width: "100%",
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colours.border,
-  },
-  dividerText: {
-    marginHorizontal: 10,
-    color: colours.muted,
-    fontSize: 12,
-  },
-  toggleText: {
-    color: colours.primary,
-    fontWeight: "600",
-    textDecorationLine: "underline",
-  },
-  manualContainer: {
-    width: "100%",
-  },
-  connectedInfo: {
-    width: "100%",
-    alignItems: "center",
-  },
-});
+
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+      padding: 24,
+      paddingBottom: 100,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    iconContainer: {
+      width: 120,
+      height: 120,
+      borderRadius: 60,
+      backgroundColor: t.primaryLight,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 24,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: t.text,
+      marginBottom: 16,
+      textAlign: "center",
+    },
+    description: {
+      fontSize: 16,
+      color: t.textSecondary,
+      textAlign: "center",
+      lineHeight: 24,
+      marginBottom: 32,
+    },
+    button: {
+      width: "100%",
+      backgroundColor: t.primary,
+    },
+    footerText: {
+      marginTop: 24,
+      fontSize: 12,
+      color: t.muted,
+    },
+    divider: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginVertical: 20,
+      width: "100%",
+    },
+    line: {
+      flex: 1,
+      height: 1,
+      backgroundColor: t.border,
+    },
+    dividerText: {
+      marginHorizontal: 10,
+      color: t.muted,
+      fontSize: 12,
+    },
+    toggleText: {
+      color: t.primary,
+      fontWeight: "600",
+      textDecorationLine: "underline",
+    },
+    manualContainer: {
+      width: "100%",
+    },
+    connectedInfo: {
+      width: "100%",
+      alignItems: "center",
+    },
+  });
+}

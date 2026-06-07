@@ -11,10 +11,10 @@ import {
 } from "@/utils/property-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { colours, Property, supabase } from "@kiado/shared";
+import { Property, supabase } from "@kiado/shared";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
@@ -28,11 +28,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import SurveillanceDeclarationSection, {
-  DeclarationType,
-} from "@/components/properties/SurveillanceDeclarationSection";
+import SurveillanceDeclarationSection from "@/components/properties/SurveillanceDeclarationSection";
+import type { SurveillanceDeclarationType as DeclarationType } from "@kiado/shared/types/property";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function EditPropertyScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuthStore();
   const router = useRouter();
@@ -76,7 +78,7 @@ export default function EditPropertyScreen() {
       city: "",
       postcode: "",
       address: "",
-      rental_type: "long_term",
+      rental_type: "holiday",
       price: 0,
       bedrooms: 0,
       bathrooms: 0,
@@ -121,7 +123,7 @@ export default function EditPropertyScreen() {
         city: propertyData.city || "",
         postcode: propertyData.postcode || "",
         address: propertyData.address || "",
-        rental_type: propertyData.rental_type || "long_term",
+        rental_type: propertyData.rental_type || "holiday",
         price: propertyData.price || 0,
         bedrooms: propertyData.bedrooms || 0,
         bathrooms: propertyData.bathrooms || 0,
@@ -411,7 +413,7 @@ export default function EditPropertyScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer} edges={["top", "bottom"]}>
-        <ActivityIndicator size="large" color={colours.primary} />
+        <ActivityIndicator size="large" color={theme.primary} />
         <Text style={styles.loadingText}>Loading property...</Text>
       </SafeAreaView>
     );
@@ -621,7 +623,7 @@ export default function EditPropertyScreen() {
               <MaterialIcons
                 name={isAvailable ? "check-circle" : "cancel"}
                 size={20}
-                color={isAvailable ? colours.success : colours.muted}
+                color={isAvailable ? theme.success : theme.muted}
               />
               <Text style={styles.availabilityText}>Available for Rent</Text>
             </View>
@@ -629,10 +631,10 @@ export default function EditPropertyScreen() {
               value={isAvailable}
               onValueChange={setIsAvailable}
               trackColor={{
-                false: colours.border,
-                true: colours.primaryLight,
+                false: theme.border,
+                true: theme.primaryLight,
               }}
-              thumbColor={isAvailable ? colours.primary : colours.muted}
+              thumbColor={isAvailable ? theme.primary : theme.muted}
             />
           </View>
         </View>
@@ -662,7 +664,7 @@ export default function EditPropertyScreen() {
                 <MaterialIcons
                   name={selectingCover ? "close" : "image"}
                   size={20}
-                  color={colours.primary}
+                  color={theme.primary}
                 />
                 <Text style={styles.setCoverText}>
                   {selectingCover ? "Cancel" : "Set Cover"}
@@ -692,7 +694,7 @@ export default function EditPropertyScreen() {
               <MaterialIcons
                 name="add-a-photo"
                 size={24}
-                color={colours.primary}
+                color={theme.primary}
               />
               <Text style={styles.addTileText}>Add photos</Text>
             </Pressable>
@@ -717,7 +719,7 @@ export default function EditPropertyScreen() {
                     <MaterialIcons
                       name="check-circle"
                       size={32}
-                      color={colours.primary}
+                      color={theme.primary}
                     />
                   </View>
                 )}
@@ -799,10 +801,11 @@ export default function EditPropertyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   contentContainer: {
     padding: 20,
@@ -812,12 +815,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colours.background,
+    backgroundColor: t.background,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
   header: {
     alignItems: "center",
@@ -826,12 +829,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: colours.text,
+    color: t.text,
     marginTop: 12,
   },
   subtitle: {
     fontSize: 20,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginTop: 4,
   },
   form: {
@@ -843,12 +846,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: colours.text,
+    color: t.text,
     marginBottom: 16,
   },
   input: {
-    backgroundColor: colours.surface,
-    borderColor: colours.border,
+    backgroundColor: t.surface,
+    borderColor: t.border,
     borderRadius: 12,
   },
   row: {
@@ -862,7 +865,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -875,7 +878,7 @@ const styles = StyleSheet.create({
   availabilityText: {
     fontSize: 16,
     fontWeight: "500",
-    color: colours.text,
+    color: t.text,
   },
   photoHeader: {
     flexDirection: "row",
@@ -889,17 +892,17 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: colours.primaryLight,
+    backgroundColor: t.primaryLight,
     borderRadius: 8,
   },
   setCoverText: {
     fontSize: 14,
     fontWeight: "600",
-    color: colours.primary,
+    color: t.primary,
   },
   coverHint: {
     fontSize: 12,
-    color: colours.textSecondary,
+    color: t.textSecondary,
     marginBottom: 12,
     fontStyle: "italic",
   },
@@ -914,15 +917,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderStyle: "dashed",
-    borderColor: colours.primary,
-    backgroundColor: colours.surface,
+    borderColor: t.primary,
+    backgroundColor: t.surface,
     alignItems: "center",
     justifyContent: "center",
   },
   addTileText: {
     marginTop: 6,
     fontSize: 12,
-    color: colours.primary,
+    color: t.primary,
     fontWeight: "600",
   },
   thumbWrapper: {
@@ -931,7 +934,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     position: "relative",
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
   },
   thumb: {
     width: "100%",
@@ -941,7 +944,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 6,
     left: 6,
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -968,7 +971,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 6,
     left: 6,
-    backgroundColor: colours.success,
+    backgroundColor: t.success,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -992,7 +995,7 @@ const styles = StyleSheet.create({
   photoHint: {
     marginTop: 8,
     fontSize: 12,
-    color: colours.textSecondary,
+    color: t.textSecondary,
   },
   buttonRow: {
     flexDirection: "row",
@@ -1005,14 +1008,15 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   cancelButton: {
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     borderWidth: 1,
-    borderColor: colours.border,
+    borderColor: t.border,
   },
   cancelButtonText: {
-    color: colours.text,
+    color: t.text,
   },
   submitButton: {
-    backgroundColor: colours.primary,
+    backgroundColor: t.primary,
   },
-});
+  });
+}

@@ -1,21 +1,27 @@
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
-import { supabase, colours } from "@kiado/shared";
+import { supabase } from "@kiado/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { Toast } from "react-native-toast-notifications";
 import * as zod from "zod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useKeyboardOffset } from "@/hooks/useKeyboardOffset";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import { Image } from "expo-image";
+
+const logoImg = require("@kiado/shared/assets/images/kiado-logo.png");
 
 const forgotPasswordSchema = zod.object({
   email: zod.string().email({ message: "Invalid email address" }),
 });
 
 export default function ForgotPasswordScreen() {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { keyboardOffset } = useKeyboardOffset();
   const { control, handleSubmit, formState } = useForm({
     resolver: zodResolver(forgotPasswordSchema),
@@ -64,6 +70,12 @@ export default function ForgotPasswordScreen() {
       contentContainerStyle={styles.container}
     >
       <View style={styles.header}>
+        <Image
+          source={logoImg}
+          style={styles.logo}
+          contentFit="contain"
+          tintColor={theme.text}
+        />
         <Text style={styles.title}>Reset Password</Text>
         <Text style={styles.subtitle}>
           Enter your email address and we&aposll send you a link to reset your
@@ -84,7 +96,7 @@ export default function ForgotPasswordScreen() {
               leftIcon={{
                 type: "font-awesome",
                 name: "envelope",
-                color: colours.muted,
+                color: theme.muted,
               }}
               onChangeText={onChange}
               value={value}
@@ -107,7 +119,7 @@ export default function ForgotPasswordScreen() {
             loading={loading}
             buttonStyle={[
               styles.resetButton,
-              { backgroundColor: colours.primary },
+              { backgroundColor: theme.primary },
             ]}
             titleStyle={styles.resetButtonText}
           />
@@ -128,27 +140,33 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(t: AppTheme) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: colours.surface,
+    backgroundColor: t.surface,
     justifyContent: "center",
   },
   header: {
     marginBottom: 40,
     alignItems: "center",
   },
+  logo: {
+    width: 140,
+    height: 38,
+    marginBottom: 28,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
     textAlign: "center",
-    color: colours.text,
+    color: t.text,
   },
   subtitle: {
     fontSize: 16,
-    color: colours.muted,
+    color: t.muted,
     textAlign: "center",
     lineHeight: 22,
   },
@@ -172,10 +190,11 @@ const styles = StyleSheet.create({
   backButton: {
     borderRadius: 8,
     paddingVertical: 12,
-    borderColor: colours.primary,
+    borderColor: t.primary,
   },
   backButtonText: {
     fontSize: 16,
-    color: colours.primary,
+    color: t.primary,
   },
-});
+  });
+}
