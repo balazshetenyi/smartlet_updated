@@ -174,11 +174,14 @@ export default function PaymentScreen() {
         .catch((e) => console.error("Failed to send booking email:", e));
 
       paymentRegistered.current = true;
-      showToastMessage({
-        message: "Card saved. Payment will be taken 48h before check-in.",
-        type: "success",
-      });
-      router.replace("/my-bookings");
+      router.replace({
+        pathname: "/book-property/success",
+        params: {
+          propertyTitle: encodeURIComponent(booking?.property?.title ?? ""),
+          checkIn:  booking?.check_in  ?? "",
+          checkOut: booking?.check_out ?? "",
+        },
+      } as any);
     } catch {
       showToastMessage({ message: "Card setup failed", type: "danger" });
     } finally {

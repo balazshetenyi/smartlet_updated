@@ -26,6 +26,10 @@ export default function AppLayout() {
           headerLeft: () => <HeaderBackButton />,
         }}
       />
+      <Stack.Screen
+        name="book-property/success"
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }
