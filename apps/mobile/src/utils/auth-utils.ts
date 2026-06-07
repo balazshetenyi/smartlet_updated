@@ -1,6 +1,6 @@
-import { signInSchema, signUpSchema } from "@/config/schemas";
+import { signInSchema } from "@/config/schemas";
 import { supabase } from "@kiado/shared";
-import { SignInResponse } from "@kiado/shared/types/auth";
+import { SignInResponse, SignUpData } from "@kiado/shared/types/auth";
 import { UserProfile } from "@kiado/shared/types/user";
 import { Alert } from "react-native";
 import zod from "zod";
@@ -85,7 +85,7 @@ export const fetchUserProfile = async (
 };
 
 export const signUpWithEmail = async (
-  signUpData: zod.infer<typeof signUpSchema>,
+  signUpData: SignUpData,
 ): Promise<{ success: boolean; error?: string }> => {
   if (
     !signUpData.email ||

@@ -88,10 +88,7 @@
   "private": true,
   "jest": {
     "preset": "jest-expo",
-    "setupFilesAfterFramework": [
-      "@testing-library/jest-native/extend-expect"
-    ],
-    "setupFiles": [
+    "setupFilesAfterEnv": [
       "./src/test/setup.ts"
     ],
     "transformIgnorePatterns": [

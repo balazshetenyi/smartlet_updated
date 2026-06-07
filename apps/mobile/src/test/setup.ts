@@ -1,14 +1,8 @@
-import "@testing-library/jest-native/extend-expect";
-
 // Silence non-actionable warnings in tests
 jest.spyOn(console, "warn").mockImplementation(() => {});
 jest.spyOn(console, "error").mockImplementation((msg: string) => {
-  // Still surface unexpected errors
-  if (!msg?.includes("Warning:")) throw new Error(msg);
+  if (typeof msg === "string" && !msg.includes("Warning:")) throw new Error(msg);
 });
-
-// React Native Animated — use native driver mock
-jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");
 
 // Safe area context
 jest.mock("react-native-safe-area-context", () => {

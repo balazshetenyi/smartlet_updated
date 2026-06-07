@@ -74,7 +74,7 @@ const Properties = () => {
             try {
               const { data: userData } = await supabase.auth.getUser();
 
-              const data = await deleteProperty(propertyId);
+              await deleteProperty(propertyId);
 
               Alert.alert("Success", "Property deleted successfully");
               await loadProperties();
