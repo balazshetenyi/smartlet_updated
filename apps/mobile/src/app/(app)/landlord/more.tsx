@@ -16,13 +16,16 @@ interface MenuItem {
 }
 
 const MENU: MenuItem[] = [
-  { icon: "person",          label: "Profile",              sub: "Edit personal details",    route: "/(account)/profile"         },
-  { icon: "account-balance", label: "Earnings",             sub: "View payouts and reports", route: "/(account)/earnings"        },
-  { icon: "payments",        label: "Payout Settings",      sub: "Bank account and payouts", route: "/(account)/payout-setup"    },
-  { icon: "security",        label: "Surveillance Reports", sub: "Review reports on your properties", route: "/(account)/my-reports" },
+  { icon: "person",          label: "Profile",              sub: "Edit personal details",           route: "/(account)/profile"         },
+  { icon: "account-balance", label: "Earnings",             sub: "View payouts and reports",        route: "/(account)/earnings"        },
+  { icon: "payments",        label: "Payout Settings",      sub: "Bank account and payouts",        route: "/(account)/payout-setup"    },
+  { icon: "security",        label: "Surveillance Reports", sub: "Review reports on your properties", route: "/(account)/my-reports"    },
   { icon: "luggage",         label: "My Travel Bookings",   sub: "Properties you've booked as a guest", route: "/(account)/my-bookings" },
-  { icon: "notifications",   label: "Notifications",        sub: "Manage alerts",            route: "/(account)/notifications"   },
-  { icon: "lock",            label: "Change Password",      sub: "Update your password",     route: "/(account)/change-password" },
+  { icon: "notifications",   label: "Notifications",        sub: "Manage alerts",                   route: "/(account)/notifications"   },
+  { icon: "lock",            label: "Change Password",      sub: "Update your password",            route: "/(account)/change-password" },
+  { icon: "help",            label: "Help & Support",       sub: "Get help with the app",           route: "/terms-of-service"          },
+  { icon: "gavel",           label: "Terms of Service",     sub: "Read our terms",                  route: "/terms-of-service"          },
+  { icon: "privacy-tip",     label: "Privacy Policy",       sub: "Read our privacy policy",         route: "/privacy-policy"            },
 ];
 
 export default function MoreTab() {

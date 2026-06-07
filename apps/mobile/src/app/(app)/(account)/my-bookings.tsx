@@ -384,7 +384,7 @@ export default function MyBookingsScreen() {
             </Text>
             <Button
               title="Browse Properties"
-              onPress={() => router.push("/?guest=1")}
+              onPress={() => router.push("/tenant?guest=1")}
               buttonStyle={styles.browseButton}
             />
           </View>

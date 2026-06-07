@@ -5,7 +5,7 @@ import { supabase } from "@kiado/shared";
 import { BookingWithProperty } from "@kiado/shared/types/bookings";
 import { usePaymentSheet, useStripe } from "@stripe/stripe-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -30,8 +30,24 @@ export default function PaymentScreen() {
   const [booking, setBooking] = useState<BookingWithProperty | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
+  // Tracks whether the user successfully registered a payment method.
+  // If the screen unmounts without this being set, the pending booking
+  // is cancelled so the dates are freed up for other tenants.
+  const paymentRegistered = useRef(false);
+
   useEffect(() => {
     fetchBookingDetails();
+    return () => {
+      if (!paymentRegistered.current && bookingId) {
+        void Promise.resolve(
+          supabase
+            .from("bookings")
+            .update({ status: "cancelled" })
+            .eq("id", bookingId)
+            .is("payment_method_id", null),
+        ).catch(() => {});
+      }
+    };
   }, [bookingId]);
 
   const fetchBookingDetails = async () => {
@@ -157,6 +173,7 @@ export default function PaymentScreen() {
         .invoke("send-booking-email", { body: { bookingId } })
         .catch((e) => console.error("Failed to send booking email:", e));
 
+      paymentRegistered.current = true;
       showToastMessage({
         message: "Card saved. Payment will be taken 48h before check-in.",
         type: "success",

@@ -113,6 +113,7 @@ export default function BookingsTab() {
             message: "Booking confirmed and payment processed",
             type: "success",
           });
+          setBookings((prev) => prev.filter((b) => b.id !== bookingId));
           load();
         } catch {
           showToastMessage({
@@ -141,6 +142,7 @@ export default function BookingsTab() {
           });
           if (error) throw error;
           showToastMessage({ message: "Booking declined", type: "success" });
+          setBookings((prev) => prev.filter((b) => b.id !== bookingId));
           load();
         } catch {
           showToastMessage({

@@ -17,6 +17,7 @@ export default function AppLayout() {
       <Stack.Screen name="(account)" options={{ headerShown: false }} />
       <Stack.Screen name="properties" options={{ headerShown: false }} />
       <Stack.Screen name="landlord" options={{ headerShown: false }} />
+      <Stack.Screen name="tenant" options={{ headerShown: false }} />
       <Stack.Screen
         name="book-property/payment"
         options={{
