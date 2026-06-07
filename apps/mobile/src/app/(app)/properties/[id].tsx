@@ -112,6 +112,9 @@ export default function PropertyDetailsScreen() {
       property?.rental_type === "holiday" ||
       property?.rental_type === "short_term"
     ) {
+      // Always refresh blocked dates on open so a returning user
+      // sees the latest availability — not stale data from page load.
+      fetchBlockedDates(property.id).then(setBlockedDates);
       setShowBookingModal(true);
     } else {
       showToastMessage({
@@ -148,19 +151,11 @@ export default function PropertyDetailsScreen() {
 
       const booking = await createBooking(bookingData);
 
-      if (!booking) {
-        showToastMessage({
-          message: "Failed to create booking",
-          type: "danger",
-        });
-        return;
-      }
-
       // Navigate to payment screen
       router.push(`/book-property/payment?bookingId=${booking.id}` as any);
     } catch (error) {
       showToastMessage({
-        message: "Failed to create booking",
+        message: (error as Error).message || "Failed to create booking",
         type: "danger",
       });
     }

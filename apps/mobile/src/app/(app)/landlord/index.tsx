@@ -1,3 +1,4 @@
+import AppBar from "@/components/shared/AppBar";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth-store";
 import { fetchBookingRequests } from "@/utils/booking-utils";
@@ -56,6 +57,7 @@ interface ActivityItem {
   color: string;
   desc: string;
   time: string;
+  route: string;
 }
 
 function bookingToActivity(b: BookingWithTenant): ActivityItem {
@@ -68,6 +70,7 @@ function bookingToActivity(b: BookingWithTenant): ActivityItem {
       color: SUCCESS,
       desc: `Payment received from ${guest}`,
       time: relativeTime(b.updated_at),
+      route: "/(account)/earnings",
     };
   }
   if (b.status === "confirmed") {
@@ -76,6 +79,7 @@ function bookingToActivity(b: BookingWithTenant): ActivityItem {
       color: ACCENT,
       desc: `Booking confirmed · ${prop}`,
       time: relativeTime(b.updated_at),
+      route: `/landlord/bookings?filter=confirmed&bookingId=${b.id}`,
     };
   }
   if (b.status === "cancelled") {
@@ -84,6 +88,7 @@ function bookingToActivity(b: BookingWithTenant): ActivityItem {
       color: ERROR,
       desc: `Booking cancelled · ${guest}`,
       time: relativeTime(b.updated_at),
+      route: `/landlord/bookings?filter=past&bookingId=${b.id}`,
     };
   }
   if (b.status === "completed") {
@@ -92,6 +97,7 @@ function bookingToActivity(b: BookingWithTenant): ActivityItem {
       color: SUCCESS,
       desc: `Stay completed · ${guest}`,
       time: relativeTime(b.updated_at),
+      route: `/landlord/bookings?filter=past&bookingId=${b.id}`,
     };
   }
   // pending
@@ -100,6 +106,7 @@ function bookingToActivity(b: BookingWithTenant): ActivityItem {
     color: WARNING,
     desc: `New request from ${guest} · ${prop}`,
     time: relativeTime(b.created_at),
+    route: `/landlord/bookings?filter=pending&bookingId=${b.id}`,
   };
 }
 
@@ -254,6 +261,7 @@ export default function LandlordDashboard() {
   if (loading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
+        <AppBar backgroundColor={theme.bg} />
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={theme.accent} />
         </View>
@@ -264,9 +272,7 @@ export default function LandlordDashboard() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
-      </View>
+      <AppBar backgroundColor={theme.bg} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -428,26 +434,24 @@ export default function LandlordDashboard() {
         {recentActivity.length > 0 ? (
           <View style={styles.activityCard}>
             {recentActivity.map((a, i) => (
-              <View
+              <TouchableOpacity
                 key={i}
                 style={[
                   styles.activityItem,
                   i < recentActivity.length - 1 && styles.activityDivider,
                 ]}
+                onPress={() => router.push(a.route as any)}
+                activeOpacity={0.7}
               >
-                <View
-                  style={[
-                    styles.activityIconWrap,
-                    { backgroundColor: a.color + "22" },
-                  ]}
-                >
+                <View style={[styles.activityIconWrap, { backgroundColor: a.color + "22" }]}>
                   <MaterialIcons name={a.icon} size={16} color={a.color} />
                 </View>
                 <Text style={styles.activityDesc} numberOfLines={1}>
                   {a.desc}
                 </Text>
                 <Text style={styles.activityTime}>{a.time}</Text>
-              </View>
+                <MaterialIcons name="chevron-right" size={16} color={theme.textMuted} />
+              </TouchableOpacity>
             ))}
           </View>
         ) : (
@@ -475,15 +479,6 @@ function createStyles(t: AppTheme) {
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
-    },
-    header: {
-      paddingHorizontal: 20,
-      paddingTop: 14,
-    },
-    title: {
-      fontSize: 22,
-      fontWeight: "700",
-      color: t.text,
     },
     scrollContent: {
       paddingHorizontal: 20,

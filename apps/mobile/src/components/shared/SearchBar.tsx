@@ -1,5 +1,6 @@
-import { useSearch } from "@/context/SearchContext";
 import LocationAutocomplete from "@/components/search/LocationAutocomplete";
+import { useSearch } from "@/context/SearchContext";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -12,9 +13,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Calendar } from "react-native-calendars";
-import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 const RADIUS_OPTIONS = [5, 15, 30, 50, 100] as const;
 
@@ -338,11 +338,7 @@ export default function SearchBar() {
           style={styles.searchRow}
           onPress={() => setShowGuestPicker(true)}
         >
-          <MaterialIcons
-            name="person"
-            size={24}
-            color={theme.darkSlateBlue}
-          />
+          <MaterialIcons name="person" size={24} color={theme.darkSlateBlue} />
           <View style={styles.searchContent}>
             <Text style={styles.searchLabel}>Who</Text>
             <Text style={styles.searchValue}>
@@ -738,10 +734,10 @@ function createStyles(t: AppTheme) {
       borderRadius: 16,
       padding: 8,
       elevation: 4,
-      shadowColor: t.shadow,
+      shadowColor: "#000000",
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.9,
-      shadowRadius: 8,
+      shadowOpacity: 0.2,
+      shadowRadius: 6,
       borderWidth: 1,
       borderColor: t.border,
     },
@@ -823,6 +819,11 @@ function createStyles(t: AppTheme) {
       padding: 16,
       marginTop: 12,
       gap: 8,
+      elevation: 2,
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
     },
     searchButtonDisabled: {
       backgroundColor: t.muted,

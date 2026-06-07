@@ -1,0 +1,11 @@
+version: 2
+
+# Ignore test files — they intentionally contain dummy passwords and secrets
+# for unit testing purposes and are never real credentials.
+ignore-paths:
+  - "apps/mobile/src/__tests__/**"
+  - "apps/mobile/src/test/**"
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/*.spec.tsx"

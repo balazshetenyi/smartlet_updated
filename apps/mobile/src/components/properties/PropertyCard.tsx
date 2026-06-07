@@ -1,8 +1,8 @@
-import { Property } from "@kiado/shared/types/property";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Property } from "@kiado/shared/types/property";
 import React, { useMemo } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 interface PropertyCardProps {
   property: Property;
@@ -126,11 +126,11 @@ function createStyles(t: AppTheme) {
       backgroundColor: t.cardBackground,
       borderRadius: 12,
       marginBottom: 16,
-      elevation: 2,
+      elevation: 4, // Android shadow
       shadowColor: t.overlay,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4,
+      shadowRadius: 6,
     },
     image: {
       width: "100%",

@@ -110,7 +110,22 @@ const SignUp = () => {
         bottomOffset={keyboardOffset + 170}
         keyboardShouldPersistTaps="handled"
         style={styles.container}
+        contentContainerStyle={styles.scrollContent}
       >
+        {/* Personalised header */}
+        <View style={styles.header}>
+          <Text style={styles.headline}>
+            {presetRole === "landlord"
+              ? "Set up your account"
+              : "Create your account"}
+          </Text>
+          <Text style={styles.subtitle}>
+            {presetRole === "landlord"
+              ? "List properties and connect with guests"
+              : "Start exploring properties today"}
+          </Text>
+        </View>
+
         <View style={styles.form}>
           {!presetRole && (
             <Controller
@@ -442,8 +457,25 @@ function createStyles(t: AppTheme) {
       flex: 1,
       backgroundColor: t.surface,
       paddingHorizontal: 10,
+    },
+    scrollContent: {
       paddingTop: 12,
       paddingBottom: 24,
+    },
+    header: {
+      paddingTop: 8,
+      paddingBottom: 24,
+    },
+    headline: {
+      fontSize: 26,
+      fontWeight: "800",
+      color: t.text,
+      marginBottom: 8,
+      letterSpacing: -0.3,
+    },
+    subtitle: {
+      fontSize: 15,
+      color: t.textSecondary,
     },
     form: {
       width: "100%",
