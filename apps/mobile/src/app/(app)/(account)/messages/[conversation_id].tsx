@@ -71,6 +71,8 @@ export default function ChatScreen() {
   const [selectedImage, setSelectedImage] = useState<string | undefined>(
     undefined,
   );
+  const [isSuggestingReplies, setIsSuggestingReplies] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const messageIdsRef = useRef<Set<string>>(new Set());
   const headerHeight = useHeaderHeight();
   const { width: screenWidth } = useWindowDimensions();
@@ -148,6 +150,41 @@ export default function ChatScreen() {
     }
   };
 
+  const fetchSuggestions = async () => {
+    if (isSuggestingReplies || messages.length === 0) return;
+    setIsSuggestingReplies(true);
+    setSuggestions([]);
+    try {
+      const recentMessages = [...messages]
+        .slice(0, 10)
+        .reverse()
+        .filter((m) => m.content?.trim())
+        .map((m) => ({ content: m.content, isOwn: m.sender_id === profile?.id }));
+
+      const myRole =
+        conversation && profile?.id === conversation.landlord_id
+          ? "landlord"
+          : "tenant";
+
+      const { data, error } = await supabase.functions.invoke("suggest-reply", {
+        body: {
+          messages: recentMessages,
+          myRole,
+          propertyTitle: propertyTitle || conversation?.property?.title,
+        },
+      });
+
+      if (error) throw error;
+      if (Array.isArray(data?.suggestions)) {
+        setSuggestions(data.suggestions);
+      }
+    } catch {
+      showToastMessage({ message: "Couldn't generate suggestions", type: "danger" });
+    } finally {
+      setIsSuggestingReplies(false);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!inputText.trim() || !profile?.id) return;
 
@@ -198,6 +235,7 @@ export default function ChatScreen() {
           messageIdsRef.current.add(message.id);
         }
         setInputText("");
+        setSuggestions([]);
       }
     } catch (error) {
       console.error("Error sending message.");
@@ -558,6 +596,35 @@ export default function ChatScreen() {
         }
       />
 
+      {suggestions.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.suggestionsRow}
+          contentContainerStyle={styles.suggestionsContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {suggestions.map((suggestion, index) => (
+            <Pressable
+              key={index}
+              style={({ pressed }) => [
+                styles.suggestionChip,
+                pressed && { opacity: 0.7 },
+              ]}
+              onPress={() => {
+                setInputText(suggestion);
+                setSuggestions([]);
+              }}
+            >
+              <View style={styles.suggestionInner}>
+              <Text style={styles.suggestionLabel}>Suggestion {index + 1}</Text>
+              <Text style={styles.suggestionText}>{suggestion}</Text>
+            </View>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
       <View style={styles.inputContainer}>
         <TouchableOpacity
           style={styles.attachButton}
@@ -569,6 +636,24 @@ export default function ChatScreen() {
             size={24}
             color={sending ? theme.muted : theme.primary}
           />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.suggestButton}
+          onPress={fetchSuggestions}
+          disabled={isSuggestingReplies || messages.length === 0 || sending}
+        >
+          {isSuggestingReplies ? (
+            <ActivityIndicator size="small" color={theme.primary} />
+          ) : (
+            <MaterialIcons
+              name="auto-awesome"
+              size={22}
+              color={
+                messages.length === 0 || sending ? theme.muted : theme.primary
+              }
+            />
+          )}
         </TouchableOpacity>
 
         <TextInput
@@ -827,6 +912,51 @@ function createStyles(t: AppTheme) {
     imageViewerImage: {
       width: SCREEN_WIDTH,
       height: SCREEN_WIDTH,
+    },
+    suggestionsRow: {
+      backgroundColor: t.surface,
+      borderTopWidth: 1,
+      borderTopColor: t.border,
+      maxHeight: 120,
+    },
+    suggestionsContent: {
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      gap: 8,
+      flexDirection: "row",
+      alignItems: "flex-start",
+    },
+    suggestionChip: {
+      backgroundColor: t.primaryLight,
+      borderRadius: 16,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderWidth: 1,
+      borderColor: t.primary + "33",
+    },
+    suggestionInner: {
+      width: 192,
+    },
+    suggestionLabel: {
+      fontSize: 11,
+      fontWeight: "600",
+      color: t.primary,
+      opacity: 0.6,
+      marginBottom: 3,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+    },
+    suggestionText: {
+      fontSize: 13,
+      color: t.primary,
+      lineHeight: 18,
+    },
+    suggestButton: {
+      width: 36,
+      height: 36,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 4,
     },
   });
 }
