@@ -1,7 +1,9 @@
 import AmenitySelector from "@/components/properties/AmenitySelector";
 import RentalTypeSelector from "@/components/properties/RentalTypeSelector";
+import SurveillanceDeclarationSection from "@/components/properties/SurveillanceDeclarationSection";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
+import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { AddNewProperty, propertySchema } from "@/schemas/property-schema";
 import { useAuthStore } from "@/store/auth-store";
 import {
@@ -12,11 +14,14 @@ import {
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@kiado/shared";
+import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Pressable,
@@ -26,16 +31,15 @@ import {
   Text,
   View,
 } from "react-native";
-import SurveillanceDeclarationSection from "@/components/properties/SurveillanceDeclarationSection";
-import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
-import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 export default function CreatePropertyScreen() {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { profile } = useAuthStore();
   const router = useRouter();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [isAvailable, setIsAvailable] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [assets, setAssets] = useState<Array<ImagePicker.ImagePickerAsset>>([]);
   const [declarationType, setDeclarationType] =
     useState<SurveillanceDeclarationType | null>(null);
@@ -55,6 +59,7 @@ export default function CreatePropertyScreen() {
     reset,
     watch,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<AddNewProperty>({
     resolver: zodResolver(propertySchema),
@@ -98,45 +103,104 @@ export default function CreatePropertyScreen() {
     }
   };
 
-  const requestMediaPermission = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission required",
-        "We need access to your photo library to add property photos.",
-      );
-      return false;
-    }
-    return true;
+  const appendAssets = (newAssets: ImagePicker.ImagePickerAsset[]) => {
+    setAssets((prev) => {
+      const seen = new Set(prev.map((a) => a.uri));
+      return [...prev, ...newAssets.filter((a) => !seen.has(a.uri))];
+    });
   };
 
-  const pickImages = async () => {
-    const ok = await requestMediaPermission();
-    if (!ok) return;
+  const addPhotos = () => {
+    showActionSheetWithOptions(
+      {
+        options: ["Cancel", "Take Photo", "Choose from Library"],
+        cancelButtonIndex: 0,
+      },
+      async (buttonIndex) => {
+        if (buttonIndex === 0 || buttonIndex == null) return;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.3, // Match quality from image-picker-utils
-      selectionLimit: 10,
-      base64: true, // Required for uploadImageToStorage
-      exif: false,
-    });
-
-    if (!result.canceled) {
-      setAssets((prev) => {
-        const merged = [...prev, ...result.assets];
-        // de-dup by uri
-        const seen = new Set<string>();
-        return merged.filter((i) =>
-          seen.has(i.uri) ? false : (seen.add(i.uri), true),
-        );
-      });
-    }
+        if (buttonIndex === 1) {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission required", "Camera access is needed to take photos.");
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            quality: 0.3,
+            base64: true,
+            exif: false,
+          });
+          if (!result.canceled) appendAssets(result.assets);
+        } else {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission required", "Photo library access is needed to add photos.");
+            return;
+          }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            quality: 0.3,
+            selectionLimit: 10,
+            base64: true,
+            exif: false,
+          });
+          if (!result.canceled) appendAssets(result.assets);
+        }
+      },
+    );
   };
 
   const removeAsset = (uri: string) => {
     setAssets((prev) => prev.filter((a) => a.uri !== uri));
+  };
+
+  const generateWithAI = async () => {
+    setIsGenerating(true);
+    try {
+      const values = getValues();
+      const imagePayload = assets
+        .slice(0, 3)
+        .filter((a) => a.base64)
+        .map((a) => ({
+          base64: a.base64,
+          mimeType: a.mimeType ?? "image/jpeg",
+        }));
+
+      const { data, error } = await supabase.functions.invoke(
+        "generate-listing-description",
+        {
+          body: {
+            title: values.title,
+            address: values.address,
+            city: values.city,
+            postcode: values.postcode,
+            rental_type: values.rental_type,
+            price: values.price,
+            bedrooms: values.bedrooms,
+            bathrooms: values.bathrooms,
+            max_guests: values.max_guests,
+            amenities: values.amenities,
+            images: imagePayload,
+          },
+        },
+      );
+
+      if (error) throw error;
+      if (data?.title) {
+        setValue("title", data.title, { shouldValidate: true });
+      }
+      if (data?.description) {
+        setValue("description", data.description, { shouldValidate: true });
+      }
+    } catch {
+      Alert.alert(
+        "Error",
+        "Failed to generate listing content. Please try again.",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const onSubmit = async (data: AddNewProperty) => {
@@ -239,6 +303,83 @@ export default function CreatePropertyScreen() {
       </View>
 
       <View style={styles.form}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Photos</Text>
+          <View style={styles.photoGrid}>
+            {/* Add tile */}
+            <Pressable
+              onPress={addPhotos}
+              style={({ pressed }) => [
+                styles.addTile,
+                pressed && { opacity: 0.8 },
+              ]}
+              accessibilityLabel="Add photos"
+            >
+              <MaterialIcons
+                name="add-a-photo"
+                size={24}
+                color={theme.primary}
+              />
+              <Text style={styles.addTileText}>Add photos</Text>
+            </Pressable>
+
+            {/* Selected thumbnails */}
+            {assets.map((a) => (
+              <View key={a.uri} style={styles.thumbWrapper}>
+                <Image source={{ uri: a.uri }} style={styles.thumb} />
+                <Pressable
+                  onPress={() => removeAsset(a.uri)}
+                  style={({ pressed }) => [
+                    styles.removeBtn,
+                    pressed && { opacity: 0.8 },
+                  ]}
+                  accessibilityLabel="Remove photo"
+                >
+                  <MaterialIcons name="close" size={16} color="#fff" />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+          <Text style={styles.photoHint}>
+            Up to 10 photos. The first photo will be used as the cover.
+          </Text>
+
+          <Pressable
+            onPress={generateWithAI}
+            disabled={isGenerating || assets.length === 0}
+            style={({ pressed }) => [
+              styles.generateButton,
+              pressed && assets.length > 0 && { opacity: 0.7 },
+              (isGenerating || assets.length === 0) && styles.generateButtonDisabled,
+            ]}
+            accessibilityLabel="Generate title and description with AI"
+          >
+            {isGenerating ? (
+              <ActivityIndicator
+                size="small"
+                color={assets.length > 0 ? theme.primary : theme.muted}
+              />
+            ) : (
+              <MaterialIcons
+                name="auto-awesome"
+                size={16}
+                color={assets.length > 0 ? theme.primary : theme.muted}
+              />
+            )}
+            <Text
+              style={[
+                styles.generateButtonText,
+                assets.length === 0 && styles.generateButtonTextDisabled,
+              ]}
+            >
+              {isGenerating ? "Generating…" : "Generate title & description"}
+            </Text>
+          </Pressable>
+          {assets.length === 0 && (
+            <Text style={styles.generateHint}>Add photos above to generate</Text>
+          )}
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Basic Information</Text>
 
@@ -468,49 +609,6 @@ export default function CreatePropertyScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Photos</Text>
-          <View style={styles.photoGrid}>
-            {/* Add tile */}
-            <Pressable
-              onPress={pickImages}
-              style={({ pressed }) => [
-                styles.addTile,
-                pressed && { opacity: 0.8 },
-              ]}
-              accessibilityLabel="Add photos"
-            >
-              <MaterialIcons
-                name="add-a-photo"
-                size={24}
-                color={theme.primary}
-              />
-              <Text style={styles.addTileText}>Add photos</Text>
-            </Pressable>
-
-            {/* Selected thumbnails */}
-            {assets.map((a) => (
-              <View key={a.uri} style={styles.thumbWrapper}>
-                <Image source={{ uri: a.uri }} style={styles.thumb} />
-                <Pressable
-                  onPress={() => removeAsset(a.uri)}
-                  style={({ pressed }) => [
-                    styles.removeBtn,
-                    pressed && { opacity: 0.8 },
-                  ]}
-                  accessibilityLabel="Remove photo"
-                >
-                  <MaterialIcons name="close" size={16} color="#fff" />
-                </Pressable>
-              </View>
-            ))}
-          </View>
-          <Text style={styles.photoHint}>
-            You can upload up to 10 photos. The first photo may be used as the
-            cover.
-          </Text>
-        </View>
-
-        <View style={styles.section}>
           <SurveillanceDeclarationSection
             declarationType={declarationType}
             onDeclarationTypeChange={setDeclarationType}
@@ -536,130 +634,161 @@ export default function CreatePropertyScreen() {
 
 function createStyles(t: AppTheme) {
   return StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: t.background,
-  },
-  contentContainer: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: t.text,
-    marginTop: 12,
-  },
-  subtitle: {
-    fontSize: 20,
-    color: t.textSecondary,
-    marginTop: 4,
-  },
-  form: {
-    width: "100%",
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: t.text,
-    marginBottom: 16,
-  },
-  input: {
-    backgroundColor: t.surface,
-    borderColor: t.border,
-    borderRadius: 12,
-  },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: "top",
-  },
-  row: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  halfWidth: {
-    flex: 1,
-  },
-  availabilityContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: t.surface,
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  availabilityLabel: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  availabilityText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: t.text,
-  },
-  submitButton: {
-    marginTop: 8,
-    backgroundColor: t.primary,
-    borderRadius: 12,
-  },
-  photoGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  addTile: {
-    width: 96,
-    height: 96,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: t.primary,
-    backgroundColor: t.surface,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  addTileText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: t.primary,
-    fontWeight: "600",
-  },
-  thumbWrapper: {
-    width: 96,
-    height: 96,
-    borderRadius: 12,
-    overflow: "hidden",
-    position: "relative",
-    backgroundColor: t.surface,
-  },
-  thumb: {
-    width: "100%",
-    height: "100%",
-  },
-  removeBtn: {
-    position: "absolute",
-    top: 6,
-    right: 6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  photoHint: {
-    marginTop: 8,
-    fontSize: 12,
-    color: t.textSecondary,
-  },
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    contentContainer: {
+      padding: 20,
+      paddingBottom: 40,
+    },
+    header: {
+      alignItems: "center",
+      marginBottom: 32,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: t.text,
+      marginTop: 12,
+    },
+    subtitle: {
+      fontSize: 20,
+      color: t.textSecondary,
+      marginTop: 4,
+    },
+    form: {
+      width: "100%",
+    },
+    section: {
+      marginBottom: 24,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: t.text,
+      marginBottom: 16,
+    },
+    input: {
+      backgroundColor: t.surface,
+      borderColor: t.border,
+      borderRadius: 12,
+    },
+    textArea: {
+      minHeight: 100,
+      textAlignVertical: "top",
+    },
+    row: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    halfWidth: {
+      flex: 1,
+    },
+    availabilityContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: t.surface,
+      padding: 16,
+      borderRadius: 12,
+      marginTop: 8,
+    },
+    availabilityLabel: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    availabilityText: {
+      fontSize: 16,
+      fontWeight: "500",
+      color: t.text,
+    },
+    submitButton: {
+      marginTop: 8,
+      backgroundColor: t.primary,
+      borderRadius: 12,
+    },
+    photoGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      marginBottom: 12,
+    },
+    addTile: {
+      width: 96,
+      height: 96,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderStyle: "dashed",
+      borderColor: t.primary,
+      backgroundColor: t.surface,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    addTileText: {
+      marginTop: 6,
+      fontSize: 12,
+      color: t.primary,
+      fontWeight: "600",
+    },
+    thumbWrapper: {
+      width: 96,
+      height: 96,
+      borderRadius: 12,
+      overflow: "hidden",
+      position: "relative",
+      backgroundColor: t.surface,
+    },
+    thumb: {
+      width: "100%",
+      height: "100%",
+    },
+    removeBtn: {
+      position: "absolute",
+      top: 6,
+      right: 6,
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: "rgba(0,0,0,0.6)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    photoHint: {
+      marginBottom: 12,
+      fontSize: 12,
+      color: t.textSecondary,
+    },
+    generateButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "flex-start",
+      gap: 6,
+      marginTop: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: t.primary,
+      backgroundColor: t.surface,
+    },
+    generateButtonText: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: t.primary,
+    },
+    generateButtonDisabled: {
+      borderColor: t.border,
+      opacity: 0.5,
+    },
+    generateButtonTextDisabled: {
+      color: t.muted,
+    },
+    generateHint: {
+      marginTop: 6,
+      fontSize: 12,
+      color: t.textSecondary,
+    },
   });
 }
