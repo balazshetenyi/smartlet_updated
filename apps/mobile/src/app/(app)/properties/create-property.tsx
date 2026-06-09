@@ -15,6 +15,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@kiado/shared";
 import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -36,6 +37,7 @@ export default function CreatePropertyScreen() {
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { profile } = useAuthStore();
   const router = useRouter();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [isAvailable, setIsAvailable] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [assets, setAssets] = useState<Array<ImagePicker.ImagePickerAsset>>([]);
@@ -101,41 +103,52 @@ export default function CreatePropertyScreen() {
     }
   };
 
-  const requestMediaPermission = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission required",
-        "We need access to your photo library to add property photos.",
-      );
-      return false;
-    }
-    return true;
+  const appendAssets = (newAssets: ImagePicker.ImagePickerAsset[]) => {
+    setAssets((prev) => {
+      const seen = new Set(prev.map((a) => a.uri));
+      return [...prev, ...newAssets.filter((a) => !seen.has(a.uri))];
+    });
   };
 
-  const pickImages = async () => {
-    const ok = await requestMediaPermission();
-    if (!ok) return;
+  const addPhotos = () => {
+    showActionSheetWithOptions(
+      {
+        options: ["Cancel", "Take Photo", "Choose from Library"],
+        cancelButtonIndex: 0,
+      },
+      async (buttonIndex) => {
+        if (buttonIndex === 0 || buttonIndex == null) return;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.3, // Match quality from image-picker-utils
-      selectionLimit: 10,
-      base64: true, // Required for uploadImageToStorage
-      exif: false,
-    });
-
-    if (!result.canceled) {
-      setAssets((prev) => {
-        const merged = [...prev, ...result.assets];
-        // de-dup by uri
-        const seen = new Set<string>();
-        return merged.filter((i) =>
-          seen.has(i.uri) ? false : (seen.add(i.uri), true),
-        );
-      });
-    }
+        if (buttonIndex === 1) {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission required", "Camera access is needed to take photos.");
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            quality: 0.3,
+            base64: true,
+            exif: false,
+          });
+          if (!result.canceled) appendAssets(result.assets);
+        } else {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission required", "Photo library access is needed to add photos.");
+            return;
+          }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            quality: 0.3,
+            selectionLimit: 10,
+            base64: true,
+            exif: false,
+          });
+          if (!result.canceled) appendAssets(result.assets);
+        }
+      },
+    );
   };
 
   const removeAsset = (uri: string) => {
@@ -295,7 +308,7 @@ export default function CreatePropertyScreen() {
           <View style={styles.photoGrid}>
             {/* Add tile */}
             <Pressable
-              onPress={pickImages}
+              onPress={addPhotos}
               style={({ pressed }) => [
                 styles.addTile,
                 pressed && { opacity: 0.8 },
