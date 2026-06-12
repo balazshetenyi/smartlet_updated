@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { supabase } from "@kiado/shared";
+import { connectStripeAccount, supabase } from "@kiado/shared";
 import Button from "@/components/shared/Button";
 import Input from "@/components/shared/Input";
 import * as WebBrowser from "expo-web-browser";
@@ -28,31 +28,23 @@ export default function PayoutSetupScreen() {
   const handleConnectStripe = async (existingAccountId?: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "create-or-connect-stripe-account",
-        {
-          body: { stripeAccountId: existingAccountId },
-        },
-      );
+      const { url, error } = await connectStripeAccount(supabase, {
+        stripeAccountId: existingAccountId,
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error);
 
-      if (data?.url) {
-        // If Stripe returns an onboarding URL (for new or incomplete accounts)
-        const result = await WebBrowser.openAuthSessionAsync(data.url);
+      if (url) {
+        const result = await WebBrowser.openAuthSessionAsync(url);
         if (result.type === "success") {
           await refreshProfile();
         }
-      } else if (data?.success) {
-        // If the account was connected directly (already exists and valid)
+      } else {
         Alert.alert("Success", "Stripe account connected successfully.");
         await refreshProfile();
       }
     } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error.message || "Failed to connect Stripe account.",
-      );
+      Alert.alert("Error", error.message || "Failed to connect Stripe account.");
     } finally {
       setLoading(false);
     }

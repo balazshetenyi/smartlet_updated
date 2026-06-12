@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/store/auth-store";
 import { supabase } from "@kiado/shared";
+import { suggestReplies } from "@kiado/shared/services/ai-service";
 import { Conversation, Message } from "@kiado/shared/types/message";
 import { pickImage } from "@/utils/image-picker-utils";
 import { ImageSourceType } from "@/enums/image-source-type";
@@ -159,25 +160,19 @@ export default function ChatScreen() {
         .slice(0, 10)
         .reverse()
         .filter((m) => m.content?.trim())
-        .map((m) => ({ content: m.content, isOwn: m.sender_id === profile?.id }));
+        .map((m) => ({ content: m.content ?? "", isOwn: m.sender_id === profile?.id }));
 
       const myRole =
         conversation && profile?.id === conversation.landlord_id
           ? "landlord"
           : "tenant";
 
-      const { data, error } = await supabase.functions.invoke("suggest-reply", {
-        body: {
-          messages: recentMessages,
-          myRole,
-          propertyTitle: propertyTitle || conversation?.property?.title,
-        },
+      const suggestions = await suggestReplies(supabase, {
+        messages: recentMessages,
+        myRole,
+        propertyTitle: propertyTitle || conversation?.property?.title,
       });
-
-      if (error) throw error;
-      if (Array.isArray(data?.suggestions)) {
-        setSuggestions(data.suggestions);
-      }
+      setSuggestions(suggestions);
     } catch {
       showToastMessage({ message: "Couldn't generate suggestions", type: "danger" });
     } finally {

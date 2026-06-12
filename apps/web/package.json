@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@kiado/shared": "workspace:*",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.1",
     "lucide-react": "^0.574.0",
     "next": "16.1.6",
     "react": "19.2.3",

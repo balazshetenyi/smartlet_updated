@@ -16,8 +16,8 @@ importers:
         specifier: ^9.1.7
         version: 9.1.7
       turbo:
-        specifier: ^2.8.9
-        version: 2.8.10
+        specifier: ^2.9.18
+        version: 2.9.18
 
   apps/mobile:
     dependencies:
@@ -223,6 +223,15 @@ importers:
 
   apps/web:
     dependencies:
+      '@kiado/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@supabase/ssr':
+        specifier: ^0.12.0
+        version: 0.12.0(@supabase/supabase-js@2.108.1)
+      '@supabase/supabase-js':
+        specifier: ^2.108.1
+        version: 2.108.1
       lucide-react:
         specifier: ^0.574.0
         version: 0.574.0(react@19.2.3)
@@ -264,7 +273,11 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  packages/shared: {}
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
 
 packages:
 
@@ -1903,24 +1916,56 @@ packages:
       react-native-webview:
         optional: true
 
+  '@supabase/auth-js@2.108.1':
+    resolution: {integrity: sha512-Lle5rKU8f9LF3K5dDd8Or8mkkG+ptzRZZWKPVMm9B9UuovH65Ss2+iFnQqRsCqaGouvJEcTWyl0cj2riNrrDLQ==}
+    engines: {node: '>=20.0.0'}
+
   '@supabase/auth-js@2.97.0':
     resolution: {integrity: sha512-2Og/1lqp+AIavr8qS2X04aSl8RBY06y4LrtIAGxat06XoXYiDxKNQMQzWDAKm1EyZFZVRNH48DO5YvIZ7la5fQ==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/functions-js@2.108.1':
+    resolution: {integrity: sha512-fxBRW/A4IG7ADQztVt0NaEy5ysiO1WJ2pbldsnBchrkHuyepX0Krek9qA9T4gUQBVVTCE9Ea4pdsM5hfn3nc4A==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/functions-js@2.97.0':
     resolution: {integrity: sha512-fSaA0ZeBUS9hMgpGZt5shIZvfs3Mvx2ZdajQT4kv/whubqDBAp3GU5W8iIXy21MRvKmO2NpAj8/Q6y+ZkZyF/w==}
     engines: {node: '>=20.0.0'}
 
+  '@supabase/phoenix@0.4.2':
+    resolution: {integrity: sha512-YSAGnmDAfuleFCVt3CeurQZAhxRfXWeZIIkwp7NhYzQ1UwW6ePSnzsFAiUm/mbCkfoCf70QQHKW/K6RKh52a4A==}
+
+  '@supabase/postgrest-js@2.108.1':
+    resolution: {integrity: sha512-9lj2MCPPMgSTaJ5y+amnhb3TWPtMFVlbDn2hmX/VV91xQU4j0AauwfMaBErHBJ+zzsSwjc0jLU+zLIZFLQzfig==}
+    engines: {node: '>=20.0.0'}
+
   '@supabase/postgrest-js@2.97.0':
     resolution: {integrity: sha512-g4Ps0eaxZZurvfv/KGoo2XPZNpyNtjth9aW8eho9LZWM0bUuBtxPZw3ZQ6ERSpEGogshR+XNgwlSPIwcuHCNww==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/realtime-js@2.108.1':
+    resolution: {integrity: sha512-mHGGqOjwd1XTydcoffUqEMsbFQHUi6A3uhQ0EXr3iqzpLqItxKA9nbN6gIQxrZ7JRRnuUe/iOFPUkYV9Tdc5lg==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/realtime-js@2.97.0':
     resolution: {integrity: sha512-37Jw0NLaFP0CZd7qCan97D1zWutPrTSpgWxAw6Yok59JZoxp4IIKMrPeftJ3LZHmf+ILQOPy3i0pRDHM9FY36Q==}
     engines: {node: '>=20.0.0'}
 
+  '@supabase/ssr@0.12.0':
+    resolution: {integrity: sha512-d9XV5XzJvzzZbeAIM7fWTCUYxQJZ2Ru6ny3dJHmHGp/LIrJ+o9FpD7N9Rf/UhhWEvHXSoDe8SI32Z2ouOdMjBg==}
+    peerDependencies:
+      '@supabase/supabase-js': ^2.108.0
+
+  '@supabase/storage-js@2.108.1':
+    resolution: {integrity: sha512-Er0SGGt85iT6ye+SSh98Az6L2CesoZJuyzEZYH2oBOAnIxa9Nn4CtwUC3veGxYggoT56X+3tVuuQeDBP8kR8sg==}
+    engines: {node: '>=20.0.0'}
+
   '@supabase/storage-js@2.97.0':
     resolution: {integrity: sha512-9f6NniSBfuMxOWKwEFb+RjJzkfMdJUwv9oHuFJKfe/5VJR8cd90qw68m6Hn0ImGtwG37TUO+QHtoOechxRJ1Yg==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/supabase-js@2.108.1':
+    resolution: {integrity: sha512-V/1hRKLSCJ0zEL+9QFRBUtivvePfOsaAYQmC0HhFNSHC2F3xFs4jSF3YhkLmzex6E4V4FGvmBDOP72D/53NnZA==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/supabase-js@2.97.0':
@@ -2049,6 +2094,36 @@ packages:
   '@tootallnate/once@2.0.1':
     resolution: {integrity: sha512-HqmEUIGRJ5fSXchkVgR5F7qn48bDBzv0kWj/Kfu5e6uci4UlEeng4331LnBkWffb++Ei3FOVLxo8JJWMFBDMeQ==}
     engines: {node: '>= 10'}
+
+  '@turbo/darwin-64@2.9.18':
+    resolution: {integrity: sha512-9f27peFu16ur8c0v9nUFUEyBnbKuuFsUTjHFWfmwGfzySBXbHwzU44QhZon6Mznz0cHsIr3984NQj/bVrnGSRw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@turbo/darwin-arm64@2.9.18':
+    resolution: {integrity: sha512-9A6TMRq/Ib+QnbhLlgkhOm+624wO4pzSQ/yQviQfWHOlFvaYxdnIAYmu2H6TS6y7kSVL0DvzNe04NbESTOzFVQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@turbo/linux-64@2.9.18':
+    resolution: {integrity: sha512-zCdIDtz69AnbYh913elJRRoF3QY5aa2HNnf+4rAkc7bQ+tWujiDkCNV7stazOUPggaDvhKIf2Z87qHftTeXSkw==}
+    cpu: [x64]
+    os: [linux]
+
+  '@turbo/linux-arm64@2.9.18':
+    resolution: {integrity: sha512-Va1kXI04naMgYwqv/5Dfa36dTDx8015U7oaQAjrXa45ua9OoFjSV4OmvkML4EmXvUclQHCiBRbY8bvd0jV7eAg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@turbo/windows-64@2.9.18':
+    resolution: {integrity: sha512-m0kDhZANxSNz9ck1ybogFscHabriAsp4eDFNrN/1H5WrgTF7b3VlcPZnhuO3v2+E2KnCbeAc+UUT10BZZHdDKw==}
+    cpu: [x64]
+    os: [win32]
+
+  '@turbo/windows-arm64@2.9.18':
+    resolution: {integrity: sha512-nUdR8WqoomUys9iIQmG45TMiizJ+5BV8egSeLLZba/AWblyp3fVBcIH1kSE58OtK4g2YzbMJEth6Ttv9w5rqMA==}
+    cpu: [arm64]
+    os: [win32]
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -2836,6 +2911,10 @@ packages:
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
+
+  cookie@1.1.1:
+    resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
+    engines: {node: '>=18'}
 
   core-js-compat@3.48.0:
     resolution: {integrity: sha512-OM4cAF3D6VtH/WkLtWvyNC56EZVXsZdU3iqaMG2B4WvYrlqU831pc4UtG5yp0sE9z8Y02wVN7PjW5Zf9Gt0f1Q==}
@@ -6166,38 +6245,8 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
-  turbo-darwin-64@2.8.10:
-    resolution: {integrity: sha512-A03fXh+B7S8mL3PbdhTd+0UsaGrhfyPkODvzBDpKRY7bbeac4MDFpJ7I+Slf2oSkCEeSvHKR7Z4U71uKRUfX7g==}
-    cpu: [x64]
-    os: [darwin]
-
-  turbo-darwin-arm64@2.8.10:
-    resolution: {integrity: sha512-sidzowgWL3s5xCHLeqwC9M3s9M0i16W1nuQF3Mc7fPHpZ+YPohvcbVFBB2uoRRHYZg6yBnwD4gyUHKTeXfwtXA==}
-    cpu: [arm64]
-    os: [darwin]
-
-  turbo-linux-64@2.8.10:
-    resolution: {integrity: sha512-YK9vcpL3TVtqonB021XwgaQhY9hJJbKKUhLv16osxV0HkcQASQWUqR56yMge7puh6nxU67rQlTq1b7ksR1T3KA==}
-    cpu: [x64]
-    os: [linux]
-
-  turbo-linux-arm64@2.8.10:
-    resolution: {integrity: sha512-3+j2tL0sG95iBJTm+6J8/45JsETQABPqtFyYjVjBbi6eVGdtNTiBmHNKrbvXRlQ3ZbUG75bKLaSSDHSEEN+btQ==}
-    cpu: [arm64]
-    os: [linux]
-
-  turbo-windows-64@2.8.10:
-    resolution: {integrity: sha512-hdeF5qmVY/NFgiucf8FW0CWJWtyT2QPm5mIsX0W1DXAVzqKVXGq+Zf+dg4EUngAFKjDzoBeN6ec2Fhajwfztkw==}
-    cpu: [x64]
-    os: [win32]
-
-  turbo-windows-arm64@2.8.10:
-    resolution: {integrity: sha512-QGdr/Q8LWmj+ITMkSvfiz2glf0d7JG0oXVzGL3jxkGqiBI1zXFj20oqVY0qWi+112LO9SVrYdpHS0E/oGFrMbQ==}
-    cpu: [arm64]
-    os: [win32]
-
-  turbo@2.8.10:
-    resolution: {integrity: sha512-OxbzDES66+x7nnKGg2MwBA1ypVsZoDTLHpeaP4giyiHSixbsiTaMyeJqbEyvBdp5Cm28fc+8GG6RdQtic0ijwQ==}
+  turbo@2.9.18:
+    resolution: {integrity: sha512-bwabv6PupzeavybzEoArBAkwq5fnzwf8OFnRtpHwnviFWuwJPFxtyH+aVp36TmIqK3aYYgtTJ3J0m2ysxxSzQg==}
     hasBin: true
 
   type-check@0.4.0:
@@ -8601,7 +8650,15 @@ snapshots:
     optionalDependencies:
       expo: 55.0.4(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@55.0.6)(expo-router@55.0.3)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
 
+  '@supabase/auth-js@2.108.1':
+    dependencies:
+      tslib: 2.8.1
+
   '@supabase/auth-js@2.97.0':
+    dependencies:
+      tslib: 2.8.1
+
+  '@supabase/functions-js@2.108.1':
     dependencies:
       tslib: 2.8.1
 
@@ -8609,8 +8666,19 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@supabase/phoenix@0.4.2': {}
+
+  '@supabase/postgrest-js@2.108.1':
+    dependencies:
+      tslib: 2.8.1
+
   '@supabase/postgrest-js@2.97.0':
     dependencies:
+      tslib: 2.8.1
+
+  '@supabase/realtime-js@2.108.1':
+    dependencies:
+      '@supabase/phoenix': 0.4.2
       tslib: 2.8.1
 
   '@supabase/realtime-js@2.97.0':
@@ -8623,10 +8691,28 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  '@supabase/ssr@0.12.0(@supabase/supabase-js@2.108.1)':
+    dependencies:
+      '@supabase/supabase-js': 2.108.1
+      cookie: 1.1.1
+
+  '@supabase/storage-js@2.108.1':
+    dependencies:
+      iceberg-js: 0.8.1
+      tslib: 2.8.1
+
   '@supabase/storage-js@2.97.0':
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
+
+  '@supabase/supabase-js@2.108.1':
+    dependencies:
+      '@supabase/auth-js': 2.108.1
+      '@supabase/functions-js': 2.108.1
+      '@supabase/postgrest-js': 2.108.1
+      '@supabase/realtime-js': 2.108.1
+      '@supabase/storage-js': 2.108.1
 
   '@supabase/supabase-js@2.97.0':
     dependencies:
@@ -8736,6 +8822,24 @@ snapshots:
       jest: 29.7.0(@types/node@20.19.33)
 
   '@tootallnate/once@2.0.1': {}
+
+  '@turbo/darwin-64@2.9.18':
+    optional: true
+
+  '@turbo/darwin-arm64@2.9.18':
+    optional: true
+
+  '@turbo/linux-64@2.9.18':
+    optional: true
+
+  '@turbo/linux-arm64@2.9.18':
+    optional: true
+
+  '@turbo/windows-64@2.9.18':
+    optional: true
+
+  '@turbo/windows-arm64@2.9.18':
+    optional: true
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
@@ -9641,6 +9745,8 @@ snapshots:
       - supports-color
 
   convert-source-map@2.0.0: {}
+
+  cookie@1.1.1: {}
 
   core-js-compat@3.48.0:
     dependencies:
@@ -13981,32 +14087,14 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  turbo-darwin-64@2.8.10:
-    optional: true
-
-  turbo-darwin-arm64@2.8.10:
-    optional: true
-
-  turbo-linux-64@2.8.10:
-    optional: true
-
-  turbo-linux-arm64@2.8.10:
-    optional: true
-
-  turbo-windows-64@2.8.10:
-    optional: true
-
-  turbo-windows-arm64@2.8.10:
-    optional: true
-
-  turbo@2.8.10:
+  turbo@2.9.18:
     optionalDependencies:
-      turbo-darwin-64: 2.8.10
-      turbo-darwin-arm64: 2.8.10
-      turbo-linux-64: 2.8.10
-      turbo-linux-arm64: 2.8.10
-      turbo-windows-64: 2.8.10
-      turbo-windows-arm64: 2.8.10
+      '@turbo/darwin-64': 2.9.18
+      '@turbo/darwin-arm64': 2.9.18
+      '@turbo/linux-64': 2.9.18
+      '@turbo/linux-arm64': 2.9.18
+      '@turbo/windows-64': 2.9.18
+      '@turbo/windows-arm64': 2.9.18
 
   type-check@0.4.0:
     dependencies:
