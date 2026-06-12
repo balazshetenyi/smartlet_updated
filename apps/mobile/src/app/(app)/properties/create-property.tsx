@@ -14,6 +14,7 @@ import {
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@kiado/shared";
+import { generateListingContent } from "@kiado/shared/services/ai-service";
 import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
@@ -159,40 +160,14 @@ export default function CreatePropertyScreen() {
     setIsGenerating(true);
     try {
       const values = getValues();
-      const imagePayload = assets
+      const images = assets
         .slice(0, 3)
         .filter((a) => a.base64)
-        .map((a) => ({
-          base64: a.base64,
-          mimeType: a.mimeType ?? "image/jpeg",
-        }));
+        .map((a) => ({ base64: a.base64!, mimeType: a.mimeType ?? "image/jpeg" }));
 
-      const { data, error } = await supabase.functions.invoke(
-        "generate-listing-description",
-        {
-          body: {
-            title: values.title,
-            address: values.address,
-            city: values.city,
-            postcode: values.postcode,
-            rental_type: values.rental_type,
-            price: values.price,
-            bedrooms: values.bedrooms,
-            bathrooms: values.bathrooms,
-            max_guests: values.max_guests,
-            amenities: values.amenities,
-            images: imagePayload,
-          },
-        },
-      );
-
-      if (error) throw error;
-      if (data?.title) {
-        setValue("title", data.title, { shouldValidate: true });
-      }
-      if (data?.description) {
-        setValue("description", data.description, { shouldValidate: true });
-      }
+      const result = await generateListingContent(supabase, { ...values, images });
+      setValue("title", result.title, { shouldValidate: true });
+      setValue("description", result.description, { shouldValidate: true });
     } catch {
       Alert.alert(
         "Error",

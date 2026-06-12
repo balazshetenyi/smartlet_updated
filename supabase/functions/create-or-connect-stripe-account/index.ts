@@ -17,7 +17,7 @@ Deno.serve(async (req: Request) => {
     // Parse request body
     const body =
       req.method === "POST" ? await req.json().catch(() => ({})) : {};
-    const { stripeAccountId: providedAccountId } = body;
+    const { stripeAccountId: providedAccountId, returnUrl } = body;
 
     const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeSecret) throw new Error("STRIPE_SECRET_KEY is not configured");
@@ -98,10 +98,11 @@ Deno.serve(async (req: Request) => {
 
     // 3. Create account link for onboarding
     // Note: Replace 'your-app-scheme://' with your actual Expo scheme or web URL
+    const baseUrl = returnUrl ?? "https://www.kiado.co.uk/payout-setup";
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `https://www.kiado.co.uk/payout-setup?refresh=true`,
-      return_url: `https://www.kiado.co.uk/payout-setup?success=true`,
+      refresh_url: `${baseUrl}?refresh=true`,
+      return_url: `${baseUrl}?success=true`,
       type: "account_onboarding",
     });
 

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import Markdown from "react-native-markdown-display";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Stack } from "expo-router";
 import { PRIVACY_POLICY } from "@kiado/shared/content/privacy-policy";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
@@ -9,25 +9,37 @@ export default function PrivacyPolicyScreen() {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <Stack.Screen options={{ title: "Privacy Policy" }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Privacy Policy</Text>
-        <Markdown>{PRIVACY_POLICY}</Markdown>
+        <Markdown style={styles.markdown}>{PRIVACY_POLICY}</Markdown>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 function createStyles(t: AppTheme) {
   return StyleSheet.create({
-  container: { flex: 1, backgroundColor: t.surface },
-  content: { padding: 20 },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: t.text,
-    marginBottom: 8,
-  },
-  body: { color: t.text, fontSize: 14, lineHeight: 20 },
+    container: { flex: 1, backgroundColor: t.surface },
+    content: { padding: 20 },
+    markdown: {
+      heading1: { color: t.text, marginTop: 24, marginBottom: 8 },
+      heading2: { color: t.text, marginTop: 20, marginBottom: 6 },
+      heading3: { color: t.text, marginTop: 16, marginBottom: 4 },
+      paragraph: { color: t.text, marginBottom: 12, lineHeight: 22 },
+      strong: { color: t.text },
+      bullet_list: { color: t.text, marginBottom: 12 },
+      ordered_list: { color: t.text, marginBottom: 12 },
+      list_item: { color: t.text, marginBottom: 4 },
+      code_inline: { color: t.text },
+      code_block: { color: t.text },
+      hr: { backgroundColor: t.border, marginVertical: 16 },
+      table: { borderWidth: 1, borderColor: t.border, marginBottom: 12 },
+      thead: { backgroundColor: t.bg2 ?? t.surface },
+      tbody: {},
+      tr: { borderBottomWidth: 1, borderColor: t.border, flexDirection: 'row' },
+      th: { flex: 1, padding: 8, color: t.text, fontWeight: '700' },
+      td: { flex: 1, padding: 8, color: t.text },
+    } as any,
   });
 }
