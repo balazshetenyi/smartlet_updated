@@ -18,7 +18,9 @@ import { generateListingContent } from "@kiado/shared/services/ai-service";
 import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
+import { reverseGeocode } from "@/utils/geocoding-utils";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -41,6 +43,7 @@ export default function CreatePropertyScreen() {
   const { showActionSheetWithOptions } = useActionSheet();
   const [isAvailable, setIsAvailable] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [locationDetected, setLocationDetected] = useState(false);
   const [assets, setAssets] = useState<Array<ImagePicker.ImagePickerAsset>>([]);
   const [declarationType, setDeclarationType] =
     useState<SurveillanceDeclarationType | null>(null);
@@ -126,12 +129,38 @@ export default function CreatePropertyScreen() {
             Alert.alert("Permission required", "Camera access is needed to take photos.");
             return;
           }
+
+          // Request location permission in parallel — silently skip if denied
+          const locationPermission = await Location.requestForegroundPermissionsAsync();
+
           const result = await ImagePicker.launchCameraAsync({
             quality: 0.3,
             base64: true,
             exif: false,
           });
-          if (!result.canceled) appendAssets(result.assets);
+
+          if (!result.canceled) {
+            appendAssets(result.assets);
+
+            // Auto-fill address only if all three fields are currently empty
+            const { address, city, postcode } = getValues();
+            if (!address && !city && !postcode && locationPermission.status === "granted") {
+              try {
+                const pos = await Location.getCurrentPositionAsync({
+                  accuracy: Location.Accuracy.Balanced,
+                });
+                const detected = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+                if (detected) {
+                  if (detected.address) setValue("address", detected.address, { shouldValidate: true });
+                  if (detected.city) setValue("city", detected.city, { shouldValidate: true });
+                  if (detected.postcode) setValue("postcode", detected.postcode, { shouldValidate: true });
+                  setLocationDetected(true);
+                }
+              } catch {
+                // Location lookup failed — fields stay empty, no disruption
+              }
+            }
+          }
         } else {
           const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (status !== "granted") {
@@ -397,6 +426,12 @@ export default function CreatePropertyScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Location</Text>
+
+          {locationDetected && (
+            <Text style={styles.locationDetectedHint}>
+              Address detected from your location — edit if needed
+            </Text>
+          )}
 
           <Controller
             control={control}
@@ -764,6 +799,11 @@ function createStyles(t: AppTheme) {
       marginTop: 6,
       fontSize: 12,
       color: t.textSecondary,
+    },
+    locationDetectedHint: {
+      fontSize: 12,
+      color: t.primary,
+      marginBottom: 12,
     },
   });
 }
