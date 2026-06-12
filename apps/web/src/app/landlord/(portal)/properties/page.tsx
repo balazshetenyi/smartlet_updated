@@ -37,7 +37,7 @@ export default async function PropertiesPage() {
           </p>
         </div>
         <Link
-          href="https://kiado.co.uk"
+          href="/landlord/properties/new"
           className="flex items-center gap-2 bg-[#7C6CFF] hover:bg-[#6B5CE7] text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors"
         >
           <Plus size={16} />
@@ -56,8 +56,9 @@ export default async function PropertiesPage() {
       ) : (
         <div className="grid gap-4">
           {properties.map((property) => (
-            <div
+            <Link
               key={property.id}
+              href={`/landlord/properties/${property.id}`}
               className="bg-white rounded-2xl border border-gray-200 overflow-hidden flex hover:shadow-sm transition-shadow"
             >
               <div className="w-40 h-32 flex-shrink-0 bg-gray-100">
@@ -120,7 +121,7 @@ export default async function PropertiesPage() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

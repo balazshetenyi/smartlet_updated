@@ -1,5 +1,7 @@
+import { fetchLandlordBookings, isBookingRequestExpired } from "@/lib/booking-service";
 import { createClient } from "@/lib/supabase/server";
-import { Building2, CalendarClock, TrendingUp, Clock } from "lucide-react";
+import { Building2, CalendarClock, TrendingUp, Clock, Wallet } from "lucide-react";
+import RecentBookings from "./_components/RecentBookings";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -7,66 +9,31 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [propertiesRes, pendingRes, earningsRes, recentBookingsRes] =
-    await Promise.all([
-      supabase
-        .from("properties")
-        .select("id", { count: "exact", head: true })
-        .eq("landlord_id", user!.id),
+  const landlordId = user!.id;
 
-      supabase
-        .from("bookings")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending")
-        .in(
-          "property_id",
-          (
-            await supabase
-              .from("properties")
-              .select("id")
-              .eq("landlord_id", user!.id)
-          ).data?.map((p) => p.id) ?? [],
-        ),
-
-      supabase
-        .from("bookings")
-        .select("total_price")
-        .eq("status", "confirmed")
-        .in(
-          "property_id",
-          (
-            await supabase
-              .from("properties")
-              .select("id")
-              .eq("landlord_id", user!.id)
-          ).data?.map((p) => p.id) ?? [],
-        ),
-
-      supabase
-        .from("bookings")
-        .select(
-          "id, check_in, check_out, total_price, status, tenant:profiles!tenant_id(first_name, last_name), property:properties!property_id(title)",
-        )
-        .in(
-          "property_id",
-          (
-            await supabase
-              .from("properties")
-              .select("id")
-              .eq("landlord_id", user!.id)
-          ).data?.map((p) => p.id) ?? [],
-        )
-        .order("created_at", { ascending: false })
-        .limit(5),
-    ]);
+  const [propertiesRes, bookings] = await Promise.all([
+    supabase
+      .from("properties")
+      .select("id", { count: "exact", head: true })
+      .eq("landlord_id", landlordId),
+    fetchLandlordBookings(supabase, landlordId),
+  ]);
 
   const propertyCount = propertiesRes.count ?? 0;
-  const pendingCount = pendingRes.count ?? 0;
-  const totalEarnings = (earningsRes.data ?? []).reduce(
-    (sum, b) => sum + (b.total_price ?? 0),
-    0,
-  );
-  const recentBookings = recentBookingsRes.data ?? [];
+  const net = (total: number) => total * 0.94;
+  const pendingCount = bookings.filter(
+    (b) => b.status === "pending" && !isBookingRequestExpired(b),
+  ).length;
+  const totalEarnings = bookings
+    .filter((b) => b.status === "confirmed" && b.payment_status === "paid")
+    .reduce((sum, b) => sum + net(b.total_price ?? 0), 0);
+  const upcomingPayments = bookings
+    .filter((b) => b.status === "confirmed" && b.payment_status !== "paid")
+    .reduce((sum, b) => sum + net(b.total_price ?? 0), 0);
+  const recentBookings = bookings.slice(0, 5);
+
+  const fmt = (n: number) =>
+    `£${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const stats = [
     {
@@ -86,21 +53,23 @@ export default async function DashboardPage() {
       bg: "bg-amber-50",
     },
     {
-      label: "Total earnings",
-      value: `£${totalEarnings.toLocaleString("en-GB")}`,
+      label: "Upcoming payments",
+      value: fmt(upcomingPayments),
       icon: TrendingUp,
+      href: "/landlord/bookings",
+      color: "text-purple-600",
+      bg: "bg-purple-50",
+    },
+    {
+      label: "Total earnings",
+      value: fmt(totalEarnings),
+      icon: Wallet,
       href: "/landlord/earnings",
       color: "text-green-600",
       bg: "bg-green-50",
     },
   ];
 
-  const statusColors: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-700",
-    confirmed: "bg-green-100 text-green-700",
-    cancelled: "bg-red-100 text-red-700",
-    completed: "bg-gray-100 text-gray-600",
-  };
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -111,7 +80,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map(({ label, value, icon: Icon, href, color, bg }) => (
           <a
             key={label}
@@ -146,36 +115,7 @@ export default async function DashboardPage() {
             No bookings yet
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
-            {recentBookings.map((booking: any) => (
-              <div
-                key={booking.id}
-                className="px-6 py-4 flex items-center justify-between"
-              >
-                <div>
-                  <p className="text-sm font-medium text-[#2C3E50]">
-                    {booking.tenant?.first_name} {booking.tenant?.last_name}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {booking.property?.title} · {booking.check_in} →{" "}
-                    {booking.check_out}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-[#2C3E50]">
-                    £{(booking.total_price ?? 0).toLocaleString("en-GB")}
-                  </span>
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                      statusColors[booking.status] ?? "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {booking.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <RecentBookings bookings={recentBookings} landlordId={landlordId} />
         )}
       </div>
     </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { ArrowLeft, Send } from "lucide-react";
+import { suggestReplies } from "@kiado/shared/services/ai-service";
+import { ArrowLeft, Loader2, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -32,6 +33,8 @@ export default function ConversationThread({
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [isSuggestingReplies, setIsSuggestingReplies] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -76,6 +79,7 @@ export default function ConversationThread({
     setSending(true);
     const content = text.trim();
     setText("");
+    setSuggestions([]);
 
     const { data: msg, error } = await supabase
       .from("messages")
@@ -106,6 +110,29 @@ export default function ConversationThread({
     }
   };
 
+  const fetchSuggestions = async () => {
+    if (isSuggestingReplies || messages.length === 0) return;
+    setIsSuggestingReplies(true);
+    setSuggestions([]);
+    try {
+      const recentMessages = messages
+        .slice(-10)
+        .filter((m) => m.content?.trim())
+        .map((m) => ({ content: m.content, isOwn: m.sender_id === currentUserId }));
+
+      const result = await suggestReplies(supabase, {
+        messages: recentMessages,
+        myRole: "landlord",
+        propertyTitle,
+      });
+      setSuggestions(result);
+    } catch {
+      // silently fail — no toast needed on a small feature
+    } finally {
+      setIsSuggestingReplies(false);
+    }
+  };
+
   const formatTime = (d: string) =>
     new Date(d).toLocaleTimeString("en-GB", {
       hour: "2-digit",
@@ -120,10 +147,7 @@ export default function ConversationThread({
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-    return date.toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-    });
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   };
 
   const groupedMessages: Array<{ date: string; msgs: Message[] }> = [];
@@ -139,6 +163,7 @@ export default function ConversationThread({
 
   return (
     <div className="flex flex-col h-screen">
+      {/* Header */}
       <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-200 bg-white">
         <Link
           href="/landlord/messages"
@@ -155,6 +180,7 @@ export default function ConversationThread({
         </div>
       </div>
 
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-50">
         {groupedMessages.map(({ date, msgs }) => (
           <div key={date}>
@@ -185,7 +211,9 @@ export default function ConversationThread({
                           className="rounded-lg mb-2 max-w-full"
                         />
                       )}
-                      {msg.content && <p className="leading-relaxed">{msg.content}</p>}
+                      {msg.content && (
+                        <p className="leading-relaxed">{msg.content}</p>
+                      )}
                       <p
                         className={`text-xs mt-1 ${
                           isOwn ? "text-white/60" : "text-gray-400"
@@ -203,8 +231,43 @@ export default function ConversationThread({
         <div ref={bottomRef} />
       </div>
 
+      {/* Suggestion chips */}
+      {suggestions.length > 0 && (
+        <div className="flex gap-2 px-6 py-2.5 border-t border-gray-100 bg-white overflow-x-auto">
+          {suggestions.map((suggestion, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setText(suggestion);
+                setSuggestions([]);
+              }}
+              className="shrink-0 text-left bg-[#7C6CFF]/8 hover:bg-[#7C6CFF]/15 border border-[#7C6CFF]/25 text-[#7C6CFF] text-xs font-medium px-3 py-2 rounded-xl transition-colors max-w-[220px]"
+            >
+              <span className="block text-[10px] text-[#7C6CFF]/60 font-semibold uppercase tracking-wide mb-0.5">
+                Suggestion {index + 1}
+              </span>
+              <span className="line-clamp-2 leading-snug">{suggestion}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input bar */}
       <div className="px-6 py-4 border-t border-gray-200 bg-white">
-        <div className="flex items-end gap-3">
+        <div className="flex items-end gap-2">
+          <button
+            onClick={fetchSuggestions}
+            disabled={isSuggestingReplies || messages.length === 0 || sending}
+            title="Suggest replies with AI"
+            className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-[#7C6CFF] hover:border-[#7C6CFF] transition-colors disabled:opacity-40 shrink-0"
+          >
+            {isSuggestingReplies ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Sparkles size={16} />
+            )}
+          </button>
+
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -214,10 +277,11 @@ export default function ConversationThread({
             className="flex-1 resize-none bg-gray-100 rounded-xl px-4 py-3 text-sm text-[#2C3E50] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7C6CFF] max-h-32"
             style={{ minHeight: "44px" }}
           />
+
           <button
             onClick={handleSend}
             disabled={!text.trim() || sending}
-            className="w-10 h-10 bg-[#7C6CFF] hover:bg-[#6B5CE7] disabled:bg-gray-300 text-white rounded-xl flex items-center justify-center transition-colors flex-shrink-0"
+            className="w-10 h-10 bg-[#7C6CFF] hover:bg-[#6B5CE7] disabled:bg-gray-300 text-white rounded-xl flex items-center justify-center transition-colors shrink-0"
           >
             <Send size={16} />
           </button>

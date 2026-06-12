@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { MessageSquare } from "lucide-react";
-import Link from "next/link";
+import ConversationList from "./_components/ConversationList";
 
 export default async function MessagesPage() {
   const supabase = await createClient();
@@ -33,17 +33,6 @@ export default async function MessagesPage() {
     });
   }
 
-  const formatTime = (d: string | null) => {
-    if (!d) return "";
-    const date = new Date(d);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    if (diff < 60_000) return "Just now";
-    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
-    if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-  };
-
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <div className="mb-8">
@@ -60,40 +49,12 @@ export default async function MessagesPage() {
           <p className="text-gray-500 text-sm">No messages yet</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-100">
-          {conversations.map((conv: any) => {
-            const unread = unreadCounts[conv.id] ?? 0;
-            return (
-              <Link
-                key={conv.id}
-                href={`/landlord/messages/${conv.id}`}
-                className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors"
-              >
-                <div className="w-10 h-10 rounded-full bg-[#7C6CFF]/10 flex items-center justify-center text-[#7C6CFF] font-semibold text-sm flex-shrink-0">
-                  {conv.tenant?.first_name?.[0]?.toUpperCase() ?? "?"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#2C3E50] truncate">
-                    {conv.tenant?.first_name} {conv.tenant?.last_name}
-                  </p>
-                  <p className="text-xs text-gray-400 truncate">
-                    {conv.property?.title}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <p className="text-xs text-gray-400">
-                    {formatTime(conv.last_message_at)}
-                  </p>
-                  {unread > 0 && (
-                    <span className="w-5 h-5 bg-[#7C6CFF] rounded-full text-white text-xs flex items-center justify-center font-medium">
-                      {unread}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <ConversationList
+          conversations={(conversations ?? []).map((conv: any) => ({
+            ...conv,
+            unread: unreadCounts[conv.id] ?? 0,
+          }))}
+        />
       )}
     </div>
   );

@@ -7,7 +7,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { fetchBookingRequests } from "@/utils/booking-utils";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { supabase } from "@kiado/shared";
+import { isBookingRequestExpired, supabase } from "@kiado/shared";
 import { BookingWithTenant } from "@kiado/shared/types/bookings";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -67,14 +67,7 @@ export default function BookingsTab() {
     }, [profile?.id]),
   );
 
-  const isExpired = (b: BookingWithTenant) => {
-    const now = new Date();
-    if (now >= new Date(b.check_in)) return true;
-    const expiresAt = new Date(
-      new Date(b.created_at!).getTime() + 48 * 60 * 60 * 1000,
-    );
-    return now >= expiresAt;
-  };
+  const isExpired = (b: BookingWithTenant) => isBookingRequestExpired(b);
 
   const getStatusColor = (status: string) => {
     switch (status) {

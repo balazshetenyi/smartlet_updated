@@ -223,6 +223,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@kiado/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@supabase/ssr':
         specifier: ^0.12.0
         version: 0.12.0(@supabase/supabase-js@2.108.1)
@@ -270,7 +273,11 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  packages/shared: {}
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
 
 packages:
 

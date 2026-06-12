@@ -19,7 +19,9 @@ export default function BookingActions({ bookingId }: { bookingId: string }) {
       { body: { bookingId } },
     );
     if (error) {
-      setError(error.message ?? "Something went wrong");
+      const ctx = (error as any).context;
+      const body = ctx instanceof Response ? await ctx.json().catch(() => null) : null;
+      setError(body?.error ?? error.message ?? "Something went wrong");
     } else {
       router.refresh();
     }

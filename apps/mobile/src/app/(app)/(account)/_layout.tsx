@@ -66,6 +66,10 @@ export default function AccountLayout() {
         name="my-reports"
         options={{ title: "My Reports", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
       />
+      <Stack.Screen
+        name="help-support"
+        options={{ title: "Help & Support", headerShown: true, headerLeft: () => <HeaderBackButton /> }}
+      />
     </Stack>
   );
 }

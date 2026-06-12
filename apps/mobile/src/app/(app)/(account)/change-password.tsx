@@ -88,7 +88,7 @@ export default function ChangePasswordScreen() {
     <KeyboardAwareScrollView
       bottomOffset={keyboardOffset + 170}
       keyboardShouldPersistTaps="handled"
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: theme.surface }}
     >
       <View style={styles.container}>
         <View style={styles.header}>

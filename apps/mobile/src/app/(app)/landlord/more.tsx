@@ -23,7 +23,7 @@ const MENU: MenuItem[] = [
   { icon: "luggage",         label: "My Travel Bookings",   sub: "Properties you've booked as a guest", route: "/(account)/my-bookings" },
   { icon: "notifications",   label: "Notifications",        sub: "Manage alerts",                   route: "/(account)/notifications"   },
   { icon: "lock",            label: "Change Password",      sub: "Update your password",            route: "/(account)/change-password" },
-  { icon: "help",            label: "Help & Support",       sub: "Get help with the app",           route: "/terms-of-service"          },
+  { icon: "help",            label: "Help & Support",       sub: "Get help with the app",           route: "/(account)/help-support"    },
   { icon: "gavel",           label: "Terms of Service",     sub: "Read our terms",                  route: "/terms-of-service"          },
   { icon: "privacy-tip",     label: "Privacy Policy",       sub: "Read our privacy policy",         route: "/privacy-policy"            },
 ];
