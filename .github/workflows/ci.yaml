@@ -16,7 +16,7 @@ jobs:
           version: latest
 
       - name: Start Supabase local development setup
-        run: supabase db start
+        run: supabase start
 
       - name: Verify generated types are checked in
         run: |
