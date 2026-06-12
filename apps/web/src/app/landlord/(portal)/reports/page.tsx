@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { fetchLandlordReports } from "@kiado/shared/services/surveillance-service";
-import { ShieldAlert, ShieldCheck, ShieldOff, Clock, Shield } from "lucide-react";
+import { SUPPORT_EMAIL } from "@kiado/shared/content/faq";
+import { ShieldAlert, ShieldCheck, ShieldOff, Clock, Shield, Mail } from "lucide-react";
 
 const STATUS_CONFIG = {
   pending: {
@@ -100,15 +101,18 @@ export default async function ReportsPage() {
 function ReportCard({ report }: { report: Awaited<ReturnType<typeof fetchLandlordReports>>[number] }) {
   const config = STATUS_CONFIG[report.status] ?? STATUS_CONFIG.pending;
   const Icon = config.icon;
+  const propertyTitle = report.property?.title ?? "Unknown property";
+  const mailtoHref =
+    `mailto:${SUPPORT_EMAIL}` +
+    `?subject=${encodeURIComponent(`Surveillance report enquiry – ${propertyTitle}`)}` +
+    `&body=${encodeURIComponent(`Report ID: ${report.id}\nProperty: ${propertyTitle}\nFiled: ${formatDate(report.created_at)}\n\nPlease describe your query:\n\n`)}`;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <p className="font-semibold text-[#2C3E50] truncate">
-              {report.property?.title ?? "Unknown property"}
-            </p>
+            <p className="font-semibold text-[#2C3E50] truncate">{propertyTitle}</p>
             {report.property?.city && (
               <span className="text-xs text-gray-400 shrink-0">
                 {report.property.city}
@@ -121,6 +125,13 @@ function ReportCard({ report }: { report: Awaited<ReturnType<typeof fetchLandlor
               Resolution: {report.resolution_notes}
             </p>
           )}
+          <a
+            href={mailtoHref}
+            className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-[#7C6CFF] hover:text-[#6B5CE7] transition-colors"
+          >
+            <Mail size={12} />
+            Contact Support
+          </a>
         </div>
         <div className="shrink-0 text-right">
           <span

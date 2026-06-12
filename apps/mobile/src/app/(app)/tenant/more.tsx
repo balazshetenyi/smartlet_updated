@@ -15,13 +15,28 @@ interface MenuItem {
   route: string;
 }
 
-const MENU: MenuItem[] = [
-  { icon: "security",      label: "Surveillance Reports", sub: "Reports you've submitted",  route: "/(account)/my-reports"      },
-  { icon: "notifications", label: "Notifications",        sub: "Manage your alerts",        route: "/(account)/notifications"   },
-  { icon: "lock",          label: "Change Password",      sub: "Update your password",      route: "/(account)/change-password" },
-  { icon: "help",          label: "Help & Support",       sub: "Get help with the app",     route: "/(account)/help-support"    },
-  { icon: "gavel",         label: "Terms of Service",     sub: "Read our terms",            route: "/terms-of-service"          },
-  { icon: "privacy-tip",   label: "Privacy Policy",       sub: "Read our privacy policy",   route: "/privacy-policy"            },
+interface MenuSection {
+  title: string;
+  items: MenuItem[];
+}
+
+const SECTIONS: MenuSection[] = [
+  {
+    title: "Account",
+    items: [
+      { icon: "notifications", label: "Notifications",        sub: "Manage your alerts",       route: "/(account)/notifications"   },
+      { icon: "lock",          label: "Change Password",      sub: "Update your password",     route: "/(account)/change-password" },
+      { icon: "security",      label: "Surveillance Reports", sub: "Reports you've submitted", route: "/(account)/my-reports"      },
+    ],
+  },
+  {
+    title: "Legal",
+    items: [
+      { icon: "help",        label: "Help & Support",  sub: "Get help with the app",    route: "/(account)/help-support" },
+      { icon: "gavel",       label: "Terms of Service", sub: "Read our terms",          route: "/terms-of-service"       },
+      { icon: "privacy-tip", label: "Privacy Policy",   sub: "Read our privacy policy", route: "/privacy-policy"         },
+    ],
+  },
 ];
 
 export default function MoreTab() {
@@ -77,25 +92,30 @@ export default function MoreTab() {
           <MaterialIcons name="edit" size={18} color={theme.textMuted} />
         </TouchableOpacity>
 
-        {/* Menu */}
-        <View style={styles.menuCard}>
-          {MENU.map((item, i) => (
-            <TouchableOpacity
-              key={item.label}
-              style={[styles.menuItem, i < MENU.length - 1 && styles.menuDivider]}
-              onPress={() => router.push(item.route as any)}
-            >
-              <View style={[styles.menuIconWrap, { backgroundColor: theme.accent + "22" }]}>
-                <MaterialIcons name={item.icon} size={18} color={theme.accent} />
-              </View>
-              <View style={styles.menuText}>
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Text style={styles.menuSub}>{item.sub}</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={18} color={theme.textMuted} />
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* Menu sections */}
+        {SECTIONS.map((section) => (
+          <View key={section.title} style={styles.sectionBlock}>
+            <Text style={styles.sectionLabel}>{section.title}</Text>
+            <View style={styles.menuCard}>
+              {section.items.map((item, i) => (
+                <TouchableOpacity
+                  key={item.label}
+                  style={[styles.menuItem, i < section.items.length - 1 && styles.menuDivider]}
+                  onPress={() => router.push(item.route as any)}
+                >
+                  <View style={[styles.menuIconWrap, { backgroundColor: theme.accent + "22" }]}>
+                    <MaterialIcons name={item.icon} size={18} color={theme.accent} />
+                  </View>
+                  <View style={styles.menuText}>
+                    <Text style={styles.menuLabel}>{item.label}</Text>
+                    <Text style={styles.menuSub}>{item.sub}</Text>
+                  </View>
+                  <MaterialIcons name="chevron-right" size={18} color={theme.textMuted} />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ))}
 
         {/* Sign out */}
         <TouchableOpacity style={styles.signOutBtn} onPress={() => signOut()}>
@@ -130,9 +150,11 @@ function createStyles(t: AppTheme) {
     profileInfo:  { flex: 1 },
     profileName:  { fontSize: 16, fontWeight: "700", color: t.text, marginBottom: 2 },
     profileEmail: { fontSize: 12, color: t.textMuted },
+    sectionBlock: { marginBottom: 16 },
+    sectionLabel: { fontSize: 12, fontWeight: "600", color: t.textMuted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8, marginLeft: 4 },
     menuCard: {
       backgroundColor: t.card, borderRadius: 16, borderWidth: 1,
-      borderColor: t.border, overflow: "hidden", marginBottom: 16,
+      borderColor: t.border, overflow: "hidden",
     },
     menuItem:    { flexDirection: "row", alignItems: "center", padding: 14, gap: 12 },
     menuDivider: { borderBottomWidth: 1, borderBottomColor: t.border },
