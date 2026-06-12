@@ -12,7 +12,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { action, input, placeId } = await req.json();
+    const { action, input, placeId, lat, lng } = await req.json();
     const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
 
     if (!apiKey) {
@@ -33,6 +33,12 @@ Deno.serve(async (req: Request) => {
     else if (action === "details") {
       if (!placeId) throw new Error("Place ID required for details");
       url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=geometry,name&key=${apiKey}`;
+    }
+
+    // 3. Handle Reverse Geocoding
+    else if (action === "reverseGeocode") {
+      if (!lat || !lng) throw new Error("lat and lng required for reverseGeocode");
+      url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
     } else {
       throw new Error("Invalid action");
     }
