@@ -1,10 +1,4 @@
-/**
- * Geocoding utilities powered by the Nominatim OpenStreetMap API.
- * No API key required.
- * Usage policy: https://operations.osmfoundation.org/policies/nominatim/
- *   - Maximum 1 request per second
- *   - Must include a descriptive User-Agent header
- */
+import { supabase } from "@kiado/shared";
 
 export type ReverseGeocodeResult = {
   address: string;
@@ -16,14 +10,21 @@ export async function reverseGeocode(
   lat: number,
   lng: number,
 ): Promise<ReverseGeocodeResult | null> {
-  const { supabase } = await import("@kiado/shared");
   try {
     const { data, error } = await supabase.functions.invoke("google-places", {
       body: { action: "reverseGeocode", lat, lng },
     });
 
+    if (error) {
+      console.warn("[reverseGeocode] Edge function error:", error);
+      return null;
+    }
+
     const result = data as any;
-    if (error || !Array.isArray(result?.results) || result.results.length === 0) return null;
+    if (!Array.isArray(result?.results) || result.results.length === 0) {
+      console.warn("[reverseGeocode] No results returned:", result);
+      return null;
+    }
 
     const components: Array<{ long_name: string; types: string[] }> =
       result.results[0].address_components ?? [];
@@ -40,7 +41,8 @@ export async function reverseGeocode(
     if (!streetAddress && !city && !postcode) return null;
 
     return { address: streetAddress, city, postcode };
-  } catch {
+  } catch (e) {
+    console.warn("[reverseGeocode] Unexpected error:", e);
     return null;
   }
 }

@@ -156,8 +156,8 @@ export default function CreatePropertyScreen() {
                   if (detected.postcode) setValue("postcode", detected.postcode, { shouldValidate: true });
                   setLocationDetected(true);
                 }
-              } catch {
-                // Location lookup failed — fields stay empty, no disruption
+              } catch (e) {
+                console.warn("[addPhotos] Location/geocoding failed:", e);
               }
             }
           }
