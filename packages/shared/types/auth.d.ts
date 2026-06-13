@@ -9,7 +9,7 @@ type SignUpData = {
   last_name: string;
   email: string;
   password: string;
-  user_type: "tenant" | "landlord";
+  user_type: "tenant" | "landlord" | "service_operator";
 };
 
 type SignInResponse = {

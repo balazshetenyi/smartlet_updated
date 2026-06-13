@@ -20,6 +20,9 @@ type NotificationPrefs = {
   booking_confirmed: boolean;
   booking_cancelled: boolean;
   new_message: boolean;
+  new_service_job: boolean;
+  application_update: boolean;
+  service_application_received: boolean;
 };
 
 const DEFAULT_PREFS: NotificationPrefs = {
@@ -27,6 +30,9 @@ const DEFAULT_PREFS: NotificationPrefs = {
   booking_confirmed: true,
   booking_cancelled: true,
   new_message: true,
+  new_service_job: true,
+  application_update: true,
+  service_application_received: true,
 };
 
 export default function NotificationsScreen() {
@@ -40,6 +46,7 @@ export default function NotificationsScreen() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const isLandlord = profile?.user_role === "landlord";
+  const isServiceOperator = profile?.user_role === "service_operator";
 
   useEffect(() => {
     checkPermission();
@@ -179,6 +186,50 @@ export default function NotificationsScreen() {
           theme={theme}
         />
       </View>
+
+      {/* Service marketplace — operators */}
+      {isServiceOperator && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Services</Text>
+          <NotificationRow
+            icon="work-outline"
+            label="New Job Nearby"
+            description="When a landlord posts a job matching your services"
+            value={prefs.new_service_job}
+            onToggle={() => toggle("new_service_job")}
+            disabled={saving || permissionGranted === false}
+            styles={styles}
+            theme={theme}
+          />
+          <NotificationRow
+            icon="assignment-turned-in"
+            label="Application Updates"
+            description="When your application is approved or declined"
+            value={prefs.application_update}
+            onToggle={() => toggle("application_update")}
+            disabled={saving || permissionGranted === false}
+            styles={styles}
+            theme={theme}
+          />
+        </View>
+      )}
+
+      {/* Service marketplace — landlords */}
+      {isLandlord && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Services</Text>
+          <NotificationRow
+            icon="handyman"
+            label="New Application Received"
+            description="When an operator applies to one of your jobs"
+            value={prefs.service_application_received}
+            onToggle={() => toggle("service_application_received")}
+            disabled={saving || permissionGranted === false}
+            styles={styles}
+            theme={theme}
+          />
+        </View>
+      )}
     </ScrollView>
   );
 }

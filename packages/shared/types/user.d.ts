@@ -5,7 +5,7 @@ export type UserProfile = {
   first_name: string;
   last_name: string;
   avatar_url: string;
-  user_role?: "tenant" | "landlord" | "admin";
+  user_role?: "tenant" | "landlord" | "admin" | "service_operator";
   push_token?: string;
   stripe_account_id?: string;
   created_at: string;
@@ -20,5 +20,5 @@ export type Coordinates = {
 export type UserRole = {
   id: string;
   user_id: string;
-  role: "tenant" | "landlord" | "admin";
+  role: "tenant" | "landlord" | "admin" | "service_operator";
 };

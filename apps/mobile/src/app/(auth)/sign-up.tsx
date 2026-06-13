@@ -28,9 +28,11 @@ const SignUp = () => {
   const presetRole =
     roleParam === "landlord"
       ? "landlord"
-      : roleParam === "tenant"
-        ? "tenant"
-        : null;
+      : roleParam === "service_operator"
+        ? "service_operator"
+        : roleParam === "tenant"
+          ? "tenant"
+          : null;
   const [consentGiven, setConsentGiven] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const { signUpWithEmail, loading, session } = useAuthStore();
@@ -44,7 +46,7 @@ const SignUp = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      user_type: (presetRole ?? "tenant") as "tenant" | "landlord",
+      user_type: (presetRole ?? "tenant") as "tenant" | "landlord" | "service_operator",
     },
     mode: "onChange",
   });
@@ -117,12 +119,16 @@ const SignUp = () => {
           <Text style={styles.headline}>
             {presetRole === "landlord"
               ? "Set up your account"
-              : "Create your account"}
+              : presetRole === "service_operator"
+                ? "Register as a service operator"
+                : "Create your account"}
           </Text>
           <Text style={styles.subtitle}>
             {presetRole === "landlord"
               ? "List properties and connect with guests"
-              : "Start exploring properties today"}
+              : presetRole === "service_operator"
+                ? "Get hired by landlords for cleaning, maintenance and more"
+                : "Start exploring properties today"}
           </Text>
         </View>
 

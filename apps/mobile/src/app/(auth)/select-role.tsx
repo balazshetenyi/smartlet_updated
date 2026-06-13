@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type Role = "tenant" | "landlord";
+type Role = "tenant" | "landlord" | "service_operator";
 
 interface RoleCard {
   role: Role;
@@ -34,6 +34,13 @@ const CARDS: RoleCard[] = [
     iconColor: "#22C55E",
     title: "I own a property",
     description: "List your property, manage bookings and connect with guests",
+  },
+  {
+    role: "service_operator",
+    icon: "handyman",
+    iconColor: "#F59E0B",
+    title: "I offer property services",
+    description: "Cleaning, maintenance and more — get hired by landlords nearby",
   },
 ];
 

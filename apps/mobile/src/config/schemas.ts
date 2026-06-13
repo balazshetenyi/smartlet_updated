@@ -32,7 +32,7 @@ export const signUpSchema = zod
         "Password must contain at least one special character"
       ),
     confirmPassword: zod.string().min(1, "Please confirm your password"),
-    user_type: zod.enum(["tenant", "landlord"], {
+    user_type: zod.enum(["tenant", "landlord", "service_operator"], {
       error: "Please select your account type",
     }),
   })

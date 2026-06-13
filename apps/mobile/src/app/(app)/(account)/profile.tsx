@@ -3,6 +3,7 @@ import Input from "@/components/shared/Input";
 import { useAuthStore } from "@/store/auth-store";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { getRoleColor, getRoleIcon, handleProfileSave } from "@/utils/profile-utils";
+import { fetchServiceOperatorProfile, upsertServiceOperatorProfile } from "@/utils/service-utils";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -15,6 +16,8 @@ export default function ProfileScreen() {
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { profile, refreshProfile } = useAuthStore();
   const { keyboardOffset } = useKeyboardOffset();
+  const isOperator = profile?.user_role === "service_operator";
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -24,6 +27,11 @@ export default function ProfileScreen() {
     email:      profile?.email      || "",
     phone:      profile?.phone      || "",
   });
+
+  const [isEditingBusiness, setIsEditingBusiness] = useState(false);
+  const [savingBusiness, setSavingBusiness] = useState(false);
+  const [companyName, setCompanyName] = useState("");
+  const [bio, setBio] = useState("");
 
   useEffect(() => {
     if (!isEditing && profile) {
@@ -35,6 +43,30 @@ export default function ProfileScreen() {
       });
     }
   }, [profile, isEditing]);
+
+  useEffect(() => {
+    if (isOperator && profile?.id) {
+      fetchServiceOperatorProfile(profile.id).then((op) => {
+        setCompanyName(op?.company_name ?? "");
+        setBio(op?.bio ?? "");
+      });
+    }
+  }, [isOperator, profile?.id]);
+
+  const handleSaveBusiness = async () => {
+    if (!profile?.id) return;
+    setSavingBusiness(true);
+    const { error } = await upsertServiceOperatorProfile(profile.id, {
+      company_name: companyName.trim() || undefined,
+      bio: bio.trim() || undefined,
+    });
+    setSavingBusiness(false);
+    if (error) {
+      Alert.alert("Error", "Failed to save business info.");
+    } else {
+      setIsEditingBusiness(false);
+    }
+  };
 
   const handleSave = async () => {
     const error = validatePhone(formData.phone);
@@ -153,6 +185,57 @@ export default function ProfileScreen() {
           </View>
         )}
       </View>
+
+      {isOperator && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Business Information</Text>
+            {!isEditingBusiness && (
+              <TouchableOpacity onPress={() => setIsEditingBusiness(true)} style={styles.editBtn}>
+                <MaterialIcons name="edit" size={18} color={theme.primary} />
+                <Text style={styles.editBtnText}>Edit</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.form}>
+            <Input
+              label="Company / Trading Name"
+              placeholder="e.g. Smith Cleaning Services"
+              value={companyName}
+              onChangeText={setCompanyName}
+              editable={isEditingBusiness}
+              style={[styles.input, !isEditingBusiness && styles.disabledInput]}
+              autoCapitalize="words"
+            />
+            <Input
+              label="Description"
+              placeholder="A short description of your experience and services..."
+              value={bio}
+              onChangeText={setBio}
+              editable={isEditingBusiness}
+              style={[styles.input, styles.bioInput, !isEditingBusiness && styles.disabledInput]}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+          {isEditingBusiness && (
+            <View style={styles.buttonRow}>
+              <Button
+                title="Cancel"
+                onPress={() => setIsEditingBusiness(false)}
+                type="outline"
+                buttonStyle={styles.cancelBtn}
+              />
+              <Button
+                title="Save"
+                onPress={handleSaveBusiness}
+                loading={savingBusiness}
+                buttonStyle={styles.saveBtn}
+              />
+            </View>
+          )}
+        </View>
+      )}
     </KeyboardAwareScrollView>
   );
 }
@@ -183,5 +266,6 @@ function createStyles(t: AppTheme) {
     buttonRow:     { flexDirection: "row", gap: 12, marginTop: 16 },
     cancelBtn:     { flex: 1, borderColor: t.muted },
     saveBtn:       { flex: 1, backgroundColor: t.primary },
+    bioInput:      { height: 100, paddingTop: 12 },
   });
 }

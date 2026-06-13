@@ -1,6 +1,7 @@
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
+import { useAuthStore } from "@/store/auth-store";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { FAQ_CATEGORIES, SUPPORT_EMAIL } from "@kiado/shared/content/faq";
+import { FAQ_CATEGORIES, SERVICE_OPERATOR_FAQ_CATEGORIES, SUPPORT_EMAIL } from "@kiado/shared/content/faq";
 import { useMemo, useState } from "react";
 import {
   Linking,
@@ -16,7 +17,13 @@ export default function HelpSupportScreen() {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
+  const { profile } = useAuthStore();
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  const categories =
+    profile?.user_role === "service_operator"
+      ? SERVICE_OPERATOR_FAQ_CATEGORIES
+      : FAQ_CATEGORIES;
 
   const toggle = (key: string) =>
     setExpanded((prev) => (prev === key ? null : key));
@@ -27,7 +34,7 @@ export default function HelpSupportScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {FAQ_CATEGORIES.map((category) => (
+      {categories.map((category) => (
         <View key={category.title} style={styles.section}>
           <Text style={styles.categoryTitle}>{category.title}</Text>
           <View style={styles.card}>

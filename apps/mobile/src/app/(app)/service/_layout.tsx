@@ -1,15 +1,17 @@
 import { useTheme } from "@/hooks/useTheme";
-import { MaterialIcons } from "@expo/vector-icons";
+import { useMessageStore } from "@/store/message-store";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Tabs } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { useMemo } from "react";
 import { useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
-export default function LandlordTabLayout() {
+export default function ServiceTabLayout() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const scheme = useColorScheme();
+  const { unreadCount } = useMessageStore();
 
   const tabBarStyle = useMemo(
     () => ({
@@ -32,7 +34,7 @@ export default function LandlordTabLayout() {
           headerShown: false,
           sceneStyle: { backgroundColor: theme.bg },
           tabBarStyle,
-          tabBarActiveTintColor: theme.accent,
+          tabBarActiveTintColor: "#F59E0B",
           tabBarInactiveTintColor: theme.textMuted,
           tabBarLabelStyle: {
             fontSize: 10,
@@ -44,18 +46,18 @@ export default function LandlordTabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Dashboard",
+            title: "Jobs",
             tabBarIcon: ({ color }) => (
-              <MaterialIcons name="dashboard" size={22} color={color} />
+              <MaterialIcons name="work-outline" size={22} color={color} />
             ),
           }}
         />
         <Tabs.Screen
-          name="bookings"
+          name="my-jobs"
           options={{
-            title: "Bookings",
+            title: "My Jobs",
             tabBarIcon: ({ color }) => (
-              <MaterialIcons name="calendar-today" size={22} color={color} />
+              <MaterialIcons name="assignment" size={22} color={color} />
             ),
           }}
         />
@@ -63,26 +65,10 @@ export default function LandlordTabLayout() {
           name="messages"
           options={{
             title: "Messages",
+            tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+            tabBarBadgeStyle: { backgroundColor: "#F59E0B" },
             tabBarIcon: ({ color }) => (
               <MaterialIcons name="chat" size={22} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="properties"
-          options={{
-            title: "Properties",
-            tabBarIcon: ({ color }) => (
-              <MaterialIcons name="home" size={22} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="services"
-          options={{
-            title: "Services",
-            tabBarIcon: ({ color }) => (
-              <MaterialIcons name="handyman" size={22} color={color} />
             ),
           }}
         />
