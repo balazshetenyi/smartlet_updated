@@ -347,7 +347,12 @@ export default function CreatePropertyScreen() {
                     accessibilityLabel="Remove photo"
                   >
                     {({ pressed }) => (
-                      <View style={[styles.removeBtnInner, pressed && { opacity: 0.6 }]}>
+                      <View
+                        style={[
+                          styles.removeBtnInner,
+                          pressed && { opacity: 0.6 },
+                        ]}
+                      >
                         <MaterialIcons name="close" size={14} color="#fff" />
                       </View>
                     )}
@@ -765,7 +770,7 @@ function createStyles(t: AppTheme) {
     },
     addTileOuter: {
       flex: 1,
-      width: 96,
+      minWidth: 96,
       height: 96,
       borderRadius: 12,
       borderWidth: 1.5,

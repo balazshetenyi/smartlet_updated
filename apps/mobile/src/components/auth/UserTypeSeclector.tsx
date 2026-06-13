@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
 
 interface UserTypeSelectorProps {
-  value: "tenant" | "landlord" | "";
+  value: "tenant" | "landlord" | "service_operator" | "";
   onChange: (value: "tenant" | "landlord") => void;
   error?: string;
 }

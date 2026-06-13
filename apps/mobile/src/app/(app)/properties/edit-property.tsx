@@ -19,7 +19,7 @@ import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
-  Image,
+  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -426,6 +426,152 @@ export default function EditPropertyScreen() {
     >
       <View style={styles.form}>
         <View style={styles.section}>
+          <View style={styles.photoHeader}>
+            <Text style={styles.sectionTitle}>Photos</Text>
+            {photoDetails.length > 0 && (
+              <Pressable
+                onPress={() => setSelectingCover(!selectingCover)}
+                style={styles.setCoverButton}
+              >
+                <MaterialIcons
+                  name={selectingCover ? "close" : "image"}
+                  size={20}
+                  color={theme.primary}
+                />
+                <Text style={styles.setCoverText}>
+                  {selectingCover ? "Cancel" : "Set Cover"}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+
+          {selectingCover && (
+            <Text style={styles.coverHint}>
+              Tap a photo to set it as the cover image
+            </Text>
+          )}
+
+          <View style={styles.photoGrid}>
+            {photoDetails.map((photo) => (
+              <Pressable
+                key={photo.id}
+                onPress={() => selectingCover && handleSetCover(photo.id)}
+                style={styles.thumbWrapper}
+              >
+                <ImageBackground
+                  source={{ uri: photo.image_url }}
+                  style={{ flex: 1 }}
+                  imageStyle={styles.thumbImage}
+                >
+                  {photo.is_cover && (
+                    <View style={styles.coverBadge}>
+                      <MaterialIcons name="star" size={12} color="#fff" />
+                      <Text style={styles.coverBadgeText}>Cover</Text>
+                    </View>
+                  )}
+                  {selectingCover && !photo.is_cover && (
+                    <View style={styles.selectOverlay}>
+                      <MaterialIcons
+                        name="check-circle"
+                        size={32}
+                        color={theme.primary}
+                      />
+                    </View>
+                  )}
+                  {!selectingCover && (
+                    <View style={styles.removeBtn}>
+                      <Pressable
+                        onPress={() =>
+                          removeExistingPhoto(photo.id, photo.image_url)
+                        }
+                        style={styles.removeBtnPressable}
+                        accessibilityLabel="Remove photo"
+                      >
+                        {({ pressed }) => (
+                          <View
+                            style={[
+                              styles.removeBtnInner,
+                              pressed && { opacity: 0.6 },
+                            ]}
+                          >
+                            <MaterialIcons name="close" size={14} color="#fff" />
+                          </View>
+                        )}
+                      </Pressable>
+                    </View>
+                  )}
+                </ImageBackground>
+              </Pressable>
+            ))}
+
+            {!selectingCover &&
+              newAssets.map((a) => (
+                <ImageBackground
+                  key={a.uri}
+                  source={{ uri: a.uri }}
+                  style={styles.thumbWrapper}
+                  imageStyle={styles.thumbImage}
+                >
+                  <View style={styles.newBadge}>
+                    <Text style={styles.newBadgeText}>New</Text>
+                  </View>
+                  <View style={styles.removeBtn}>
+                    <Pressable
+                      onPress={() => removeNewAsset(a.uri)}
+                      style={styles.removeBtnPressable}
+                      accessibilityLabel="Remove photo"
+                    >
+                      {({ pressed }) => (
+                        <View
+                          style={[
+                            styles.removeBtnInner,
+                            pressed && { opacity: 0.6 },
+                          ]}
+                        >
+                          <MaterialIcons name="close" size={14} color="#fff" />
+                        </View>
+                      )}
+                    </Pressable>
+                  </View>
+                </ImageBackground>
+              ))}
+
+            <View
+              style={[
+                styles.addTileOuter,
+                selectingCover && { opacity: 0.4 },
+              ]}
+            >
+              <Pressable
+                onPress={pickImages}
+                style={styles.addTilePressable}
+                accessibilityLabel="Add photos"
+                disabled={selectingCover}
+              >
+                {({ pressed }) => (
+                  <View
+                    style={[styles.addTileInner, pressed && { opacity: 0.7 }]}
+                  >
+                    <MaterialIcons
+                      name="add-photo-alternate"
+                      size={32}
+                      color={theme.textSecondary}
+                    />
+                    <Text style={styles.addTileText}>Add photos</Text>
+                  </View>
+                )}
+              </Pressable>
+            </View>
+          </View>
+
+          <Text style={styles.photoHint}>
+            {selectingCover
+              ? "Tap a photo to set it as your cover image"
+              : "Add, remove, or set a cover image. Changes will be saved when you update the property."}
+          </Text>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>Basic Information</Text>
 
           <Controller
@@ -654,121 +800,6 @@ export default function EditPropertyScreen() {
         </View>
 
         <View style={styles.section}>
-          <View style={styles.photoHeader}>
-            <Text style={styles.sectionTitle}>Photos</Text>
-            {photoDetails.length > 0 && (
-              <Pressable
-                onPress={() => setSelectingCover(!selectingCover)}
-                style={styles.setCoverButton}
-              >
-                <MaterialIcons
-                  name={selectingCover ? "close" : "image"}
-                  size={20}
-                  color={theme.primary}
-                />
-                <Text style={styles.setCoverText}>
-                  {selectingCover ? "Cancel" : "Set Cover"}
-                </Text>
-              </Pressable>
-            )}
-          </View>
-
-          {selectingCover && (
-            <Text style={styles.coverHint}>
-              Tap a photo to set it as the cover image
-            </Text>
-          )}
-
-          <View style={styles.photoGrid}>
-            {/* Add tile */}
-            <Pressable
-              onPress={pickImages}
-              style={({ pressed }) => [
-                styles.addTile,
-                pressed && { opacity: 0.8 },
-                selectingCover && { opacity: 0.6 },
-              ]}
-              disabled={selectingCover}
-              accessibilityLabel="Add photos"
-            >
-              <MaterialIcons
-                name="add-a-photo"
-                size={24}
-                color={theme.primary}
-              />
-              <Text style={styles.addTileText}>Add photos</Text>
-            </Pressable>
-
-            {/* Existing photos */}
-            {photoDetails.map((photo) => (
-              <Pressable
-                key={photo.id}
-                onPress={() => selectingCover && handleSetCover(photo.id)}
-                disabled={!selectingCover}
-                style={styles.thumbWrapper}
-              >
-                <Image source={{ uri: photo.image_url }} style={styles.thumb} />
-                {photo.is_cover && (
-                  <View style={styles.coverBadge}>
-                    <MaterialIcons name="star" size={12} color="#fff" />
-                    <Text style={styles.coverBadgeText}>Cover</Text>
-                  </View>
-                )}
-                {selectingCover && !photo.is_cover && (
-                  <View style={styles.selectOverlay}>
-                    <MaterialIcons
-                      name="check-circle"
-                      size={32}
-                      color={theme.primary}
-                    />
-                  </View>
-                )}
-                {!selectingCover && (
-                  <Pressable
-                    onPress={() =>
-                      removeExistingPhoto(photo.id, photo.image_url)
-                    }
-                    style={({ pressed }) => [
-                      styles.removeBtn,
-                      pressed && { opacity: 0.8 },
-                    ]}
-                    accessibilityLabel="Remove photo"
-                  >
-                    <MaterialIcons name="close" size={16} color="#fff" />
-                  </Pressable>
-                )}
-              </Pressable>
-            ))}
-
-            {/* New assets to be uploaded */}
-            {!selectingCover &&
-              newAssets.map((a) => (
-                <View key={a.uri} style={styles.thumbWrapper}>
-                  <Image source={{ uri: a.uri }} style={styles.thumb} />
-                  <View style={styles.newBadge}>
-                    <Text style={styles.newBadgeText}>New</Text>
-                  </View>
-                  <Pressable
-                    onPress={() => removeNewAsset(a.uri)}
-                    style={({ pressed }) => [
-                      styles.removeBtn,
-                      pressed && { opacity: 0.8 },
-                    ]}
-                    accessibilityLabel="Remove photo"
-                  >
-                    <MaterialIcons name="close" size={16} color="#fff" />
-                  </Pressable>
-                </View>
-              ))}
-          </View>
-          <Text style={styles.photoHint}>
-            {selectingCover
-              ? "Tap a photo to set it as your cover image"
-              : "Add, remove, or set a cover image. Changes will be saved when you update the property."}
-          </Text>
-        </View>
-
-        <View style={styles.section}>
           <SurveillanceDeclarationSection
             declarationType={declarationType}
             onDeclarationTypeChange={setDeclarationType}
@@ -907,38 +938,48 @@ function createStyles(t: AppTheme) {
     fontStyle: "italic",
   },
   photoGrid: {
+    flex: 1,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    marginBottom: 12,
   },
-  addTile: {
-    width: 96,
+  addTileOuter: {
+    flex: 1,
+    minWidth: 96,
     height: 96,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderStyle: "dashed",
-    borderColor: t.primary,
-    backgroundColor: t.surface,
+    borderColor: t.muted,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
   },
+  addTilePressable: {
+    flex: 1,
+  },
+  addTileInner: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+  },
   addTileText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: t.primary,
-    fontWeight: "600",
+    fontSize: 11,
+    color: t.textSecondary,
+    fontWeight: "500",
   },
   thumbWrapper: {
-    width: 96,
+    minWidth: 96,
     height: 96,
+    flex: 1,
     borderRadius: 12,
     overflow: "hidden",
-    position: "relative",
     backgroundColor: t.surface,
   },
-  thumb: {
-    width: "100%",
-    height: "100%",
+  thumbImage: {
+    borderRadius: 12,
   },
   coverBadge: {
     position: "absolute",
@@ -983,17 +1024,24 @@ function createStyles(t: AppTheme) {
   },
   removeBtn: {
     position: "absolute",
-    top: 6,
-    right: 6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: t.overlay,
+  },
+  removeBtnPressable: {
+    flex: 1,
+  },
+  removeBtnInner: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
   photoHint: {
-    marginTop: 8,
+    marginBottom: 12,
     fontSize: 12,
     color: t.textSecondary,
   },

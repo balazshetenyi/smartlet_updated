@@ -1,5 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
 import { useAuthStore } from "@/store/auth-store";
+import { supabase } from "@kiado/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
@@ -22,6 +23,15 @@ export default function AppIndex() {
 
     if (profile.user_role === "landlord" && !isGuestMode) {
       router.replace("/landlord");
+    } else if (profile.user_role === "service_operator") {
+      supabase
+        .from("service_operator_profiles")
+        .select("id")
+        .eq("id", profile.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          router.replace(data ? "/service" : "/service-onboarding");
+        });
     } else {
       router.replace(isGuestMode ? "/tenant?guest=1" : "/tenant");
     }

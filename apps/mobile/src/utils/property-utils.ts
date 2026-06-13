@@ -228,11 +228,25 @@ export const updateProperty = async (
  */
 export const deleteProperty = async (id: string): Promise<void> => {
   try {
-    const { data, error } = await supabase
+    const { data: photos } = await supabase
+      .from("property_photos")
+      .select("image_url")
+      .eq("property_id", id);
+
+    if (photos && photos.length > 0) {
+      const paths = photos
+        .map((p) => p.image_url?.split("/property-photos/")[1])
+        .filter(Boolean) as string[];
+
+      if (paths.length > 0) {
+        await supabase.storage.from("property-photos").remove(paths);
+      }
+    }
+
+    const { error } = await supabase
       .from("properties")
       .delete()
-      .eq("id", id)
-      .select("id");
+      .eq("id", id);
 
     if (error) {
       throw new Error(

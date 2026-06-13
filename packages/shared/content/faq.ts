@@ -10,6 +10,105 @@ export type FaqCategory = {
   items: FaqItem[];
 };
 
+export const SERVICE_OPERATOR_FAQ_CATEGORIES: FaqCategory[] = [
+  {
+    title: "Getting Started",
+    items: [
+      {
+        question: "How do I set up my profile?",
+        answer:
+          "After registering as a service operator, complete your profile by selecting the services you offer, adding your location, and writing a short description. Landlords will see this when reviewing your application for a job.",
+      },
+      {
+        question: "Do I need to connect Stripe before applying for jobs?",
+        answer:
+          "You can browse and apply for jobs without Stripe connected, but you won't be able to receive payment until you set up your payout account. Go to More → Payout Settings to connect Stripe before your first job is approved.",
+      },
+      {
+        question: "How do landlords find me?",
+        answer:
+          "When a landlord posts a job, operators who offer the relevant service type are notified. You can then browse open jobs and submit a quote. Landlords review all applications and choose the best fit.",
+      },
+    ],
+  },
+  {
+    title: "Jobs & Quotes",
+    items: [
+      {
+        question: "How do I apply for a job?",
+        answer:
+          "Open an available job, review the property details, and tap 'Submit your quote'. Enter your price and an optional cover note explaining your experience and availability. The landlord will be notified of your application.",
+      },
+      {
+        question: "Can I withdraw an application?",
+        answer:
+          "Yes. In My Jobs, tap the application you want to withdraw and select Withdraw. You can only withdraw while the application is still pending — once approved, contact support to discuss cancellation.",
+      },
+      {
+        question: "What happens after my application is approved?",
+        answer:
+          "When a landlord approves your application, payment is held in escrow by Stripe. A message channel is opened so you can coordinate with the landlord. Once the job is marked complete, the payment is released to your Stripe account minus the 6% platform fee.",
+      },
+      {
+        question: "What if the landlord cancels the job?",
+        answer:
+          "If a landlord cancels a job after your application has been approved, any held payment is released back to them. Contact support at " +
+          SUPPORT_EMAIL +
+          " if you believe you're owed compensation for work already started.",
+      },
+    ],
+  },
+  {
+    title: "Payments & Payouts",
+    items: [
+      {
+        question: "What is the platform fee?",
+        answer:
+          "Kiado charges a 6% platform fee on service jobs. This is deducted from your quote price at the point of payout. For example, a £100 quote results in a £94 payout to you. The fee is always shown to you before you submit a quote.",
+      },
+      {
+        question: "When do I get paid?",
+        answer:
+          "Payment is released to your Stripe account once the landlord marks the job as complete. Stripe then pays out to your bank account according to your payout schedule, which is typically 2–7 business days.",
+      },
+      {
+        question: "How do I connect my bank account?",
+        answer:
+          "Go to More → Payout Settings and tap 'Connect New Stripe Account'. You'll be guided through Stripe's onboarding where you can add your bank details. This only needs to be done once.",
+      },
+      {
+        question: "What if I haven't been paid after the job is complete?",
+        answer:
+          "First check your Stripe dashboard to confirm the payout is in progress. Stripe payouts typically take 2–7 business days. If it's been longer, contact us at " +
+          SUPPORT_EMAIL +
+          " with your job details.",
+      },
+    ],
+  },
+  {
+    title: "Account",
+    items: [
+      {
+        question: "How do I update my availability?",
+        answer:
+          "Go to More and use the availability toggle at the top of the screen. When set to unavailable, you won't receive notifications about new jobs in your area.",
+      },
+      {
+        question: "How do I change my password?",
+        answer:
+          "Go to More → Change Password. Enter your current password and then your new password. If you've forgotten your password, use the 'Forgot password' option on the sign-in screen.",
+      },
+      {
+        question: "How do I contact support?",
+        answer:
+          "You can reach us any time at " +
+          SUPPORT_EMAIL +
+          ". We aim to respond within one business day.",
+      },
+    ],
+  },
+];
+
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     title: "Bookings",
