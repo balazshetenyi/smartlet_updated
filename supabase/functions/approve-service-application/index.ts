@@ -75,9 +75,9 @@ Deno.serve(async (req: Request) => {
       throw new Error("Job is no longer open for applications");
     }
 
-    // Fetch operator's Stripe Connect account
+    // Fetch operator's Stripe Connect account — stored in profiles, not service_operator_profiles
     const { data: operatorProfile, error: opProfileError } = await supabaseAdmin
-      .from("service_operator_profiles")
+      .from("profiles")
       .select("stripe_account_id")
       .eq("id", application.operator_id)
       .single();

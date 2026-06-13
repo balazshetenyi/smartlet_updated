@@ -179,6 +179,15 @@ export default function ManageJobScreen() {
     );
   }
 
+  function operatorDisplay(app: ApplicationRow) {
+    const p = Array.isArray(app.profiles) ? app.profiles[0] : app.profiles;
+    const op = p?.service_operator_profiles;
+    const fullName = [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "Operator";
+    const primary = op?.company_name || fullName;
+    const secondary = op?.company_name ? fullName : null;
+    return { primary, secondary, city: op?.city };
+  }
+
   const assignedApp = applications.find(
     (a) => a.status === "approved" && job?.assigned_operator_id,
   );
@@ -287,12 +296,12 @@ export default function ManageJobScreen() {
               <View style={styles.assignedText}>
                 <Text style={styles.assignedLabel}>Matched operator</Text>
                 <Text style={styles.assignedName}>
-                  {[
-                    (Array.isArray(assignedApp.profiles) ? assignedApp.profiles[0] : assignedApp.profiles)?.first_name,
-                    (Array.isArray(assignedApp.profiles) ? assignedApp.profiles[0] : assignedApp.profiles)?.last_name,
-                  ].filter(Boolean).join(" ") || "Operator"}
+                  {operatorDisplay(assignedApp).primary}
                   {" · "}£{Number(assignedApp.quote_price).toFixed(2)}
                 </Text>
+                {operatorDisplay(assignedApp).secondary && (
+                  <Text style={styles.assignedSub}>{operatorDisplay(assignedApp).secondary}</Text>
+                )}
               </View>
               <MaterialIcons name="chevron-right" size={20} color={theme.textMuted} />
             </TouchableOpacity>
@@ -322,9 +331,7 @@ export default function ManageJobScreen() {
             </View>
           ) : (
             applications.map((app) => {
-              const p = Array.isArray(app.profiles) ? app.profiles[0] : app.profiles;
-              const name = [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "Operator";
-              const op = p?.service_operator_profiles;
+              const { primary, secondary, city } = operatorDisplay(app);
 
               return (
                 <TouchableOpacity
@@ -341,8 +348,9 @@ export default function ManageJobScreen() {
                     <MaterialIcons name="person" size={20} color={theme.textMuted} />
                   </View>
                   <View style={styles.appRowBody}>
-                    <Text style={styles.appRowName}>{name}</Text>
-                    {op?.city && <Text style={styles.appRowCity}>{op.city}</Text>}
+                    <Text style={styles.appRowName}>{primary}</Text>
+                    {secondary && <Text style={styles.appRowCity}>{secondary}</Text>}
+                    {!secondary && city && <Text style={styles.appRowCity}>{city}</Text>}
                   </View>
                   <Text style={styles.appRowQuote}>£{Number(app.quote_price).toFixed(2)}</Text>
                   <View style={[styles.appBadge, getAppBadgeStyle(app.status)]}>
@@ -374,11 +382,8 @@ export default function ManageJobScreen() {
           <Pressable style={[styles.modalSheet, { paddingBottom: insets.bottom + 16 }]}>
             <View style={styles.modalHandle} />
             {selectedApp && (() => {
-              const p = Array.isArray(selectedApp.profiles)
-                ? selectedApp.profiles[0]
-                : selectedApp.profiles;
-              const op = p?.service_operator_profiles;
-              const name = [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "Operator";
+              const { primary, secondary, city } = operatorDisplay(selectedApp);
+              const op = (Array.isArray(selectedApp.profiles) ? selectedApp.profiles[0] : selectedApp.profiles)?.service_operator_profiles;
 
               return (
                 <>
@@ -387,11 +392,9 @@ export default function ManageJobScreen() {
                       <MaterialIcons name="person" size={28} color={theme.textMuted} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.modalName}>{name}</Text>
-                      {op?.company_name && (
-                        <Text style={styles.modalCompany}>{op.company_name}</Text>
-                      )}
-                      {op?.city && <Text style={styles.modalCity}>{op.city}</Text>}
+                      <Text style={styles.modalName}>{primary}</Text>
+                      {secondary && <Text style={styles.modalCompany}>{secondary}</Text>}
+                      {city && <Text style={styles.modalCity}>{city}</Text>}
                     </View>
                     <View style={[styles.appBadge, getAppBadgeStyle(selectedApp.status)]}>
                       <Text style={[styles.appBadgeText, getAppBadgeTextStyle(selectedApp.status)]}>
@@ -439,7 +442,7 @@ export default function ManageJobScreen() {
                       title={approving === selectedApp.id ? "Approving…" : "Approve this operator"}
                       loading={approving === selectedApp.id}
                       disabled={approving !== null}
-                      onPress={() => handleApprove(selectedApp.id, name)}
+                      onPress={() => handleApprove(selectedApp.id, primary)}
                       buttonStyle={styles.approveBtn}
                     />
                   )}
@@ -568,6 +571,7 @@ function createStyles(t: AppTheme) {
     assignedText: { flex: 1 },
     assignedLabel: { fontSize: 11, color: "#22C55E", fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 },
     assignedName: { fontSize: 14, fontWeight: "600", color: t.text, marginTop: 2 },
+    assignedSub: { fontSize: 12, color: t.textSecondary, marginTop: 1 },
 
     completeBtn: { backgroundColor: "#22C55E", borderRadius: 12 },
 

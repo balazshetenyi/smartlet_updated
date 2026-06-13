@@ -334,7 +334,17 @@ export default function ServiceJobDetailScreen() {
           )}
 
           {/* Apply form — service operators only, open jobs */}
-          {isOperator && isOpen && !hasApplied && (
+          {isOperator && isOpen && !hasApplied && !profile?.stripe_account_id && (
+            <View style={styles.stripeGate}>
+              <MaterialIcons name="account-balance" size={28} color="#F59E0B" />
+              <Text style={styles.stripeGateTitle}>Payout account required</Text>
+              <Text style={styles.stripeGateText}>
+                You need to connect Stripe before you can apply for jobs. Set it up in your account settings.
+              </Text>
+            </View>
+          )}
+
+          {isOperator && isOpen && !hasApplied && !!profile?.stripe_account_id && (
             <View style={styles.applyCard}>
               <Text style={styles.applyTitle}>Submit your quote</Text>
 
@@ -491,6 +501,17 @@ function createStyles(t: AppTheme) {
       backgroundColor: t.primary,
       borderRadius: 12,
     },
+    stripeGate: {
+      backgroundColor: "#F59E0B12",
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: "#F59E0B40",
+      padding: 16,
+      alignItems: "center",
+      gap: 8,
+    },
+    stripeGateTitle: { fontSize: 15, fontWeight: "700", color: t.text },
+    stripeGateText: { fontSize: 13, color: t.textSecondary, textAlign: "center", lineHeight: 19 },
     feeHint: {
       fontSize: 12,
       color: t.textMuted,

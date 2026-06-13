@@ -167,6 +167,14 @@ export async function applyToServiceJob(
     .single();
 
   if (error) return { error: error.message };
+
+  // Notify the landlord — best-effort, don't fail the apply flow if this errors
+  supabase.functions
+    .invoke("notify-landlord-of-service-application", {
+      body: { applicationId: result.id },
+    })
+    .catch(() => {});
+
   return { id: result.id };
 }
 
