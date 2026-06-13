@@ -6,27 +6,27 @@ import Input from "@/components/shared/Input";
 import { useTheme, type AppTheme } from "@/hooks/useTheme";
 import { AddNewProperty, propertySchema } from "@/schemas/property-schema";
 import { useAuthStore } from "@/store/auth-store";
+import { reverseGeocode } from "@/utils/geocoding-utils";
 import {
   createProperty,
   setCoverImage,
   uploadPropertyImages,
 } from "@/utils/property-utils";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@kiado/shared";
 import { generateListingContent } from "@kiado/shared/services/ai-service";
 import { SurveillanceDeclarationType } from "@kiado/shared/types/property";
-import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import { reverseGeocode } from "@/utils/geocoding-utils";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
-  Image,
+  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -126,12 +126,16 @@ export default function CreatePropertyScreen() {
         if (buttonIndex === 1) {
           const { status } = await ImagePicker.requestCameraPermissionsAsync();
           if (status !== "granted") {
-            Alert.alert("Permission required", "Camera access is needed to take photos.");
+            Alert.alert(
+              "Permission required",
+              "Camera access is needed to take photos.",
+            );
             return;
           }
 
           // Request location permission in parallel — silently skip if denied
-          const locationPermission = await Location.requestForegroundPermissionsAsync();
+          const locationPermission =
+            await Location.requestForegroundPermissionsAsync();
 
           const result = await ImagePicker.launchCameraAsync({
             quality: 0.3,
@@ -144,16 +148,31 @@ export default function CreatePropertyScreen() {
 
             // Auto-fill address only if all three fields are currently empty
             const { address, city, postcode } = getValues();
-            if (!address && !city && !postcode && locationPermission.status === "granted") {
+            if (
+              !address &&
+              !city &&
+              !postcode &&
+              locationPermission.status === "granted"
+            ) {
               try {
                 const pos = await Location.getCurrentPositionAsync({
                   accuracy: Location.Accuracy.Balanced,
                 });
-                const detected = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+                const detected = await reverseGeocode(
+                  pos.coords.latitude,
+                  pos.coords.longitude,
+                );
                 if (detected) {
-                  if (detected.address) setValue("address", detected.address, { shouldValidate: true });
-                  if (detected.city) setValue("city", detected.city, { shouldValidate: true });
-                  if (detected.postcode) setValue("postcode", detected.postcode, { shouldValidate: true });
+                  if (detected.address)
+                    setValue("address", detected.address, {
+                      shouldValidate: true,
+                    });
+                  if (detected.city)
+                    setValue("city", detected.city, { shouldValidate: true });
+                  if (detected.postcode)
+                    setValue("postcode", detected.postcode, {
+                      shouldValidate: true,
+                    });
                   setLocationDetected(true);
                 }
               } catch (e) {
@@ -162,9 +181,13 @@ export default function CreatePropertyScreen() {
             }
           }
         } else {
-          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          const { status } =
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (status !== "granted") {
-            Alert.alert("Permission required", "Photo library access is needed to add photos.");
+            Alert.alert(
+              "Permission required",
+              "Photo library access is needed to add photos.",
+            );
             return;
           }
           const result = await ImagePicker.launchImageLibraryAsync({
@@ -192,9 +215,15 @@ export default function CreatePropertyScreen() {
       const images = assets
         .slice(0, 3)
         .filter((a) => a.base64)
-        .map((a) => ({ base64: a.base64!, mimeType: a.mimeType ?? "image/jpeg" }));
+        .map((a) => ({
+          base64: a.base64!,
+          mimeType: a.mimeType ?? "image/jpeg",
+        }));
 
-      const result = await generateListingContent(supabase, { ...values, images });
+      const result = await generateListingContent(supabase, {
+        ...values,
+        images,
+      });
       setValue("title", result.title, { shouldValidate: true });
       setValue("description", result.description, { shouldValidate: true });
     } catch {
@@ -299,50 +328,55 @@ export default function CreatePropertyScreen() {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
-      <View style={styles.header}>
-        <MaterialIcons name="add-home" size={32} color={theme.primary} />
-        <Text style={styles.subtitle}>
-          Fill in the details to list your property
-        </Text>
-      </View>
-
       <View style={styles.form}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Photos</Text>
           <View style={styles.photoGrid}>
-            {/* Add tile */}
-            <Pressable
-              onPress={addPhotos}
-              style={({ pressed }) => [
-                styles.addTile,
-                pressed && { opacity: 0.8 },
-              ]}
-              accessibilityLabel="Add photos"
-            >
-              <MaterialIcons
-                name="add-a-photo"
-                size={24}
-                color={theme.primary}
-              />
-              <Text style={styles.addTileText}>Add photos</Text>
-            </Pressable>
-
             {/* Selected thumbnails */}
             {assets.map((a) => (
-              <View key={a.uri} style={styles.thumbWrapper}>
-                <Image source={{ uri: a.uri }} style={styles.thumb} />
-                <Pressable
-                  onPress={() => removeAsset(a.uri)}
-                  style={({ pressed }) => [
-                    styles.removeBtn,
-                    pressed && { opacity: 0.8 },
-                  ]}
-                  accessibilityLabel="Remove photo"
-                >
-                  <MaterialIcons name="close" size={16} color="#fff" />
-                </Pressable>
-              </View>
+              <ImageBackground
+                key={a.uri}
+                source={{ uri: a.uri }}
+                style={styles.thumbWrapper}
+                imageStyle={styles.thumbImage}
+              >
+                <View style={styles.removeBtn}>
+                  <Pressable
+                    onPress={() => removeAsset(a.uri)}
+                    style={styles.removeBtnPressable}
+                    accessibilityLabel="Remove photo"
+                  >
+                    {({ pressed }) => (
+                      <View style={[styles.removeBtnInner, pressed && { opacity: 0.6 }]}>
+                        <MaterialIcons name="close" size={14} color="#fff" />
+                      </View>
+                    )}
+                  </Pressable>
+                </View>
+              </ImageBackground>
             ))}
+
+            {/* Add tile */}
+            <View style={styles.addTileOuter}>
+              <Pressable
+                onPress={addPhotos}
+                style={styles.addTilePressable}
+                accessibilityLabel="Add photos"
+              >
+                {({ pressed }) => (
+                  <View
+                    style={[styles.addTileInner, pressed && { opacity: 0.7 }]}
+                  >
+                    <MaterialIcons
+                      name="add-photo-alternate"
+                      size={32}
+                      color={theme.textSecondary}
+                    />
+                    <Text style={styles.addTileText}>Add photos</Text>
+                  </View>
+                )}
+              </Pressable>
+            </View>
           </View>
           <Text style={styles.photoHint}>
             Up to 10 photos. The first photo will be used as the cover.
@@ -354,7 +388,8 @@ export default function CreatePropertyScreen() {
             style={({ pressed }) => [
               styles.generateButton,
               pressed && assets.length > 0 && { opacity: 0.7 },
-              (isGenerating || assets.length === 0) && styles.generateButtonDisabled,
+              (isGenerating || assets.length === 0) &&
+                styles.generateButtonDisabled,
             ]}
             accessibilityLabel="Generate title and description with AI"
           >
@@ -380,7 +415,9 @@ export default function CreatePropertyScreen() {
             </Text>
           </Pressable>
           {assets.length === 0 && (
-            <Text style={styles.generateHint}>Add photos above to generate</Text>
+            <Text style={styles.generateHint}>
+              Add photos above to generate
+            </Text>
           )}
         </View>
 
@@ -720,48 +757,68 @@ function createStyles(t: AppTheme) {
       borderRadius: 12,
     },
     photoGrid: {
+      flex: 1,
       flexDirection: "row",
       flexWrap: "wrap",
       gap: 12,
       marginBottom: 12,
     },
-    addTile: {
+    addTileOuter: {
+      flex: 1,
       width: 96,
       height: 96,
       borderRadius: 12,
-      borderWidth: 1,
+      borderWidth: 1.5,
       borderStyle: "dashed",
-      borderColor: t.primary,
-      backgroundColor: t.surface,
+      borderColor: t.muted,
+      overflow: "hidden",
       alignItems: "center",
       justifyContent: "center",
     },
+    addTilePressable: {
+      flex: 1,
+    },
+    addTileInner: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+    },
     addTileText: {
-      marginTop: 6,
-      fontSize: 12,
-      color: t.primary,
-      fontWeight: "600",
+      fontSize: 11,
+      color: t.textSecondary,
+      fontWeight: "500",
     },
     thumbWrapper: {
-      width: 96,
+      minWidth: 96,
       height: 96,
+      flex: 1,
       borderRadius: 12,
-      overflow: "hidden",
-      position: "relative",
       backgroundColor: t.surface,
+      overflow: "hidden",
     },
     thumb: {
       width: "100%",
       height: "100%",
     },
+    thumbImage: {
+      borderRadius: 12,
+    },
     removeBtn: {
       position: "absolute",
-      top: 6,
-      right: 6,
-      width: 22,
-      height: 22,
-      borderRadius: 11,
-      backgroundColor: "rgba(0,0,0,0.6)",
+      top: 8,
+      right: 8,
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      overflow: "hidden",
+      backgroundColor: t.overlay,
+    },
+    removeBtnPressable: {
+      flex: 1,
+    },
+    removeBtnInner: {
+      flex: 1,
       alignItems: "center",
       justifyContent: "center",
     },
